@@ -26,6 +26,7 @@ lazy val commonSettings = Seq(
   resolvers += "GHR protocol-das repo" at "https://maven.pkg.github.com/raw-labs/protocol-das",
   resolvers += "GHR das-sdk-scala repo" at "https://maven.pkg.github.com/raw-labs/das-sdk-scala",
   resolvers += "GHR das-server-scala repo" at "https://maven.pkg.github.com/raw-labs/das-server-scala",
+  resolvers += "releases" at "https://maven.atlassian.com/repository/public/",
   resolvers ++= Resolver.sonatypeOssRepos("snapshots"),
   resolvers ++= Resolver.sonatypeOssRepos("releases")
 )
@@ -114,7 +115,7 @@ lazy val root = (project in file("."))
     publishSettings,
     libraryDependencies ++= Seq(
       "com.raw-labs" %% "das-sdk-scala" % "0.1.0" % "compile->compile;test->test",
-      "com.frejo" % "force-rest-api" % "0.0.45",
+      "com.frejo" % "force-rest-api" % "0.0.45", //(todo az) TO BE DELETED
       "joda-time" % "joda-time" % "2.12.7",
       "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.12.7"
     )
