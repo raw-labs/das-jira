@@ -12,8 +12,7 @@
 
 package com.rawlabs.das.jira.table
 
-import com.rawlabs.das.jira.generated.IssueCommentsApi
 
 class DASJiraBoardTable {
-  val test = new IssueCommentsApi()
+//  val test = new IssueCommentsApi()
 }
