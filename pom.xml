@@ -7,11 +7,85 @@
     <groupId>com.rawlabs.das.jira</groupId>
     <artifactId>das-jira</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>das-jira</name>
+    <url>https://www.raw-labs.com/</url>
+    <description>RAW Labs DAS Jira connector implementation</description>
+    <organization>
+        <name>RAW Labs SA</name>
+        <url>https://www.raw-labs.com/</url>
+    </organization>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <failOnError>true</failOnError>
+                    <failOnWarning>true</failOnWarning>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- RAW Labs Dependencies -->
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>das-sdk-java</artifactId>
+            <version>${das-java-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>das-server-scala_${scala.version}</artifactId>
+            <version>${das-server-scala.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>jira-rest-client</artifactId>
+            <version>${jira-rest-client.version}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- Distribution Management -->
+    <distributionManagement>
+        <repository>
+            <id>das-jira</id>
+            <name>GitHub raw-labs Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/raw-labs/das-jira</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <maven.compiler.source>22</maven.compiler.source>
         <maven.compiler.target>22</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- RAW Labs Dependencies -->
+        <das-java-sdk.version>0.1.0-SNAPSHOT</das-java-sdk.version>
+        <das-server-scala.version>0.1.1</das-server-scala.version>
+        <jira-rest-client.version>1.0.0</jira-rest-client.version>
+
+        <!-- Test Dependencies -->
+        <junit-jupiter.version>5.11.0</junit-jupiter.version>
+
+        <!-- Scala Version -->
+        <scala.version>2.12</scala.version>
     </properties>
 
 </project>
