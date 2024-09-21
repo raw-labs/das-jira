@@ -1,4 +1,4 @@
-# DAS Salesforce
+# DAS Jira
 
 ## How to use
 
@@ -7,7 +7,7 @@ First you need to build the project:
 $ sbt "project docker" "docker:publishLocal"
 ```
 
-This will create a docker image with the name `das-salesforce`.
+This will create a docker image with the name `das-jira`.
 
 Then you can run the image with the following command:
 ```bash
@@ -21,14 +21,23 @@ You can find the image id by looking at the sbt output or by running:
 $ docker images
 ```
 
-## Options
+[//]: # (## Options)
 
-| Name                  | Description                       | Default | Required |
-|-----------------------|-----------------------------------|---------|----------|
-| `api_version`         | Salesforce API version            |         | Yes      |
-| `username`            | Salesforce username               |         | Yes      |
-| `password`            | Salesforce password               |         | Yes      |
-| `security_token`      | Salesforce security token         |         | Yes      |
-| `client_id`           | Salesforce client id              |         | Yes      |
-| `url`                 | Salesforce URL                    |         | Yes      |
-| `add_dynamic_columns` | Add dynamic columns to the schema | `true`  | No       |
+[//]: # ()
+[//]: # (| Name                  | Description                       | Default | Required |)
+
+[//]: # (|-----------------------|-----------------------------------|---------|----------|)
+
+[//]: # (| `api_version`         | Salesforce API version            |         | Yes      |)
+
+[//]: # (| `username`            | Salesforce username               |         | Yes      |)
+
+[//]: # (| `password`            | Salesforce password               |         | Yes      |)
+
+[//]: # (| `security_token`      | Salesforce security token         |         | Yes      |)
+
+[//]: # (| `client_id`           | Salesforce client id              |         | Yes      |)
+
+[//]: # (| `url`                 | Salesforce URL                    |         | Yes      |)
+
+[//]: # (| `add_dynamic_columns` | Add dynamic columns to the schema | `true`  | No       |)
