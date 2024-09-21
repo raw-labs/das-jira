@@ -12,17 +12,15 @@
 
 package com.rawlabs.das.jira
 
-import com.rawlabs.das.rest.jira.Configuration
+import com.rawlabs.das.rest.jira.auth.{HttpBasicAuth, HttpBearerAuth}
+import com.rawlabs.das.rest.jira.{ApiClient, Configuration}
 import com.rawlabs.das.sdk.{DASFunction, DASSdk, DASTable}
 import com.rawlabs.protocol.das.{FunctionDefinition, TableDefinition}
 import com.typesafe.scalalogging.StrictLogging
 
 class DASJira(options: Map[String, String]) extends DASSdk with StrictLogging {
 
-  val defaultClient = Configuration.getDefaultApiClient()
-  defaultClient.setBasePath(options.getOrElse("jira.basePath", "https://jira.atlassian.com/rest/api/3"))
-
-
+  DASJiraInitialize(options)
 
   override def tableDefinitions: Seq[TableDefinition] = ???
 

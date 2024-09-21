@@ -116,9 +116,11 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "com.raw-labs" %% "das-sdk-scala" % "0.1.0" % "compile->compile;test->test",
       "com.frejo" % "force-rest-api" % "0.0.45", //(todo az) TO BE DELETED
-      "com.rawlabs.das.rest" % "jira-rest-client" % "1001.0.0-SNAPSHOT-bccdae9a1b3c45b4ace2d33db0008d855c13cad7",
+      "com.rawlabs.das.rest" % "jira-rest-client" % "1.0.0",
       "joda-time" % "joda-time" % "2.12.7",
-      "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.12.7"
+      "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.12.7",
+      "org.scalactic" %% "scalactic" % "3.2.19",
+      "org.scalatest" %% "scalatest" % "3.2.19" % "test"
     )
   )
 
