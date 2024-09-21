@@ -13,17 +13,22 @@
 package com.rawlabs.das.jira.table
 
 import com.rawlabs.das.sdk.{DASExecuteResult, DASTable}
-import com.rawlabs.protocol.das.{Qual, SortKey}
+import com.rawlabs.protocol.das.{Qual, SortKey, TableDefinition}
 import com.typesafe.scalalogging.StrictLogging
 
-class DASJiraTable extends DASTable with StrictLogging {
+abstract class DASJiraTable(
+    val tableName: String
+) extends DASTable
+    with StrictLogging {
 
-  override def getRelSize(quals: Seq[Qual], columns: Seq[String]): (Int, Int) = ???
+  def tableDefinition: TableDefinition
+
+  override def getRelSize(quals: Seq[Qual], columns: Seq[String]): (Int, Int)
 
   override def execute(
       quals: Seq[Qual],
       columns: Seq[String],
       maybeSortKeys: Option[Seq[SortKey]],
       maybeLimit: Option[Long]
-  ): DASExecuteResult = ???
+  ): DASExecuteResult
 }
