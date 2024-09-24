@@ -21,23 +21,12 @@ You can find the image id by looking at the sbt output or by running:
 $ docker images
 ```
 
-[//]: # (## Options)
+## Options
 
-[//]: # ()
-[//]: # (| Name                  | Description                       | Default | Required |)
 
-[//]: # (|-----------------------|-----------------------------------|---------|----------|)
-
-[//]: # (| `api_version`         | Salesforce API version            |         | Yes      |)
-
-[//]: # (| `username`            | Salesforce username               |         | Yes      |)
-
-[//]: # (| `password`            | Salesforce password               |         | Yes      |)
-
-[//]: # (| `security_token`      | Salesforce security token         |         | Yes      |)
-
-[//]: # (| `client_id`           | Salesforce client id              |         | Yes      |)
-
-[//]: # (| `url`                 | Salesforce URL                    |         | Yes      |)
-
-[//]: # (| `add_dynamic_columns` | Add dynamic columns to the schema | `true`  | No       |)
+| Name                    | Description                                                        | Default | Required |
+|-------------------------|--------------------------------------------------------------------|---------|----------|
+| `base_url`              | Jira base url                                                      |         | Yes      |
+| `personal_access_token` | API PAT for self hosted Jira instances                             |         | Yes      |
+| `token`                 | API token for user's Atlassian account.                            |         | Yes      |
+| `uesrname`              | Email address of agent user who have permission to access the API. |         | Yes      |
