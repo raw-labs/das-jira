@@ -1,9 +1,11 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.sdk.java.utils.TableFactory;
 import com.rawlabs.protocol.das.TableDefinition;
 import com.rawlabs.protocol.das.TableId;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.rawlabs.das.sdk.java.utils.ColumnFactory.createColumn;
@@ -16,277 +18,78 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
   @Override
   protected TableDefinition buildTableDefinition() {
-    return TableDefinition.newBuilder()
-        .setTableId(TableId.newBuilder().setName(this.getTableName()))
-        .setDescription(
-            "The application properties that are accessible on the Advanced Settings page.")
-        .addColumns(createColumn("id", "The ID of the issue.", createStringType()))
-        .addColumns(createColumn("key", "TThe key of the issue.", createStringType()))
-        .addColumns(createColumn("self", "The URL of the issue details.", createStringType()))
-        .addColumns(
+    return TableFactory.createTable(
+        this.getTableName(),
+        "The backlog contains incomplete issues that are not assigned to any future or active sprint.",
+        List.of(
+            createColumn("id", "The ID of the issue.", createStringType()),
+            createColumn("key", "The key of the issue.", createStringType()),
+            createColumn("self", "The URL of the issue details.", createStringType()),
             createColumn(
-                "board_name", "The name of the board the issue belongs to.", createStringType()))
-        .addColumns(
-            createColumn("board_id", "The ID of the board the issue belongs to.", createIntType()))
-        .addColumns(
+                "board_name", "The name of the board the issue belongs to.", createStringType()),
+            createColumn("board_id", "The ID of the board the issue belongs to.", createIntType()),
             createColumn(
-                "project_key", "A friendly key that identifies the project.", createStringType()))
-        .addColumns(
+                "project_key", "A friendly key that identifies the project.", createStringType()),
             createColumn(
-                "project_id", "A friendly key that identifies the project.", createStringType()))
-        .addColumns(
+                "project_id", "A friendly key that identifies the project.", createStringType()),
             createColumn(
                 "status",
                 "The status of the issue. Eg: To Do, In Progress, Done.",
-                createStringType()))
-        .addColumns(
+                createStringType()),
             createColumn(
                 "assignee_account_id",
                 "Account Id the user/application that the issue is assigned to work.",
-                createStringType()))
-        .addColumns(
+                createStringType()),
             createColumn(
                 "assignee_display_name",
                 "Display name the user/application that the issue is assigned to work.",
-                createStringType()))
-        .addColumns(createColumn("created", "Time when the issue was created.", createStringType()))
-        .addColumns(
+                createStringType()),
+            createColumn("created", "Time when the issue was created.", createTimestampType()),
             createColumn(
                 "creator_account_id",
                 "Account Id of the user/application that created the issue.",
-                createStringType()))
-        .addColumns(
+                createStringType()),
             createColumn(
                 "creator_display_name",
                 "Display name of the user/application that created the issue.",
-                createStringType()))
-        .addColumns(createColumn("description", "Description of the issue.", createStringType()))
-        .addColumns(
+                createStringType()),
+            createColumn("description", "Description of the issue.", createStringType()),
             createColumn(
                 "due_date",
                 "Time by which the issue is expected to be completed.",
-                createStringType()))
-        .addColumns(
+                createTimestampType()),
             createColumn(
-                "epic_key", "The key of the epic to which issue belongs.", createStringType()))
-        .addColumns(createColumn("priority", "Priority assigned to the issue.", createStringType()))
-        .addColumns(
+                "epic_key", "The key of the epic to which issue belongs.", createStringType()),
+            createColumn("priority", "Priority assigned to the issue.", createStringType()),
             createColumn(
-                "project_name", "Name of the project to that issue belongs.", createStringType()))
-        .addColumns(
+                "project_name", "Name of the project to that issue belongs.", createStringType()),
             createColumn(
                 "reporter_account_id",
                 "Account Id of the user/application issue is reported.",
-                createStringType()))
-        .addColumns(
+                createStringType()),
             createColumn(
                 "reporter_display_name",
                 "Display name of the user/application issue is reported.",
-                createStringType()))
-        .addColumns(
+                createStringType()),
             createColumn(
                 "summary",
                 "Details of the user/application that created the issue.",
-                createStringType()))
-        .addColumns(createColumn("type", "The name of the issue type.", createStringType()))
-        .addColumns(
-            createColumn("updated", "Time when the issue was last updated.", createStringType()))
-        .addColumns(
+                createStringType()),
+            createColumn("type", "The name of the issue type.", createStringType()),
+            createColumn("updated", "Time when the issue was last updated.", createTimestampType()),
             createColumn(
-                "components", "List of components associated with the issue.", createStringType()))
-        .addColumns(
+                "components",
+                "List of components associated with the issue.",
+                createListType(createStringType())),
             createColumn(
                 "fields",
                 "Json object containing important subfields of the issue.",
-                createStringType()))
-        .addColumns(
-            createColumn("labels", "A list of labels applied to the issue.", createStringType()))
-        .addColumns(
+                createAnyType()),
+            createColumn("labels", "A list of labels applied to the issue.", createAnyType()),
             createColumn(
                 "tags",
                 "A map of label names associated with this issue, in Steampipe standard format.",
-                createStringType()))
-        .addColumns(createColumn("title", "The title of the issue.", createStringType()))
-        .build();
+                createAnyType()),
+            createColumn("title", "The key of the issue.", createStringType())));
   }
-
-  //  Columns: commonColumns([]*plugin.Column{
-  //    // top fields
-  //    {
-  //      Name:        "id",
-  //              Description: "The ID of the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromGo(),
-  //    },
-  //    {
-  //      Name:        "key",
-  //              Description: "The key of the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //    },
-  //    {
-  //      Name:        "self",
-  //              Description: "The URL of the issue details.",
-  //            Type:        proto.ColumnType_STRING,
-  //    },
-  //    {
-  //      Name:        "board_name",
-  //              Description: "The name of the board the issue belongs to.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("BoardName"),
-  //    },
-  //    {
-  //      Name:        "board_id",
-  //              Description: "The ID of the board the issue belongs to.",
-  //            Type:        proto.ColumnType_INT,
-  //            Transform:   transform.FromField("BoardId"),
-  //    },
-  //    {
-  //      Name:        "project_key",
-  //              Description: "A friendly key that identifies the project.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Project.Key"),
-  //    },
-  //    {
-  //      Name:        "project_id",
-  //              Description: "A friendly key that identifies the project.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Project.ID"),
-  //    },
-  //    {
-  //      Name:        "status",
-  //              Description: "The status of the issue. Eg: To Do, In Progress, Done.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Status.Name"),
-  //    },
-  //
-  //    // other important fields
-  //    {
-  //      Name:        "assignee_account_id",
-  //              Description: "Account Id the user/application that the issue is assigned to
-  // work.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Assignee.AccountID"),
-  //    },
-  //    {
-  //      Name:        "assignee_display_name",
-  //              Description: "Display name the user/application that the issue is assigned to
-  // work.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Assignee.DisplayName"),
-  //    },
-  //    {
-  //      Name:        "created",
-  //              Description: "Time when the issue was created.",
-  //            Type:        proto.ColumnType_TIMESTAMP,
-  //            Transform:   transform.FromField("Fields.Created").Transform(convertJiraTime),
-  //    },
-  //    {
-  //      Name:        "creator_account_id",
-  //              Description: "Account Id of the user/application that created the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Creator.AccountID"),
-  //    },
-  //    {
-  //      Name:        "creator_display_name",
-  //              Description: "Display name of the user/application that created the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Creator.DisplayName"),
-  //    },
-  //    {
-  //      Name:        "description",
-  //              Description: "Description of the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Description"),
-  //    },
-  //    {
-  //      Name:        "due_date",
-  //              Description: "Time by which the issue is expected to be completed.",
-  //            Type:        proto.ColumnType_TIMESTAMP,
-  //            Transform:
-  // transform.FromField("Fields.Duedate").NullIfZero().Transform(convertJiraDate),
-  //    },
-  //    {
-  //      Name:        "epic_key",
-  //              Description: "The key of the epic to which issue belongs.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromP(extractBacklogIssueRequiredField, "epic"),
-  //    },
-  //    {
-  //      Name:        "priority",
-  //              Description: "Priority assigned to the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Priority.Name"),
-  //    },
-  //    {
-  //      Name:        "project_name",
-  //              Description: "Name of the project to that issue belongs.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Project.Name"),
-  //    },
-  //    {
-  //      Name:        "reporter_account_id",
-  //              Description: "Account Id of the user/application issue is reported.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Reporter.AccountID"),
-  //    },
-  //    {
-  //      Name:        "reporter_display_name",
-  //              Description: "Display name of the user/application issue is reported.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Reporter.DisplayName"),
-  //    },
-  //    {
-  //      Name:        "summary",
-  //              Description: "Details of the user/application that created the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Summary"),
-  //    },
-  //    {
-  //      Name:        "type",
-  //              Description: "The name of the issue type.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Fields.Type.Name"),
-  //    },
-  //    {
-  //      Name:        "updated",
-  //              Description: "Time when the issue was last updated.",
-  //            Type:        proto.ColumnType_TIMESTAMP,
-  //            Transform:   transform.FromField("Fields.Updated").Transform(convertJiraTime),
-  //    },
-  //
-  //    // JSON fields
-  //    {
-  //      Name:        "components",
-  //              Description: "List of components associated with the issue.",
-  //            Type:        proto.ColumnType_JSON,
-  //            Transform:
-  // transform.FromField("Fields.Components").Transform(extractComponentIds),
-  //    },
-  //    {
-  //      Name:        "fields",
-  //              Description: "Json object containing important subfields of the issue.",
-  //            Type:        proto.ColumnType_JSON,
-  //    },
-  //    {
-  //      Name:        "labels",
-  //              Description: "A list of labels applied to the issue.",
-  //            Type:        proto.ColumnType_JSON,
-  //            Transform:   transform.FromField("Fields.Labels"),
-  //    },
-  //
-  //    // Standard columns
-  //    {
-  //      Name:        "tags",
-  //              Type:        proto.ColumnType_JSON,
-  //            Description: "A map of label names associated with this issue, in Steampipe standard
-  // format.",
-  //            Transform:   transform.From(getBacklogIssueTags),
-  //    },
-  //    {
-  //      Name:        "title",
-  //              Description: ColumnDescriptionTitle,
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("Key"),
-  //    },
-  //  }),
 }
