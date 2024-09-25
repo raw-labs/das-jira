@@ -1,75 +1,36 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.protocol.das.ColumnDefinition;
+import com.rawlabs.das.sdk.java.utils.TableFactory;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.TableDefinition;
-import com.rawlabs.protocol.das.TableId;
-import com.rawlabs.protocol.raw.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
+import static com.rawlabs.das.sdk.java.utils.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.TypeFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DASJiraModelToRowTest {
 
   private static final TableDefinition tableDefinition =
-      TableDefinition.newBuilder()
-          .setTableId(TableId.newBuilder().setName("test_table"))
-          .addColumns(
-              ColumnDefinition.newBuilder()
-                  .setName("string_field")
-                  .setDescription("StringField")
-                  .setType(
-                      Type.newBuilder()
-                          .setString(
-                              StringType.newBuilder().setTriable(false).setNullable(true).build()))
-                  .build())
-          .addColumns(
-              ColumnDefinition.newBuilder()
-                  .setName("int_field")
-                  .setDescription("IntField")
-                  .setType(
-                      Type.newBuilder()
-                          .setInt(IntType.newBuilder().setTriable(false).setNullable(true).build()))
-                  .build())
-          .addColumns(
-              ColumnDefinition.newBuilder()
-                  .setName("boolean_field")
-                  .setDescription("booleanField")
-                  .setType(
-                      Type.newBuilder()
-                          .setBool(
-                              BoolType.newBuilder().setTriable(false).setNullable(true).build()))
-                  .build())
-          .addColumns(
-              ColumnDefinition.newBuilder()
-                  .setName("list_field")
-                  .setDescription("listField")
-                  .setType(
-                      Type.newBuilder()
-                          .setList(
-                              ListType.newBuilder()
-                                  .setInnerType(
-                                      Type.newBuilder()
-                                          .setString(
-                                              StringType.newBuilder()
-                                                  .setNullable(true)
-                                                  .setTriable(false)
-                                                  .build())
-                                          .build())
-                                  .build())
-                          .build())
-                  .build())
-          .build();
+      TableFactory.createTable(
+          "test_table",
+          "Test table",
+          List.of(
+              createColumn("string_field", "StringField", createStringType()),
+              createColumn("int_field", "IntField", createIntType()),
+              createColumn("boolean_field", "booleanField", createBoolType()),
+              createColumn("list_field", "listField", createListType(createStringType()))));
 
   @Test
   @DisplayName("Model to row without column transformation")
   public void testModelWithoutTransformationToRow() {
     AllTypesTestObject testObject = new AllTypesTestObject();
-    DASJiraModelToRow jsonToRow = new DASJiraModelToRow(testObject, tableDefinition);
+    DASJiraModelToRow jsonToRow = new DASJiraModelToRow(AllTypesTestObject.class, tableDefinition);
     Row row = jsonToRow.toRow(testObject);
 
     assertEquals("string", row.getDataMap().get("string_field").getString().getV());
@@ -89,7 +50,8 @@ public class DASJiraModelToRowTest {
   public void testModelWithTransformationToRow() {
     AllTypesTestObject testObject = new AllTypesTestObject();
     DASJiraModelToRow jsonToRow =
-        new DASJiraModelToRow(testObject, tableDefinition, Map.of("string_field", "StringField"));
+        new DASJiraModelToRow(
+            AllTypesTestObject.class, tableDefinition, Map.of("string_field", "StringField"));
     Row row = jsonToRow.toRow(testObject);
     assertTrue(row.getDataMap().containsKey("StringField"));
     assertEquals("string", row.getDataMap().get("StringField").getString().getV());

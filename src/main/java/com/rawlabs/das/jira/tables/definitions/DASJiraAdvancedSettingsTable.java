@@ -9,6 +9,7 @@ import com.rawlabs.das.rest.jira.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
+import com.rawlabs.das.sdk.java.utils.TableFactory;
 import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.*;
 import org.jetbrains.annotations.Nullable;
@@ -21,17 +22,22 @@ import static com.rawlabs.das.sdk.java.utils.TypeFactory.*;
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_advanced_setting";
+  private JiraSettingsApi api = new JiraSettingsApi();
 
   private final DASJiraModelToRow jsonToRow =
       new DASJiraModelToRow(
           ApplicationProperty.class,
           getTableDefinition(),
-          Map.of("desc", "description", "title", "name"));
-
-  private final JiraSettingsApi api = new JiraSettingsApi();
+          Map.of("desc", "description", "name", "title"));
 
   public DASJiraAdvancedSettingsTable(Map<String, String> options) {
     super(TABLE_NAME, options);
+  }
+
+  /** Constructor for mocks */
+  DASJiraAdvancedSettingsTable(Map<String, String> options, JiraSettingsApi api) {
+    super(TABLE_NAME, options);
+    this.api = api;
   }
 
   @Override
@@ -62,16 +68,22 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     String key =
         simpleQuals.map(qual -> qual.getSimpleQual().getValue().getString().getV()).orElse(null);
     try {
-      return getResult(key);
+      return getResult(key, limit);
     } catch (ApiException e) {
       throw new DASSdkException("Failed to fetch advanced settings", e);
     }
   }
 
-  private DASExecuteResult getResult(@Nullable String key) throws ApiException {
-    List<ApplicationProperty> applicationProperties =
+  private DASExecuteResult getResult(@Nullable String key, @Nullable Long limit)
+      throws ApiException {
+
+    List<ApplicationProperty> result =
         key == null ? api.getAdvancedSettings() : api.getApplicationProperty(key, null, null);
-    Iterator<ApplicationProperty> iterator = applicationProperties.iterator();
+
+    List<ApplicationProperty> maybeLimited =
+        limit == null ? result : result.subList(0, Math.toIntExact(limit));
+
+    Iterator<ApplicationProperty> iterator = maybeLimited.iterator();
 
     return new DASExecuteResult() {
       @Override
@@ -109,29 +121,22 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
   }
 
   protected TableDefinition buildTableDefinition() {
-    return TableDefinition.newBuilder()
-        .setTableId(TableId.newBuilder().setName(this.getTableName()))
-        .setDescription(
-            "The application properties that are accessible on the Advanced Settings page.")
-        .addColumns(
-            createColumn("id", "The unique identifier of the property.", createStringType()))
-        .addColumns(
-            createColumn("name", "The name of the application property.", createStringType()))
-        .addColumns(
+    return TableFactory.createTable(
+        this.getTableName(),
+        "The application properties that are accessible on the Advanced Settings page.",
+        List.of(
+            createColumn("id", "The unique identifier of the property.", createStringType()),
+            createColumn("name", "The name of the application property.", createStringType()),
             createColumn(
-                "description", "The description of the application property.", createStringType()))
-        .addColumns(createColumn("key", "The key of the application property.", createStringType()))
-        .addColumns(
-            createColumn("type", "The data type of the application property.", createStringType()))
-        .addColumns(createColumn("value", "The new value.", createStringType()))
-        .addColumns(
+                "description", "The description of the application property.", createStringType()),
+            createColumn("key", "The key of the application property.", createStringType()),
+            createColumn("type", "The data type of the application property.", createStringType()),
+            createColumn("value", "The new value.", createStringType()),
             createColumn(
                 "allowed_values",
                 "The allowed values, if applicable.",
-                createListType(createStringType())))
-        .addColumns(
+                createListType(createStringType())),
             createColumn(
-                "title", "The default value of the application property.", createStringType()))
-        .build();
+                "title", "The default value of the application property.", createStringType())));
   }
 }

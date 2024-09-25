@@ -1,5 +1,7 @@
 package com.rawlabs.das.jira.tables;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.ValueFactory;
 import com.rawlabs.protocol.das.ColumnDefinition;
@@ -15,19 +17,27 @@ import java.util.Map;
 public class DASJiraModelToRow {
 
   private final Class<?> clazz;
-  private final Map<String, String> transformations;
+  private final BiMap<String, String> transformations;
   private final TableDefinition tableDefinition;
   private final ValueFactory valueFactory = new ValueFactory();
 
+  /**
+   * Constructor for DASJiraModelToRow
+   *
+   * @param clazz Openapi generated model to be converted to Row (needed for reflection of fields)
+   * @param tableDefinition Table definition for the table
+   * @param transformations Map of transformations to be applied to the field names (key: original
+   *     field name, value: transformed field name)
+   */
   public DASJiraModelToRow(
-      Object obj, TableDefinition tableDefinition, Map<String, String> transformations) {
-    this.clazz = obj.getClass();
-    this.transformations = transformations;
+      Class<?> clazz, TableDefinition tableDefinition, Map<String, String> transformations) {
+    this.clazz = clazz;
+    this.transformations = HashBiMap.create(transformations);
     this.tableDefinition = tableDefinition;
   }
 
-  public DASJiraModelToRow(Object obj, TableDefinition tableDefinition) {
-    this(obj, tableDefinition, Map.of());
+  public DASJiraModelToRow(Class<?> clazz, TableDefinition tableDefinition) {
+    this(clazz, tableDefinition, Map.of());
   }
 
   public Row toRow(Object obj) {
@@ -46,7 +56,10 @@ public class DASJiraModelToRow {
 
   private Object extractValue(Object obj, String fieldName) {
     try {
-      return clazz.getMethod("get" + CaseUtils.toCamelCase(fieldName, true, '_')).invoke(obj);
+      return clazz
+          .getMethod(
+              "get" + CaseUtils.toCamelCase(checkForTransformationInverse(fieldName), true, '_'))
+          .invoke(obj);
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new DASSdkException("could not extract value", e);
     }
@@ -54,5 +67,9 @@ public class DASJiraModelToRow {
 
   private String checkForTransformation(String fieldName) {
     return transformations.getOrDefault(fieldName, fieldName);
+  }
+
+  private String checkForTransformationInverse(String fieldName) {
+    return transformations.inverse().getOrDefault(fieldName, fieldName);
   }
 }
