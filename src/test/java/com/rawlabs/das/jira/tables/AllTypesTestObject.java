@@ -6,19 +6,40 @@ public class AllTypesTestObject {
 
   public AllTypesTestObject() {}
 
+  private String stringField = "string";
+  private int intField = 1;
+  private boolean booleanField = true;
+  private List<String> listField = List.of("a", "b", "c");
+
   public String getStringField() {
-    return "string";
+    return stringField;
   }
 
   public int getIntField() {
-    return 1;
+    return intField;
   }
 
   public boolean getBooleanField() {
-    return true;
+    return booleanField;
   }
 
   public List<String> getListField() {
-    return List.of("a", "b", "c");
+    return listField;
+  }
+
+  public void setStringField(String stringField) {
+    this.stringField = stringField;
+  }
+
+  public void setIntField(int intField) {
+    this.intField = intField;
+  }
+
+  public void setBooleanField(boolean booleanField) {
+    this.booleanField = booleanField;
+  }
+
+  public void setListField(List<String> listField) {
+    this.listField = listField;
   }
 }

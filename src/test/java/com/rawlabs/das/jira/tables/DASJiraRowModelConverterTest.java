@@ -1,6 +1,6 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.das.sdk.java.utils.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.TableDefinition;
 import org.junit.jupiter.api.DisplayName;
@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static com.rawlabs.das.sdk.java.utils.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DASJiraModelToRowTest {
+public class DASJiraRowModelConverterTest {
 
   private static final TableDefinition tableDefinition =
       TableFactory.createTable(
@@ -30,8 +30,9 @@ public class DASJiraModelToRowTest {
   @DisplayName("Model to row without column transformation")
   public void testModelWithoutTransformationToRow() {
     AllTypesTestObject testObject = new AllTypesTestObject();
-    DASJiraModelToRow jsonToRow = new DASJiraModelToRow(AllTypesTestObject.class, tableDefinition);
-    Row row = jsonToRow.toRow(testObject);
+    DASJiraRowModelMapper rowModelConverter =
+        new DASJiraRowModelMapper(AllTypesTestObject.class, tableDefinition);
+    Row row = rowModelConverter.toRow(testObject);
 
     assertEquals("string", row.getDataMap().get("string_field").getString().getV());
     assertTrue(row.getDataMap().containsKey("int_field"));
@@ -49,11 +50,26 @@ public class DASJiraModelToRowTest {
   @DisplayName("Model to row with column transformation")
   public void testModelWithTransformationToRow() {
     AllTypesTestObject testObject = new AllTypesTestObject();
-    DASJiraModelToRow jsonToRow =
-        new DASJiraModelToRow(
+    DASJiraRowModelMapper rowModelConverter =
+        new DASJiraRowModelMapper(
             AllTypesTestObject.class, tableDefinition, Map.of("string_field", "StringField"));
-    Row row = jsonToRow.toRow(testObject);
+    Row row = rowModelConverter.toRow(testObject);
     assertTrue(row.getDataMap().containsKey("StringField"));
     assertEquals("string", row.getDataMap().get("StringField").getString().getV());
+  }
+
+  @Test
+  @DisplayName("Row to model")
+  public void testRowToModel() {
+    AllTypesTestObject testObject = new AllTypesTestObject();
+    DASJiraRowModelMapper rowModelConverter =
+        new DASJiraRowModelMapper(
+            AllTypesTestObject.class, tableDefinition, Map.of("string_field", "StringField"));
+    Row row = rowModelConverter.toRow(testObject);
+    AllTypesTestObject convertedObject = (AllTypesTestObject) rowModelConverter.toModel(row);
+    assertEquals(testObject.getBooleanField(), convertedObject.getBooleanField());
+    assertEquals(testObject.getIntField(), convertedObject.getIntField());
+    assertEquals(testObject.getListField(), convertedObject.getListField());
+    assertEquals(testObject.getStringField(), convertedObject.getStringField());
   }
 }

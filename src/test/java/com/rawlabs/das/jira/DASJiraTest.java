@@ -3,7 +3,6 @@ package com.rawlabs.das.jira;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.sdk.java.DASSdk;
 import com.rawlabs.das.sdk.java.DASTable;
-import com.rawlabs.utils.core.RawSettings;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
