@@ -1,6 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.tables.DASJiraModelToRow;
+import com.rawlabs.das.jira.tables.DASJiraRowModelMapper;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.rest.jira.ApiException;
 import com.rawlabs.das.rest.jira.api.JiraSettingsApi;
@@ -9,23 +9,23 @@ import com.rawlabs.das.rest.jira.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
-import com.rawlabs.das.sdk.java.utils.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
 import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.ColumnFactory.*;
-import static com.rawlabs.das.sdk.java.utils.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
 
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_advanced_setting";
   private JiraSettingsApi api = new JiraSettingsApi();
 
-  private final DASJiraModelToRow jsonToRow =
-      new DASJiraModelToRow(
+  private final DASJiraRowModelMapper rowModelConverter =
+      new DASJiraRowModelMapper(
           ApplicationProperty.class,
           getTableDefinition(),
           Map.of("desc", "description", "name", "title"));
@@ -97,7 +97,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
       @Override
       public Row next() {
         try {
-          return jsonToRow.toRow(iterator.next());
+          return rowModelConverter.toRow(iterator.next());
         } catch (NoSuchElementException e) {
           throw new DASSdkException("Failed to fetch advanced settings", e);
         }
@@ -114,7 +114,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     try {
       ApplicationProperty applicationProperty =
           api.setApplicationProperty(id, applicationPropertyBean);
-      return jsonToRow.toRow(applicationProperty);
+      return rowModelConverter.toRow(applicationProperty);
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }

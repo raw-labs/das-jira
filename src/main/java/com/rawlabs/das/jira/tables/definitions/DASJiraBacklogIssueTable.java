@@ -1,15 +1,14 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.tables.DASJiraTable;
-import com.rawlabs.das.sdk.java.utils.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
 import com.rawlabs.protocol.das.TableDefinition;
-import com.rawlabs.protocol.das.TableId;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.rawlabs.das.sdk.java.utils.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
 
 public class DASJiraBacklogIssueTable extends DASJiraTable {
   public DASJiraBacklogIssueTable(Map<String, String> options) {
