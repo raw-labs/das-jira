@@ -9,15 +9,15 @@ import com.rawlabs.das.rest.jira.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
-import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.table.TableFactory;
 import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.*;
-import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
