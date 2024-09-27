@@ -1,14 +1,15 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.tables.DASJiraTable;
-import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.table.TableFactory;
+import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.TableDefinition;
 
 import java.util.List;
 import java.util.Map;
 
-import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
 public class DASJiraBacklogIssueTable extends DASJiraTable {
   public DASJiraBacklogIssueTable(Map<String, String> options) {
@@ -17,6 +18,7 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
   @Override
   protected TableDefinition buildTableDefinition() {
+    ColumnDefinition column;
     return TableFactory.createTable(
         this.getTableName(),
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.",

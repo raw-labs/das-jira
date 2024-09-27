@@ -5,31 +5,27 @@ import com.rawlabs.das.rest.jira.ApiException;
 import com.rawlabs.das.rest.jira.api.JiraSettingsApi;
 import com.rawlabs.das.rest.jira.model.ApplicationProperty;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.utils.factory.ValueFactory;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
+import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.protocol.das.Row;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.util.List;
 
-import static com.rawlabs.das.sdk.java.utils.factory.QualFactory.createEq;
-import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.createStringType;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Advanced Settings Table Test")
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-public class DASJiraAdvancedSettingsTableTest {
+public class DASJiraAdvancedSettingsTableTest extends MockTest {
 
   @Mock static JiraSettingsApi api;
 
@@ -62,6 +58,8 @@ public class DASJiraAdvancedSettingsTableTest {
       when(api.getApplicationProperty("jira.home", null, null)).thenReturn(appProps.subList(0, 1));
       when(api.getApplicationProperty("jira.clone.prefix", null, null))
           .thenReturn(appProps.subList(1, 2));
+      when(api.getApplicationProperty("throw error", null, null))
+          .thenThrow(new ApiException("couldn't fetch data"));
     } catch (ApiException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
     }
@@ -84,12 +82,10 @@ public class DASJiraAdvancedSettingsTableTest {
   @Test
   @DisplayName("Get settings by key")
   public void testGetSettingsByKey() {
+    ValueFactory valueFactory = new DefaultValueFactory();
     try (DASExecuteResult result =
         dasJiraAdvancedSettingsTable.execute(
-            List.of(
-                createEq(
-                    ValueFactory.getInstance().createValue("jira.home", createStringType()),
-                    "key")),
+            List.of(createEq(valueFactory.createValue("jira.home", createStringType()), "key")),
             List.of(),
             null,
             null)) {
@@ -109,9 +105,7 @@ public class DASJiraAdvancedSettingsTableTest {
     try (DASExecuteResult result =
         dasJiraAdvancedSettingsTable.execute(
             List.of(
-                createEq(
-                    ValueFactory.getInstance().createValue("jira.clone.prefix", createStringType()),
-                    "key")),
+                createEq(valueFactory.createValue("jira.clone.prefix", createStringType()), "key")),
             List.of(),
             null,
             null)) {
@@ -130,5 +124,37 @@ public class DASJiraAdvancedSettingsTableTest {
     } catch (IOException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
     }
+  }
+
+  @Test
+  @DisplayName("Get all advanced settings with limit")
+  public void testGetAllAdvancedSettingsWithLimit() {
+    try (DASExecuteResult result =
+        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null, 1L)) {
+      assertTrue(result.hasNext());
+      assertEquals(result.next().getDataMap().get("id").getString().getV(), "jira.home");
+      assertFalse(result.hasNext());
+    } catch (IOException e) {
+      fail("Exception not expected: %s".formatted(e.getMessage()));
+    }
+  }
+
+  @Test
+  @DisplayName("Get all advanced settings with error")
+  public void testGetAllAdvancedSettingsWithWithError() {
+    ValueFactory valueFactory = new DefaultValueFactory();
+    assertThrows(
+        DASSdkException.class,
+        () -> {
+          try (DASExecuteResult result =
+              dasJiraAdvancedSettingsTable.execute(
+                  List.of(
+                      createEq(valueFactory.createValue("throw error", createStringType()), "key")),
+                  List.of(),
+                  null,
+                  1L)) {
+            fail("Exception expected");
+          }
+        });
   }
 }

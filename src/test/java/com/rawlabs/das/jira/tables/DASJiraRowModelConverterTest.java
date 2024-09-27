@@ -1,6 +1,6 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.das.sdk.java.utils.factory.TableFactory;
+import com.rawlabs.das.sdk.java.utils.factory.table.TableFactory;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.TableDefinition;
 import org.junit.jupiter.api.DisplayName;
@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static com.rawlabs.das.sdk.java.utils.factory.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.TypeFactory.*;
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

@@ -3,8 +3,10 @@ package com.rawlabs.das.jira.tables;
 import com.google.common.collect.HashBiMap;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.DASRowModelMapper;
-import com.rawlabs.das.sdk.java.utils.factory.ExtractValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.ValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.DefaultExtractValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ExtractValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.TableDefinition;
@@ -41,15 +43,15 @@ public class DASJiraRowModelMapper extends DASRowModelMapper {
   @Override
   protected Value getValue(ColumnDefinition column, Object obj) {
     try {
-      return ValueFactory.getInstance()
-          .createValue(
-              clazz
-                  .getMethod(
-                      "get"
-                          + CaseUtils.toCamelCase(
-                              withTransformationInverse(column.getName()), true, '_'))
-                  .invoke(obj),
-              column.getType());
+      ValueFactory valueFactory = new DefaultValueFactory();
+      return valueFactory.createValue(
+          clazz
+              .getMethod(
+                  "get"
+                      + CaseUtils.toCamelCase(
+                          withTransformationInverse(column.getName()), true, '_'))
+              .invoke(obj),
+          column.getType());
     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new DASSdkException("could not extract value", e);
     }
@@ -64,17 +66,13 @@ public class DASJiraRowModelMapper extends DASRowModelMapper {
         String columnName = column.getName();
         Value value =
             row.getDataOrDefault(withTransformation(columnName), Value.getDefaultInstance());
-        Object extracted = ExtractValueFactory.getInstance().extractValue(value);
+        ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
+        Object extracted = extractValueFactory.extractValue(value);
         new Statement(
                 obj,
                 "set" + CaseUtils.toCamelCase(withTransformationInverse(columnName), true, '_'),
                 new Object[] {extracted})
             .execute();
-//        clazz
-//            .getMethod(
-//                "set" + CaseUtils.toCamelCase(withTransformationInverse(columnName), true, '_'),
-//                extracted.getClass())
-//            .invoke(obj, extracted);
       }
       return obj;
     } catch (Exception e) {
