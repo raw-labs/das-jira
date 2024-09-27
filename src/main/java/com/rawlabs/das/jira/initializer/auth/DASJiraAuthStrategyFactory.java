@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class DASJiraAuthStrategyFactory {
   public static DASJiraAuthStrategy createAuthStrategy(Map<String, String> options) {
-    if (isOAuthAuth(options)) return new DASJiraOAuth2AuthStrategy();
+    if (isBearerAuth(options)) return new DASJiraBearerAuthStrategy();
     else if (isBasicAuth(options)) return new DasJiraBasicAuthStrategy();
     else throw new IllegalArgumentException("Invalid authentication options");
   }
 
-  private static boolean isOAuthAuth(Map<String, String> options) {
+  private static boolean isBearerAuth(Map<String, String> options) {
     return options.containsKey("personal_access_token");
   }
 

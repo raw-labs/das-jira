@@ -1,12 +1,12 @@
 package com.rawlabs.das.jira.initializer;
 
-import com.rawlabs.das.jira.initializer.auth.DASJiraOAuth2AuthStrategy;
+import com.rawlabs.das.jira.initializer.auth.DASJiraBearerAuthStrategy;
 import com.rawlabs.das.jira.initializer.auth.DasJiraBasicAuthStrategy;
 import com.rawlabs.das.rest.jira.ApiClient;
 import com.rawlabs.das.rest.jira.Configuration;
 import com.rawlabs.das.rest.jira.auth.Authentication;
 import com.rawlabs.das.rest.jira.auth.HttpBasicAuth;
-import com.rawlabs.das.rest.jira.auth.OAuth;
+import com.rawlabs.das.rest.jira.auth.HttpBearerAuth;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -41,14 +41,14 @@ public class DASJiraInitializerTest {
 
   @Test
   @DisplayName("Initialization succeeds when token auth is provided")
-  public void testJiraInitializerWithOAuth() {
+  public void testJiraInitializerWithBearer() {
     DASJiraInitializer.initialize(
         Map.of("base_url", "http://localhost:8080", "personal_access_token", "pat"));
     ApiClient apiClient = Configuration.getDefaultApiClient();
     assertEquals("http://localhost:8080", apiClient.getBasePath());
-    Authentication auth = apiClient.getAuthentication(DASJiraOAuth2AuthStrategy.NAME);
-    assertInstanceOf(OAuth.class, auth);
-    OAuth oauth = (OAuth) auth;
-    assertEquals("pat", oauth.getAccessToken());
+    Authentication auth = apiClient.getAuthentication(DASJiraBearerAuthStrategy.NAME);
+    assertInstanceOf(HttpBearerAuth.class, auth);
+    HttpBearerAuth httpBearerAuth = (HttpBearerAuth) auth;
+    assertEquals("pat", httpBearerAuth.getBearerToken());
   }
 }
