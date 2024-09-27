@@ -33,6 +33,34 @@
                     <argLine>-XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${maven-openapi-generator-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpecRootDirectory>
+                                ${project.basedir}/src/main/resources/jira-openapi-specs
+                            </inputSpecRootDirectory>
+                            <generatorName>java</generatorName>
+                            <configOptions>
+                                <sourceFolder>src/gen/java/main</sourceFolder>
+                                <apiPackage>com.rawlabs.das.rest.jira.api</apiPackage>
+                                <modelPackage>com.rawlabs.das.rest.jira.model</modelPackage>
+                                <groupId>com.raw-labs</groupId>
+                                <artifactId>jira-rest-client</artifactId>
+                                <artifactVersion>1.0.0</artifactVersion>
+                                <snapshotVersion>false</snapshotVersion>
+                                <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -51,7 +79,8 @@
         <dependency>
             <groupId>com.raw-labs</groupId>
             <artifactId>jira-rest-client</artifactId>
-            <version>${jira-rest-client.version}</version>
+            <version>1.0.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -80,6 +109,19 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Other Dependencies -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.2.23</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <!-- Distribution Management -->
@@ -98,6 +140,7 @@
 
         <!-- Plugins Dependencies -->
         <maven-surface-plugin.version>3.5.0</maven-surface-plugin.version>
+        <maven-openapi-generator-plugin.version>7.8.0</maven-openapi-generator-plugin.version>
 
         <!-- RAW Labs Dependencies -->
         <das-java-sdk.version>0.1.0-SNAPSHOT</das-java-sdk.version>
