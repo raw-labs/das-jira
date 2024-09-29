@@ -7,122 +7,19 @@
     <groupId>com.rawlabs.das.jira</groupId>
     <artifactId>das-jira</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>das-jira</name>
     <url>https://www.raw-labs.com/</url>
+    <modules>
+        <module>jira-platform-api-client</module>
+        <module>jira-software-api-client</module>
+        <module>das-jira-connector</module>
+    </modules>
     <description>RAW Labs DAS Jira connector implementation</description>
     <organization>
         <name>RAW Labs SA</name>
         <url>https://www.raw-labs.com/</url>
     </organization>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <failOnError>true</failOnError>
-                    <failOnWarning>true</failOnWarning>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surface-plugin.version}</version>
-                <configuration>
-                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>${maven-openapi-generator-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpecRootDirectory>
-                                ${project.basedir}/src/main/resources/jira-openapi-specs
-                            </inputSpecRootDirectory>
-                            <generatorName>java</generatorName>
-                            <configOptions>
-                                <sourceFolder>src/gen/java/main</sourceFolder>
-                                <apiPackage>com.rawlabs.das.rest.jira.api</apiPackage>
-                                <modelPackage>com.rawlabs.das.rest.jira.model</modelPackage>
-                                <groupId>com.raw-labs</groupId>
-                                <artifactId>jira-rest-client</artifactId>
-                                <artifactVersion>1.0.0</artifactVersion>
-                                <snapshotVersion>false</snapshotVersion>
-                                <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <dependencies>
-        <!-- RAW Labs Dependencies -->
-        <dependency>
-            <groupId>com.raw-labs</groupId>
-            <artifactId>das-sdk-java</artifactId>
-            <version>${das-java-sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.raw-labs</groupId>
-            <artifactId>das-server-scala_${scala.version}</artifactId>
-            <version>${das-server-scala.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.raw-labs</groupId>
-            <artifactId>jira-rest-client</artifactId>
-            <version>1.0.0</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Other Dependencies -->
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>2.2.23</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-    </dependencies>
 
     <!-- Distribution Management -->
     <distributionManagement>
@@ -139,19 +36,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Plugins Dependencies -->
-        <maven-surface-plugin.version>3.5.0</maven-surface-plugin.version>
-        <maven-openapi-generator-plugin.version>7.8.0</maven-openapi-generator-plugin.version>
-
-        <!-- RAW Labs Dependencies -->
-        <das-java-sdk.version>0.1.0-SNAPSHOT</das-java-sdk.version>
-        <das-server-scala.version>0.1.1</das-server-scala.version>
-        <jira-rest-client.version>1.0.0</jira-rest-client.version>
+        <maven-openapi-generator-plugin-version>7.8.0</maven-openapi-generator-plugin-version>
 
         <!-- Test Dependencies -->
-        <junit-jupiter.version>5.11.0</junit-jupiter.version>
+        <junit-jupiter-version>5.11.0</junit-jupiter-version>
 
-        <!-- Scala Version -->
-        <scala.version>2.12</scala.version>
+        <!-- OpenAPI Generator -->
+        <swagger-annotations-version>1.6.14</swagger-annotations-version>
+        <gson-version>2.11.0</gson-version>
+        <jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
+        <okhttp-version>4.12.0</okhttp-version>
+        <gson-fire-version>1.9.0</gson-fire-version>
+        <apache-oltu-oauth2-version>1.0.2</apache-oltu-oauth2-version>
+        <javax-annotation-api-version>1.3.2</javax-annotation-api-version>
+        <findbugs-version>3.0.2</findbugs-version>
+        <joda-time-version>2.13.0</joda-time-version>
     </properties>
 
 </project>
