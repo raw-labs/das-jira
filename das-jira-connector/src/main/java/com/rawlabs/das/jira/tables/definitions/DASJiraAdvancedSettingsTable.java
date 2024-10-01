@@ -2,10 +2,10 @@ package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.tables.DASJiraColumnDefinition;
 import com.rawlabs.das.jira.tables.DASJiraTable;
-import com.rawlabs.das.jira.rest.ApiException;
-import com.rawlabs.das.jira.rest.api.JiraSettingsApi;
-import com.rawlabs.das.jira.rest.model.ApplicationProperty;
-import com.rawlabs.das.jira.rest.model.SimpleApplicationPropertyBean;
+import com.rawlabs.das.jira.rest.platform.ApiException;
+import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
+import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
+import com.rawlabs.das.jira.rest.platform.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.jira.tables.DASJiraTableDefinition;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;

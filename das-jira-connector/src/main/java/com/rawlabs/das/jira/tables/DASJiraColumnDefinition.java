@@ -2,6 +2,7 @@ package com.rawlabs.das.jira.tables;
 
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.raw.Type;
@@ -20,7 +21,7 @@ public class DASJiraColumnDefinition {
   }
 
   public void putToRow(Object object, Row.Builder rowBuilder) {
-    Value v = valueFactory.createValue(object, type);
+    Value v = valueFactory.createValue(new ValueTypeTuple(object, type));
     rowBuilder.putData(columnDefinition.getName(), v);
   }
 
