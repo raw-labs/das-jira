@@ -4,7 +4,6 @@ import com.rawlabs.protocol.das.Row;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -13,37 +12,34 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DASJiraTableToRowTest {
 
-  private static final DASJiraTableSubDefinition<AllTypesTestObject> dasJiraTableDefinition =
-      new DASJiraTableSubDefinition<>(
+  private static final DASJiraTableDefinition dasJiraTableDefinition =
+      new DASJiraTableDefinition(
           "test_table",
           "Test Table",
-          List.of(
-              new DASJiraColumnDefinition<>(
-                  "string_field",
-                  "StringField",
-                  createStringType(),
-                  AllTypesTestObject::getStringField),
-              new DASJiraColumnDefinition<>(
-                  "int_field", "IntField", createIntType(), AllTypesTestObject::getIntField),
-              new DASJiraColumnDefinition<>(
-                  "boolean_field",
-                  "booleanField",
-                  createBoolType(),
-                  AllTypesTestObject::getBooleanField),
-              new DASJiraColumnDefinition<>(
-                  "list_field",
-                  "listField",
-                  createListType(createStringType()),
-                  AllTypesTestObject::getListField)),
-          List.of(
-              new DasJiraProvidedValueColumnDefinition(
-                  "provided_value", "ProvidedValue", createStringType())));
+          Map.of(
+              "string_field",
+                  new DASJiraColumnDefinition("string_field", "StringField", createStringType()),
+              "int_field", new DASJiraColumnDefinition("int_field", "IntField", createIntType()),
+              "boolean_field",
+                  new DASJiraColumnDefinition("boolean_field", "booleanField", createBoolType()),
+              "list_field",
+                  new DASJiraColumnDefinition(
+                      "list_field", "listField", createListType(createStringType()))));
+
+  private static Row toRow(AllTypesTestObject obj) {
+    Row.Builder rowBuilder = Row.newBuilder();
+    dasJiraTableDefinition.updateRow("string_field", rowBuilder, obj.getStringField());
+    dasJiraTableDefinition.updateRow("int_field", rowBuilder, obj.getIntField());
+    dasJiraTableDefinition.updateRow("boolean_field", rowBuilder, obj.getBooleanField());
+    dasJiraTableDefinition.updateRow("list_field", rowBuilder, obj.getListField());
+    return rowBuilder.build();
+  }
 
   @Test
   @DisplayName("Model to row")
   public void testModelToRow() {
     AllTypesTestObject testObject = new AllTypesTestObject();
-    Row row = dasJiraTableDefinition.getRow(testObject, Map.of("provided_value", "provided"));
+    Row row = toRow(testObject);
 
     assertEquals("string", row.getDataMap().get("string_field").getString().getV());
     assertTrue(row.getDataMap().containsKey("int_field"));
@@ -55,7 +51,5 @@ public class DASJiraTableToRowTest {
     assertEquals("a", row.getDataMap().get("list_field").getList().getValues(0).getString().getV());
     assertEquals("b", row.getDataMap().get("list_field").getList().getValues(1).getString().getV());
     assertEquals("c", row.getDataMap().get("list_field").getList().getValues(2).getString().getV());
-    assertTrue(row.getDataMap().containsKey("provided_value"));
-    assertEquals("provided", row.getDataMap().get("provided_value").getString().getV());
   }
 }

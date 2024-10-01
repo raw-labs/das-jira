@@ -86,9 +86,14 @@
                             <generatorName>java</generatorName>
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
-                                <apiPackage>com.rawlabs.das.jira.rest.api</apiPackage>
-                                <modelPackage>com.rawlabs.das.jira.rest.model</modelPackage>
+                                <apiPackage>com.rawlabs.das.jira.rest.platform.api</apiPackage>
+                                <modelPackage>com.rawlabs.das.jira.rest.platform.model</modelPackage>
                                 <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
+                                <!-- Change the API suffix from 'Api' to 'Service' -->
+                                <apiSuffix>Service</apiSuffix>
+
+                                <!-- (Optional) If you also want to change the implementation suffix -->
+                                <apiImplementationSuffix>ServiceImpl</apiImplementationSuffix>
                             </configOptions>
                         </configuration>
                     </execution>

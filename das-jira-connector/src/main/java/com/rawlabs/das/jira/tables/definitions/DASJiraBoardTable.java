@@ -1,8 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.rest.api.BoardApi;
-import com.rawlabs.das.jira.rest.model.GetAllBoards200ResponseValuesInner;
-import com.rawlabs.das.jira.rest.model.GetConfiguration200Response;
+import com.rawlabs.das.jira.rest.software.api.BoardApi;
+import com.rawlabs.das.jira.rest.software.model.GetAllBoards200ResponseValuesInner;
+import com.rawlabs.das.jira.rest.software.model.GetConfiguration200Response;
 import com.rawlabs.das.jira.tables.DASJiraColumnDefinition;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.DASJiraTableDefinition;
