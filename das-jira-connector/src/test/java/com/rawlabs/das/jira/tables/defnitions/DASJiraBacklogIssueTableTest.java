@@ -1,8 +1,8 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.rawlabs.das.jira.rest.api.BoardApi;
-import com.rawlabs.das.jira.rest.model.SearchResults;
+import com.rawlabs.das.jira.rest.software.api.BoardApi;
+import com.rawlabs.das.jira.rest.software.model.SearchResults;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBacklogIssueTable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;

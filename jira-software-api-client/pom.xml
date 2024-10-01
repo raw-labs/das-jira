@@ -87,8 +87,8 @@
                             <generatorName>java</generatorName>
                             <configOptions>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
-                                <apiPackage>com.rawlabs.das.jira.rest.api</apiPackage>
-                                <modelPackage>com.rawlabs.das.jira.rest.model</modelPackage>
+                                <apiPackage>com.rawlabs.das.jira.rest.software.api</apiPackage>
+                                <modelPackage>com.rawlabs.das.jira.rest.software.model</modelPackage>
                                 <skipIfSpecIsUnchanged>true</skipIfSpecIsUnchanged>
                             </configOptions>
                         </configuration>

@@ -1,10 +1,8 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.TableDefinition;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
@@ -16,6 +14,7 @@ public class DASJiraTableDefinition {
 
   public DASJiraTableDefinition(
       String name, String description, Map<String, DASJiraColumnDefinition> columnDefinitions) {
+    this.columnDefinitions = columnDefinitions;
     tableDefinition =
         createTable(
             name,

@@ -1,15 +1,15 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
-import com.rawlabs.das.jira.rest.ApiException;
-import com.rawlabs.das.jira.rest.api.JiraSettingsApi;
-import com.rawlabs.das.jira.rest.model.ApplicationProperty;
+import com.rawlabs.das.jira.rest.platform.ApiException;
+import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.Row;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +78,10 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
     ValueFactory valueFactory = new DefaultValueFactory();
     try (DASExecuteResult result =
         dasJiraAdvancedSettingsTable.execute(
-            List.of(createEq(valueFactory.createValue("jira.home", createStringType()), "key")),
+            List.of(
+                createEq(
+                    valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
+                    "key")),
             List.of(),
             null,
             null)) {
@@ -98,7 +101,10 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
     try (DASExecuteResult result =
         dasJiraAdvancedSettingsTable.execute(
             List.of(
-                createEq(valueFactory.createValue("jira.clone.prefix", createStringType()), "key")),
+                createEq(
+                    valueFactory.createValue(
+                        new ValueTypeTuple("jira.clone.prefix", createStringType())),
+                    "key")),
             List.of(),
             null,
             null)) {
@@ -142,7 +148,10 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
           try (DASExecuteResult result =
               dasJiraAdvancedSettingsTable.execute(
                   List.of(
-                      createEq(valueFactory.createValue("throw error", createStringType()), "key")),
+                      createEq(
+                          valueFactory.createValue(
+                              new ValueTypeTuple("throw error", createStringType())),
+                          "key")),
                   List.of(),
                   null,
                   1L)) {
