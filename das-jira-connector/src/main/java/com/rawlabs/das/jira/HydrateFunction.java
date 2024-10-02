@@ -8,10 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 
 @FunctionalInterface
-public interface HydrateFunction {
-  Iterator<Object> hydrate(
-      @Nullable List<Qual> quals,
-      @Nullable List<String> columns,
+public interface HydrateFunction<T> {
+  Iterator<T> hydrate(
+      List<Qual> quals,
+      List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit);
 }

@@ -1,6 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.tables.DASJiraColumnDefinition;
+import com.rawlabs.das.jira.tables.DASJiraNormalColumnDefinition;
 import com.rawlabs.das.jira.tables.DASJiraBaseTable;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
@@ -45,35 +45,12 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    Iterator<ApplicationProperty> iterator =
-        (Iterator<ApplicationProperty>)
-            dasJiraAdvancedSettingsTableDefinition.hydrate(quals, columns, sortKeys, limit);
-    return new DASExecuteResult() {
-      @Override
-      public void close() {}
-
-      @Override
-      public boolean hasNext() {
-        return iterator.hasNext();
-      }
-
-      @Override
-      public Row next() {
-        try {
-          Row.Builder rowBuilder = Row.newBuilder();
-          dasJiraAdvancedSettingsTableDefinition.updateRow(rowBuilder, iterator.next());
-          return rowBuilder.build();
-        } catch (NoSuchElementException e) {
-          throw new DASSdkException("Failed to fetch advanced settings", e);
-        }
-      }
-    };
+    return dasJiraAdvancedSettingsTableDefinition.execute(quals, columns, sortKeys, limit);
   }
 
   @Override
@@ -103,52 +80,46 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
     return dasJiraAdvancedSettingsTableDefinition.getTableDefinition();
   }
 
-  public final DASJiraTableDefinition dasJiraAdvancedSettingsTableDefinition =
-      new DASJiraTableDefinition(
+  public final DASJiraTableDefinition<ApplicationProperty> dasJiraAdvancedSettingsTableDefinition =
+      new DASJiraTableDefinition<>(
           TABLE_NAME,
           "The application properties that are accessible on the Advanced Settings page.",
           List.of(
-              new DASJiraColumnDefinition(
+              new DASJiraNormalColumnDefinition<>(
                   "id",
                   "The unique identifier of the property.",
                   createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getId()),
-              new DASJiraColumnDefinition(
+                  ApplicationProperty::getId),
+              new DASJiraNormalColumnDefinition<>(
                   "name",
                   "The name of the application property.",
                   createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getName()),
-              new DASJiraColumnDefinition(
+                  ApplicationProperty::getName),
+              new DASJiraNormalColumnDefinition<>(
                   "description",
                   "The description of the application property.",
                   createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getDesc()),
-              new DASJiraColumnDefinition(
+                  ApplicationProperty::getDesc),
+              new DASJiraNormalColumnDefinition<>(
                   "key",
                   "The key of the application property.",
                   createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getKey()),
-              new DASJiraColumnDefinition(
+                  ApplicationProperty::getKey),
+              new DASJiraNormalColumnDefinition<>(
                   "type",
                   "The data type of the application property.",
                   createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getType()),
-              new DASJiraColumnDefinition(
-                  "value",
-                  "The new value.",
-                  createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getValue()),
-              new DASJiraColumnDefinition(
+                  ApplicationProperty::getType),
+              new DASJiraNormalColumnDefinition<>(
+                  "value", "The new value.", createStringType(), ApplicationProperty::getValue),
+              new DASJiraNormalColumnDefinition<>(
                   "allowed_values",
                   "The allowed values, if applicable.",
                   createListType(createStringType()),
-                  (Object ap) -> ((ApplicationProperty) ap).getAllowedValues()),
-              new DASJiraColumnDefinition(
-                  "title",
-                  TITLE_DESC,
-                  createStringType(),
-                  (Object ap) -> ((ApplicationProperty) ap).getName())),
-          (quals, columns, sortKeys, limit) -> {
+                  ApplicationProperty::getAllowedValues),
+              new DASJiraNormalColumnDefinition<>(
+                  "title", TITLE_DESC, createStringType(), ApplicationProperty::getName)),
+          (quals, _, _, limit) -> {
             try {
               assert quals != null;
               String key = (String) extractEq(quals, "key");
