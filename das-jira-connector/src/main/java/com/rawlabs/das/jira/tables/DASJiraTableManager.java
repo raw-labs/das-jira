@@ -1,13 +1,15 @@
 package com.rawlabs.das.jira.tables;
 
 import com.rawlabs.das.jira.tables.definitions.*;
+import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
+import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
 import com.rawlabs.protocol.das.TableDefinition;
 
 import java.util.List;
 import java.util.Map;
 
 public class DASJiraTableManager {
-  private final List<DASJiraTable> tables;
+  private final List<DASJiraBaseTable> tables;
   private final List<TableDefinition> tableDefinitions;
 
   public DASJiraTableManager(Map<String, String> options) {
@@ -29,10 +31,10 @@ public class DASJiraTableManager {
             new DASJiraSprintTable(options),
             new DASJiraUserTable(options),
             new DASJiraWorkflowTable(options));
-    tableDefinitions = tables.stream().map(DASJiraTable::getTableDefinition).toList();
+    tableDefinitions = tables.stream().map(DASJiraBaseTable::getTableDefinition).toList();
   }
 
-  public List<DASJiraTable> getTables() {
+  public List<DASJiraBaseTable> getTables() {
     return tables;
   }
 
@@ -40,7 +42,7 @@ public class DASJiraTableManager {
     return tableDefinitions;
   }
 
-  public DASJiraTable getTable(String tableName) {
+  public DASJiraBaseTable getTable(String tableName) {
     return tables.stream()
         .filter(table -> table.getTableName().equals(tableName))
         .findFirst()

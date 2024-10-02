@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DASJiraTable implements DASTable {
+public abstract class DASJiraBaseTable implements DASTable {
 
   protected static final String TITLE_DESC = "Title of the resource.";
 
@@ -22,7 +22,7 @@ public abstract class DASJiraTable implements DASTable {
   protected final ValueFactory valueFactory = new DefaultValueFactory();
   private final RowsEstimation rowsEstimation = new RowsEstimation(100, 100);
 
-  protected DASJiraTable(Map<String, String> options) {
+  protected DASJiraBaseTable(Map<String, String> options) {
     this.options = options;
   }
 
