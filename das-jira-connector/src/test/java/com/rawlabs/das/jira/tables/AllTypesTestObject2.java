@@ -2,14 +2,13 @@ package com.rawlabs.das.jira.tables;
 
 import java.util.List;
 
-public class AllTypesTestObject {
+public class AllTypesTestObject2 {
+  public AllTypesTestObject2() {}
 
-  public AllTypesTestObject() {}
-
-  private String stringField = "string";
+  private String stringField = "string2";
   private int intField = 1;
   private boolean booleanField = true;
-  private List<String> listField = List.of("a", "b", "c");
+  private List<String> listField = List.of("a2", "b2", "c2");
 
   public String getStringField() {
     return stringField;
