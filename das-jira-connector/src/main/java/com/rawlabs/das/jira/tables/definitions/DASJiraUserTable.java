@@ -1,11 +1,11 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.jira.tables.DASJiraBaseTable;
 import com.rawlabs.protocol.das.TableDefinition;
 
 import java.util.Map;
 
-public class DASJiraUserTable extends DASJiraTable {
+public class DASJiraUserTable extends DASJiraBaseTable {
   public DASJiraUserTable(Map<String, String> options) {
     super( options);
   }
