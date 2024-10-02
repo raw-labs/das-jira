@@ -1,7 +1,7 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.tables.DASJiraColumnDefinition;
-import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.jira.tables.DASJiraBaseTable;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
@@ -16,9 +16,10 @@ import com.rawlabs.protocol.raw.*;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
-public class DASJiraAdvancedSettingsTable extends DASJiraTable {
+public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
 
   public static final String TABLE_NAME = "jira_advanced_setting";
   private JiraSettingsApi api = new JiraSettingsApi();
@@ -44,40 +45,15 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    Optional<Qual> simpleQuals =
-        quals.stream()
-            .filter(
-                q ->
-                    q.hasSimpleQual()
-                        && (q.getSimpleQual().hasOperator())
-                        && q.getSimpleQual().getOperator().hasEquals()
-                        && q.getFieldName().equals("key"))
-            .findFirst();
-    String key =
-        simpleQuals.map(qual -> qual.getSimpleQual().getValue().getString().getV()).orElse(null);
-    try {
-      return getResult(key, limit);
-    } catch (ApiException e) {
-      throw new DASSdkException("Failed to fetch advanced settings", e);
-    }
-  }
-
-  private DASExecuteResult getResult(@Nullable String key, @Nullable Long limit)
-      throws ApiException {
-
-    List<ApplicationProperty> result =
-        key == null ? api.getAdvancedSettings() : api.getApplicationProperty(key, null, null);
-
-    List<ApplicationProperty> maybeLimited =
-        limit == null ? result : result.subList(0, Math.toIntExact(limit));
-
-    Iterator<ApplicationProperty> iterator = maybeLimited.iterator();
-
+    Iterator<ApplicationProperty> iterator =
+        (Iterator<ApplicationProperty>)
+            dasJiraAdvancedSettingsTableDefinition.hydrate(quals, columns, sortKeys, limit);
     return new DASExecuteResult() {
       @Override
       public void close() {}
@@ -90,7 +66,9 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
       @Override
       public Row next() {
         try {
-          return toRow(iterator.next());
+          Row.Builder rowBuilder = Row.newBuilder();
+          dasJiraAdvancedSettingsTableDefinition.updateRow(rowBuilder, iterator.next());
+          return rowBuilder.build();
         } catch (NoSuchElementException e) {
           throw new DASSdkException("Failed to fetch advanced settings", e);
         }
@@ -107,7 +85,9 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     try {
       ApplicationProperty applicationProperty =
           api.setApplicationProperty(id, applicationPropertyBean);
-      return toRow(applicationProperty);
+      Row.Builder rowBuilder = Row.newBuilder();
+      dasJiraAdvancedSettingsTableDefinition.updateRow(rowBuilder, applicationProperty);
+      return rowBuilder.build();
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -115,57 +95,74 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
   @Override
   public String getTableName() {
-    return dasJiraTableDefinition.getTableDefinition().getTableId().getName();
+    return dasJiraAdvancedSettingsTableDefinition.getTableDefinition().getTableId().getName();
   }
 
   @Override
   public TableDefinition getTableDefinition() {
-    return dasJiraTableDefinition.getTableDefinition();
+    return dasJiraAdvancedSettingsTableDefinition.getTableDefinition();
   }
 
-  private Row toRow(ApplicationProperty applicationProperty) {
-    Row.Builder rowBuilder = Row.newBuilder();
-    dasJiraTableDefinition.updateRow("id", rowBuilder, applicationProperty.getId());
-    dasJiraTableDefinition.updateRow("name", rowBuilder, applicationProperty.getName());
-    dasJiraTableDefinition.updateRow("description", rowBuilder, applicationProperty.getDesc());
-    dasJiraTableDefinition.updateRow("key", rowBuilder, applicationProperty.getKey());
-    dasJiraTableDefinition.updateRow("type", rowBuilder, applicationProperty.getType());
-    dasJiraTableDefinition.updateRow("value", rowBuilder, applicationProperty.getValue());
-    dasJiraTableDefinition.updateRow(
-        "allowed_values", rowBuilder, applicationProperty.getAllowedValues());
-    dasJiraTableDefinition.updateRow("title", rowBuilder, applicationProperty.getName());
-    return rowBuilder.build();
-  }
-
-  DASJiraTableDefinition dasJiraTableDefinition =
+  public final DASJiraTableDefinition dasJiraAdvancedSettingsTableDefinition =
       new DASJiraTableDefinition(
           TABLE_NAME,
           "The application properties that are accessible on the Advanced Settings page.",
-          Map.of(
-              "id",
+          List.of(
               new DASJiraColumnDefinition(
-                  "id", "The unique identifier of the property.", createStringType()),
-              "name",
+                  "id",
+                  "The unique identifier of the property.",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getId()),
               new DASJiraColumnDefinition(
-                  "name", "The name of the application property.", createStringType()),
-              "description",
+                  "name",
+                  "The name of the application property.",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getName()),
               new DASJiraColumnDefinition(
                   "description",
                   "The description of the application property.",
-                  createStringType()),
-              "key",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getDesc()),
               new DASJiraColumnDefinition(
-                  "key", "The key of the application property.", createStringType()),
-              "type",
+                  "key",
+                  "The key of the application property.",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getKey()),
               new DASJiraColumnDefinition(
-                  "type", "The data type of the application property.", createStringType()),
-              "value",
-              new DASJiraColumnDefinition("value", "The new value.", createStringType()),
-              "allowed_values",
+                  "type",
+                  "The data type of the application property.",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getType()),
+              new DASJiraColumnDefinition(
+                  "value",
+                  "The new value.",
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getValue()),
               new DASJiraColumnDefinition(
                   "allowed_values",
                   "The allowed values, if applicable.",
-                  createListType(createStringType())),
-              "title",
-              new DASJiraColumnDefinition("title", TITLE_DESC, createStringType())));
+                  createListType(createStringType()),
+                  (Object ap) -> ((ApplicationProperty) ap).getAllowedValues()),
+              new DASJiraColumnDefinition(
+                  "title",
+                  TITLE_DESC,
+                  createStringType(),
+                  (Object ap) -> ((ApplicationProperty) ap).getName())),
+          (quals, columns, sortKeys, limit) -> {
+            try {
+              assert quals != null;
+              String key = (String) extractEq(quals, "key");
+              List<ApplicationProperty> result =
+                  key == null
+                      ? api.getAdvancedSettings()
+                      : api.getApplicationProperty(key, null, null);
+
+              List<ApplicationProperty> maybeLimited =
+                  limit == null ? result : result.subList(0, Math.toIntExact(limit));
+
+              return maybeLimited.iterator();
+            } catch (ApiException e) {
+              throw new DASSdkException("Failed to fetch advanced settings", e);
+            }
+          });
 }
