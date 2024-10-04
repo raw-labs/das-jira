@@ -34,15 +34,6 @@ public abstract class DASJiraTable implements DASTable {
         createTable(table, description, columnDefinitions.values().stream().toList());
   }
 
-  @Override
-  public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
-    return null;
-  }
-
   public String getTableName() {
     return getTableDefinition().getTableId().getName();
   }
