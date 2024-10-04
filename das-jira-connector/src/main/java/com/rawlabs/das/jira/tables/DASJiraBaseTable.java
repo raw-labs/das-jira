@@ -17,7 +17,7 @@ public abstract class DASJiraBaseTable implements DASTable {
 
   protected static final String TITLE_DESC = "Title of the resource.";
 
-  private final Map<String, String> options;
+  protected final Map<String, String> options;
 
   protected final ValueFactory valueFactory = new DefaultValueFactory();
   private final RowsEstimation rowsEstimation = new RowsEstimation(100, 100);
