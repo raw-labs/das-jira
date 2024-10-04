@@ -1,6 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.tables.DASJiraNormalColumnDefinition;
+import com.rawlabs.das.jira.tables.DASJiraColumnDefinitionWithoutChildren;
 import com.rawlabs.das.jira.tables.DASJiraBaseTable;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
@@ -89,39 +89,39 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
         TABLE_NAME,
         "The application properties that are accessible on the Advanced Settings page.",
         List.of(
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "id",
                 "The unique identifier of the property.",
                 createStringType(),
                 ApplicationProperty::getId),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "name",
                 "The name of the application property.",
                 createStringType(),
                 ApplicationProperty::getName),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "description",
                 "The description of the application property.",
                 createStringType(),
                 ApplicationProperty::getDesc),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "key",
                 "The key of the application property.",
                 createStringType(),
                 ApplicationProperty::getKey),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "type",
                 "The data type of the application property.",
                 createStringType(),
                 ApplicationProperty::getType),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "value", "The new value.", createStringType(), ApplicationProperty::getValue),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "allowed_values",
                 "The allowed values, if applicable.",
                 createListType(createStringType()),
                 ApplicationProperty::getAllowedValues),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "title", TITLE_DESC, createStringType(), ApplicationProperty::getName)),
         (quals, _, _, limit) -> {
           try {

@@ -55,68 +55,68 @@ public class DASJiraBoardTable extends DASJiraBaseTable {
         TABLE_NAME,
         "A board displays issues from one or more projects, giving you a flexible way of viewing, managing, and reporting on work in progress.",
         List.of(
-            new DASJiraParentColumnDefinition<>(
-                "id",
-                "The ID of the board.",
-                createIntType(),
-                GetAllBoards200ResponseValuesInner::getId,
-                new DASJiraTableDefinition<>(
-                    "board_config",
-                    "configuration of the board",
-                    List.of(
-                        new DASJiraNormalColumnDefinition<>(
-                            "type",
-                            "The board type of the board. Valid values are simple, scrum and kanban.",
-                            createStringType(),
-                            GetConfiguration200Response::getType),
-                        new DASJiraNormalColumnDefinition<>(
-                            "filter_id",
-                            "Filter id of the board.",
-                            createStringType(),
-                            (GetConfiguration200Response configuration) -> {
-                              GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner
-                                  filter = configuration.getFilter();
-                              return filter != null ? filter.getId() : null;
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "sub_query",
-                            "JQL subquery used by the given board - (Kanban only).",
-                            createStringType(),
-                            (GetConfiguration200Response configuration) -> {
-                              GetConfiguration200ResponseSubQuery subQuery =
-                                  configuration.getSubQuery();
-                              return subQuery != null ? subQuery.getQuery() : null;
-                            })),
-                    (quals, _, _, _) -> {
-                      try {
-                        assert quals != null;
-                        long id = (Integer) extractEq(quals, "id");
-                        GetConfiguration200Response config = boardApi.getConfiguration(id);
-                        return List.of(config).iterator();
-                      } catch (ApiException e) {
-                        throw new DASSdkException("Failed to fetch advanced settings", e);
-                      }
-                    })),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "name",
                 "The name of the board.",
                 createStringType(),
                 GetAllBoards200ResponseValuesInner::getName),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "self",
                 "The URL of the board details.",
                 createStringType(),
                 GetAllBoards200ResponseValuesInner::getSelf),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "type",
                 "The board type of the board. Valid values are simple, scrum and kanban.",
                 createStringType(),
                 GetAllBoards200ResponseValuesInner::getType),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "title",
                 TITLE_DESC,
                 createStringType(),
                 GetAllBoards200ResponseValuesInner::getName)),
+        new DASJiraColumnDefinitionWithChildren<>(
+            "id",
+            "The ID of the board.",
+            createIntType(),
+            GetAllBoards200ResponseValuesInner::getId,
+            new DASJiraTableDefinition<>(
+                "board_config",
+                "configuration of the board",
+                List.of(
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "type",
+                        "The board type of the board. Valid values are simple, scrum and kanban.",
+                        createStringType(),
+                        GetConfiguration200Response::getType),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "filter_id",
+                        "Filter id of the board.",
+                        createStringType(),
+                        (GetConfiguration200Response configuration) -> {
+                          GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner filter =
+                              configuration.getFilter();
+                          return filter != null ? filter.getId() : null;
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "sub_query",
+                        "JQL subquery used by the given board - (Kanban only).",
+                        createStringType(),
+                        (GetConfiguration200Response configuration) -> {
+                          GetConfiguration200ResponseSubQuery subQuery =
+                              configuration.getSubQuery();
+                          return subQuery != null ? subQuery.getQuery() : null;
+                        })),
+                (quals, _, _, _) -> {
+                  try {
+                    assert quals != null;
+                    long id = (Integer) extractEq(quals, "id");
+                    GetConfiguration200Response config = boardApi.getConfiguration(id);
+                    return List.of(config).iterator();
+                  } catch (ApiException e) {
+                    throw new DASSdkException("Failed to fetch advanced settings", e);
+                  }
+                })),
         this.hydrateFunction);
   }
 

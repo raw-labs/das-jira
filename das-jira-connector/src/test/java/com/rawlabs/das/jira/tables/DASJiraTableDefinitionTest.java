@@ -20,48 +20,45 @@ public class DASJiraTableDefinitionTest {
         "test_table",
         "Test Table",
         List.of(
-            new DASJiraParentColumnDefinition<>(
-                "string_field1",
-                "StringField1",
-                createStringType(),
-                AllTypesTestObject::getStringField,
-                new DASJiraTableDefinition<>(
-                    "test_table2",
-                    "Test Table 2",
-                    List.of(
-                        new DASJiraNormalColumnDefinition<>(
-                            "string_field2",
-                            "StringField",
-                            createStringType(),
-                            AllTypesTestObject::getStringField),
-                        new DASJiraNormalColumnDefinition<>(
-                            "int_field2",
-                            "IntField",
-                            createIntType(),
-                                AllTypesTestObject::getIntField),
-                        new DASJiraNormalColumnDefinition<>(
-                            "boolean_field2",
-                            "booleanField",
-                            createBoolType(),
-                                AllTypesTestObject::getBooleanField),
-                        new DASJiraNormalColumnDefinition<>(
-                            "list_field2",
-                            "listField",
-                            createListType(createStringType()),
-                                AllTypesTestObject::getListField)),
-                    (_, _, _, _) -> List.of(new AllTypesTestObject(2)).iterator())),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "int_field1", "IntField1", createIntType(), AllTypesTestObject::getIntField),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "boolean_field1",
                 "booleanField",
                 createBoolType(),
                 AllTypesTestObject::getBooleanField),
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "list_field1",
                 "listField1",
                 createListType(createStringType()),
                 AllTypesTestObject::getListField)),
+        new DASJiraColumnDefinitionWithChildren<>(
+            "string_field1",
+            "StringField1",
+            createStringType(),
+            AllTypesTestObject::getStringField,
+            new DASJiraTableDefinition<>(
+                "test_table2",
+                "Test Table 2",
+                List.of(
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "string_field2",
+                        "StringField",
+                        createStringType(),
+                        AllTypesTestObject::getStringField),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "int_field2", "IntField", createIntType(), AllTypesTestObject::getIntField),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "boolean_field2",
+                        "booleanField",
+                        createBoolType(),
+                        AllTypesTestObject::getBooleanField),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "list_field2",
+                        "listField",
+                        createListType(createStringType()),
+                        AllTypesTestObject::getListField)),
+                (_, _, _, _) -> List.of(new AllTypesTestObject(2)).iterator())),
         (_, _, _, _) -> List.of(new AllTypesTestObject(1)).iterator());
   }
 

@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 
-public class DASJiraParentColumnDefinition<T, K> implements DASJiraColumnDefinition<T> {
+public class DASJiraColumnDefinitionWithChildren<T, K> implements DASJiraColumnDefinition<T> {
   private static final ValueFactory valueFactory = new DefaultValueFactory();
   private final Type type;
   private final ColumnDefinition columnDefinition;
@@ -27,7 +27,7 @@ public class DASJiraParentColumnDefinition<T, K> implements DASJiraColumnDefinit
 
   private final DASJiraTableDefinition<K> childTableDefinition;
 
-  public DASJiraParentColumnDefinition(
+  public DASJiraColumnDefinitionWithChildren(
       String name,
       String description,
       Type type,
@@ -39,7 +39,6 @@ public class DASJiraParentColumnDefinition<T, K> implements DASJiraColumnDefinit
     this.childTableDefinition = childTableDefinition;
   }
 
-  @Override
   public DASExecuteResult getResult(
       Row.Builder rowBuilder,
       T object,
@@ -73,6 +72,12 @@ public class DASJiraParentColumnDefinition<T, K> implements DASJiraColumnDefinit
     } catch (IOException e) {
       throw new DASSdkException(e.getMessage(), e);
     }
+  }
+
+  @Override
+  public void updateRow(Row.Builder rowBuilder, T object) {
+    Value v = valueFactory.createValue(new ValueTypeTuple(transformation.apply(object), type));
+    rowBuilder.putData(columnDefinition.getName(), v);
   }
 
   @Override
