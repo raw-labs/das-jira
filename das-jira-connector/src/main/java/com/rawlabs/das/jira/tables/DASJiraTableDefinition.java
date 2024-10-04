@@ -5,33 +5,49 @@ import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.protocol.das.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
 
 public class DASJiraTableDefinition<T> {
-  private List<DASJiraColumnDefinition<T>> columnDefinitions;
+  private final List<DASJiraColumnDefinitionWithoutChildren<T>>
+      dasJiraColumnDefinitionWithoutChildren;
+  private final DASJiraColumnDefinitionWithChildren<T, ?> dasJiraColumnDefinitionWithChildren;
+
   private final TableDefinition tableDefinition;
   private final HydrateFunction<T> hydrateFunction;
 
   public DASJiraTableDefinition(
       String name,
       String description,
-      List<DASJiraColumnDefinition<T>> columnDefinitions,
+      List<DASJiraColumnDefinitionWithoutChildren<T>> columnDefinitions,
+      DASJiraColumnDefinitionWithChildren<T, ?> parentColumnDefinition,
       HydrateFunction<T> hydrateFunction) {
-    this.columnDefinitions = columnDefinitions;
-    tableDefinition =
-        createTable(
-            name,
-            description,
-            Stream.concat(
-                    columnDefinitions.stream().map(DASJiraColumnDefinition::getColumnDefinition),
-                    columnDefinitions.stream()
-                        .flatMap(columnDefinition -> columnDefinition.getChildColumns().stream()))
+    this.dasJiraColumnDefinitionWithoutChildren = columnDefinitions;
+    this.dasJiraColumnDefinitionWithChildren = parentColumnDefinition;
+
+    List<ColumnDefinition> columns =
+        new ArrayList<>(
+            columnDefinitions.stream()
+                .map(DASJiraColumnDefinitionWithoutChildren::getColumnDefinition)
                 .toList());
+
+    if (parentColumnDefinition != null) {
+      columns.addAll(parentColumnDefinition.getChildColumns());
+    }
+
+    tableDefinition = createTable(name, description, columns);
     this.hydrateFunction = hydrateFunction;
+  }
+
+  public DASJiraTableDefinition(
+      String name,
+      String description,
+      List<DASJiraColumnDefinitionWithoutChildren<T>> columnDefinitions,
+      HydrateFunction<T> hydrateFunction) {
+    this(name, description, columnDefinitions, null, hydrateFunction);
   }
 
   public TableDefinition getTableDefinition() {
@@ -46,44 +62,48 @@ public class DASJiraTableDefinition<T> {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    return new DASExecuteResult() {
-      private final Iterator<DASJiraColumnDefinition<T>> definitions = columnDefinitions.iterator();
-      private DASExecuteResult currentResult = null;
+    dasJiraColumnDefinitionWithoutChildren.forEach(
+        definition -> definition.updateRow(rowBuilder, value));
 
-      @Override
-      public void close() {}
+    if (dasJiraColumnDefinitionWithChildren == null) {
+      Iterator<Row> iterator = List.of(rowBuilder.build()).iterator();
+      return new DASExecuteResult() {
+        @Override
+        public void close() {}
 
-      @Override
-      public boolean hasNext() {
-        return definitions.hasNext() || (currentResult != null && currentResult.hasNext());
-      }
-
-      @Override
-      public Row next() {
-        if (currentResult == null) {
-          DASJiraColumnDefinition<T> definition = definitions.next();
-          currentResult = definition.getResult(rowBuilder, value, quals, columns, sortKeys, limit);
+        @Override
+        public boolean hasNext() {
+          return iterator.hasNext();
         }
-        if (!currentResult.hasNext()) {
-          currentResult = null;
-          return next();
-        }
-        Row.Builder rowBuilder = Row.newBuilder();
-        while (currentResult.hasNext()) {
-          Row childRow = currentResult.next();
-          childRow.getDataMap().forEach(rowBuilder::putData);
-        }
-        return rowBuilder.build();
-      }
-    };
-  }
 
-  public List<DASJiraColumnDefinition<T>> getColumnDefinitions() {
-    return columnDefinitions;
-  }
+        @Override
+        public Row next() {
+          return iterator.next();
+        }
+      };
+    } else {
+      return new DASExecuteResult() {
+        private final DASExecuteResult result =
+            dasJiraColumnDefinitionWithChildren.getResult(
+                rowBuilder, value, quals, columns, sortKeys, limit);
 
-  public void setColumnDefinitions(List<DASJiraColumnDefinition<T>> columnDefinitions) {
-    this.columnDefinitions = columnDefinitions;
+        @Override
+        public void close() {}
+
+        @Override
+        public boolean hasNext() {
+          return result.hasNext();
+        }
+
+        @Override
+        public Row next() {
+          Row.Builder rb = rowBuilder.clone();
+          Row next = result.next();
+          next.getDataMap().forEach(rb::putData);
+          return rb.build();
+        }
+      };
+    }
   }
 
   public DASExecuteResult execute(

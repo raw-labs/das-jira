@@ -10,13 +10,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public interface DASJiraColumnDefinition<T> {
-  DASExecuteResult getResult(
-      Row.Builder row,
-      T object,
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit);
+  void updateRow(Row.Builder rowBuilder, T object);
 
   ColumnDefinition getColumnDefinition();
 

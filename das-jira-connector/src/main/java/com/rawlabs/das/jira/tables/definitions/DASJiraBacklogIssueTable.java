@@ -96,260 +96,252 @@ public class DASJiraBacklogIssueTable extends DASJiraBaseTable {
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.",
         List.of(
-            new DASJiraNormalColumnDefinition<>(
+            new DASJiraColumnDefinitionWithoutChildren<>(
                 "board_name",
                 "The key of the issue.",
                 createStringType(),
-                GetAllBoards200ResponseValuesInner::getName),
-            new DASJiraParentColumnDefinition<>(
-                "board_id",
-                "The ID of the issue.",
-                createStringType(),
-                GetAllBoards200ResponseValuesInner::getId,
-                new DASJiraTableDefinition<>(
-                    "issues",
-                    "issues of the board",
-                    List.of(
-                        new DASJiraNormalColumnDefinition<>(
-                            "id", "The ID of the issue.", createStringType(), IssueBean::getId),
-                        new DASJiraNormalColumnDefinition<>(
-                            "key", "The key of the issue.", createStringType(), IssueBean::getKey),
-                        new DASJiraNormalColumnDefinition<>(
-                            "self",
-                            "The URL of the issue details.",
-                            createStringType(),
-                            IssueBean::getSelf),
-                        new DASJiraNormalColumnDefinition<>(
-                            "project_key",
-                            "A friendly key that identifies the project.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> project =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("project", null);
-                              return project == null ? null : project.getOrDefault("key", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "project_id",
-                            "A friendly key that identifies the project.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> project =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("project", null);
-                              return project == null ? null : project.getOrDefault("id", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "project_name",
-                            "Name of the project to that issue belongs.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> project =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("project", null);
-                              return project == null ? null : project.getOrDefault("name", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "status",
-                            "The status of the issue. Eg: To Do, In Progress, Done.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> status =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("status", null);
-                              return status.getOrDefault("name", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "assignee_account_id",
-                            "Account Id the user/application that the issue is assigned to work.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> assignee =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("assignee", null);
-                              return assignee == null
-                                  ? null
-                                  : assignee.getOrDefault("accountId", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "assignee_display_name",
-                            "Display name the user/application that the issue is assigned to work.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> assignee =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("assignee", null);
-                              return assignee == null
-                                  ? null
-                                  : assignee.getOrDefault("displayName", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "created",
-                            "Time when the issue was created.",
-                            createTimestampType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("created", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "creator_account_id",
-                            "Account Id of the user/application that created the issue.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> creator =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("creator", null);
-                              return creator == null
-                                  ? null
-                                  : creator.getOrDefault("accountId", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "creator_display_name",
-                            "Display name of the user/application that created the issue.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> creator =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("creator", null);
-                              return creator == null
-                                  ? null
-                                  : creator.getOrDefault("displayName", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "description",
-                            "Description of the issue.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("description", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "due_date",
-                            "Time by which the issue is expected to be completed.",
-                            createTimestampType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("duedate", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "epic_key",
-                            "The key of the epic to which issue belongs.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("epic", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "priority",
-                            "Priority assigned to the issue.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> priority =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("priority", null);
-                              return priority == null ? null : priority.getOrDefault("name", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "reporter_account_id",
-                            "Account Id of the user/application issue is reported.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> reporter =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("reporter", null);
-                              return reporter == null
-                                  ? null
-                                  : reporter.getOrDefault("accountId", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "reporter_display_name",
-                            "Display name of the user/application issue is reported.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> reporter =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("reporter", null);
-                              return reporter == null
-                                  ? null
-                                  : reporter.getOrDefault("displayName", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "summary",
-                            "Details of the user/application that created the issue.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("summary", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "type",
-                            "The name of the issue type.",
-                            createStringType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              Map<String, Object> type =
-                                  (Map<String, Object>)
-                                      issueBean.getFields().getOrDefault("type", null);
-                              return type == null ? null : type.getOrDefault("name", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "updated",
-                            "Time when the issue was last updated.",
-                            createTimestampType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("updated", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "components",
-                            "List of components associated with the issue.",
-                            createAnyType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("components", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "fields",
-                            "Json object containing important subfields of the issue.",
-                            createAnyType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields();
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "labels",
-                            "A list of labels applied to the issue.",
-                            createListType(createStringType()),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              return issueBean.getFields().getOrDefault("labels", null);
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "tags",
-                            "A map of label names associated with this issue",
-                            createAnyType(),
-                            (IssueBean issueBean) -> {
-                              assert issueBean.getFields() != null;
-                              var labels =
-                                  (List<String>) issueBean.getFields().getOrDefault("lables", null);
-                              Map<String, Boolean> tags = new HashMap<>();
-                              labels.forEach(label -> tags.put(label, true));
-                              return tags;
-                            }),
-                        new DASJiraNormalColumnDefinition<>(
-                            "title", TITLE_DESC, createStringType(), IssueBean::getKey)),
-                    (quals, _, _, limit) -> null))),
+                GetAllBoards200ResponseValuesInner::getName)),
+        new DASJiraColumnDefinitionWithChildren<>(
+            "board_id",
+            "The ID of the issue.",
+            createStringType(),
+            GetAllBoards200ResponseValuesInner::getId,
+            new DASJiraTableDefinition<>(
+                "issues",
+                "issues of the board",
+                List.of(
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "id", "The ID of the issue.", createStringType(), IssueBean::getId),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "key", "The key of the issue.", createStringType(), IssueBean::getKey),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "self",
+                        "The URL of the issue details.",
+                        createStringType(),
+                        IssueBean::getSelf),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "project_key",
+                        "A friendly key that identifies the project.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> project =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("project", null);
+                          return project == null ? null : project.getOrDefault("key", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "project_id",
+                        "A friendly key that identifies the project.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> project =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("project", null);
+                          return project == null ? null : project.getOrDefault("id", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "project_name",
+                        "Name of the project to that issue belongs.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> project =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("project", null);
+                          return project == null ? null : project.getOrDefault("name", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "status",
+                        "The status of the issue. Eg: To Do, In Progress, Done.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> status =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("status", null);
+                          return status.getOrDefault("name", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "assignee_account_id",
+                        "Account Id the user/application that the issue is assigned to work.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> assignee =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("assignee", null);
+                          return assignee == null ? null : assignee.getOrDefault("accountId", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "assignee_display_name",
+                        "Display name the user/application that the issue is assigned to work.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> assignee =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("assignee", null);
+                          return assignee == null
+                              ? null
+                              : assignee.getOrDefault("displayName", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "created",
+                        "Time when the issue was created.",
+                        createTimestampType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("created", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "creator_account_id",
+                        "Account Id of the user/application that created the issue.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> creator =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("creator", null);
+                          return creator == null ? null : creator.getOrDefault("accountId", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "creator_display_name",
+                        "Display name of the user/application that created the issue.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> creator =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("creator", null);
+                          return creator == null ? null : creator.getOrDefault("displayName", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "description",
+                        "Description of the issue.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("description", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "due_date",
+                        "Time by which the issue is expected to be completed.",
+                        createTimestampType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("duedate", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "epic_key",
+                        "The key of the epic to which issue belongs.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("epic", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "priority",
+                        "Priority assigned to the issue.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> priority =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("priority", null);
+                          return priority == null ? null : priority.getOrDefault("name", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "reporter_account_id",
+                        "Account Id of the user/application issue is reported.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> reporter =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("reporter", null);
+                          return reporter == null ? null : reporter.getOrDefault("accountId", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "reporter_display_name",
+                        "Display name of the user/application issue is reported.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> reporter =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("reporter", null);
+                          return reporter == null
+                              ? null
+                              : reporter.getOrDefault("displayName", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "summary",
+                        "Details of the user/application that created the issue.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("summary", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "type",
+                        "The name of the issue type.",
+                        createStringType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          Map<String, Object> type =
+                              (Map<String, Object>)
+                                  issueBean.getFields().getOrDefault("type", null);
+                          return type == null ? null : type.getOrDefault("name", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "updated",
+                        "Time when the issue was last updated.",
+                        createTimestampType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("updated", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "components",
+                        "List of components associated with the issue.",
+                        createAnyType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("components", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "fields",
+                        "Json object containing important subfields of the issue.",
+                        createAnyType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields();
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "labels",
+                        "A list of labels applied to the issue.",
+                        createListType(createStringType()),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          return issueBean.getFields().getOrDefault("labels", null);
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "tags",
+                        "A map of label names associated with this issue",
+                        createAnyType(),
+                        (IssueBean issueBean) -> {
+                          assert issueBean.getFields() != null;
+                          var labels =
+                              (List<String>) issueBean.getFields().getOrDefault("lables", null);
+                          Map<String, Boolean> tags = new HashMap<>();
+                          labels.forEach(label -> tags.put(label, true));
+                          return tags;
+                        }),
+                    new DASJiraColumnDefinitionWithoutChildren<>(
+                        "title", TITLE_DESC, createStringType(), IssueBean::getKey)),
+                (quals, _, _, limit) -> null)),
         dasJiraBoardTable.hydrateFunction);
   }
 
