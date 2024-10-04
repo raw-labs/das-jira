@@ -1,13 +1,19 @@
 package com.rawlabs.das.jira.tables;
 
+import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.ColumnDefinition;
+import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
+import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Type;
 import com.rawlabs.protocol.raw.Value;
 
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
@@ -27,14 +33,40 @@ public class DASJiraNormalColumnDefinition<T> implements DASJiraColumnDefinition
   }
 
   @Override
-  public void putToRow(T object, Row.Builder rowBuilder) {
+  public DASExecuteResult getResult(
+      Row.Builder rowBuilder,
+      T object,
+      List<Qual> quals,
+      List<String> columns,
+      @Nullable List<SortKey> sortKeys,
+      @Nullable Long limit) {
     Value v = valueFactory.createValue(new ValueTypeTuple(transformation.apply(object), type));
-    rowBuilder.putData(columnDefinition.getName(), v);
+    Row newRow = rowBuilder.putData(columnDefinition.getName(), v).build();
+    Iterator<Row> iterator = List.of(newRow).iterator();
+    return new DASExecuteResult() {
+      @Override
+      public void close() {}
+
+      @Override
+      public boolean hasNext() {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public Row next() {
+        return iterator.next();
+      }
+    };
   }
 
   @Override
   public ColumnDefinition getColumnDefinition() {
     return columnDefinition;
+  }
+
+  @Override
+  public String getName() {
+    return this.columnDefinition.getName();
   }
 
   @Override

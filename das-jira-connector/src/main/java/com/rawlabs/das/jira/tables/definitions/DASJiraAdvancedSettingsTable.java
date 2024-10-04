@@ -24,6 +24,9 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
   public static final String TABLE_NAME = "jira_advanced_setting";
   private JiraSettingsApi api = new JiraSettingsApi();
 
+  private final DASJiraTableDefinition<ApplicationProperty> dasJiraAdvancedSettingsTableDefinition =
+      this.buildTable();
+
   public DASJiraAdvancedSettingsTable(Map<String, String> options) {
     super(options);
   }
@@ -62,9 +65,10 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
     try {
       ApplicationProperty applicationProperty =
           api.setApplicationProperty(id, applicationPropertyBean);
-      Row.Builder rowBuilder = Row.newBuilder();
-      dasJiraAdvancedSettingsTableDefinition.updateRow(rowBuilder, applicationProperty);
-      return rowBuilder.build();
+      DASExecuteResult result =
+          dasJiraAdvancedSettingsTableDefinition.getResult(
+              Row.newBuilder(), applicationProperty, null, null, null, null);
+      return result.next();
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -80,60 +84,61 @@ public class DASJiraAdvancedSettingsTable extends DASJiraBaseTable {
     return dasJiraAdvancedSettingsTableDefinition.getTableDefinition();
   }
 
-  public final DASJiraTableDefinition<ApplicationProperty> dasJiraAdvancedSettingsTableDefinition =
-      new DASJiraTableDefinition<>(
-          TABLE_NAME,
-          "The application properties that are accessible on the Advanced Settings page.",
-          List.of(
-              new DASJiraNormalColumnDefinition<>(
-                  "id",
-                  "The unique identifier of the property.",
-                  createStringType(),
-                  ApplicationProperty::getId),
-              new DASJiraNormalColumnDefinition<>(
-                  "name",
-                  "The name of the application property.",
-                  createStringType(),
-                  ApplicationProperty::getName),
-              new DASJiraNormalColumnDefinition<>(
-                  "description",
-                  "The description of the application property.",
-                  createStringType(),
-                  ApplicationProperty::getDesc),
-              new DASJiraNormalColumnDefinition<>(
-                  "key",
-                  "The key of the application property.",
-                  createStringType(),
-                  ApplicationProperty::getKey),
-              new DASJiraNormalColumnDefinition<>(
-                  "type",
-                  "The data type of the application property.",
-                  createStringType(),
-                  ApplicationProperty::getType),
-              new DASJiraNormalColumnDefinition<>(
-                  "value", "The new value.", createStringType(), ApplicationProperty::getValue),
-              new DASJiraNormalColumnDefinition<>(
-                  "allowed_values",
-                  "The allowed values, if applicable.",
-                  createListType(createStringType()),
-                  ApplicationProperty::getAllowedValues),
-              new DASJiraNormalColumnDefinition<>(
-                  "title", TITLE_DESC, createStringType(), ApplicationProperty::getName)),
-          (quals, _, _, limit) -> {
-            try {
-              assert quals != null;
-              String key = (String) extractEq(quals, "key");
-              List<ApplicationProperty> result =
-                  key == null
-                      ? api.getAdvancedSettings()
-                      : api.getApplicationProperty(key, null, null);
+  public final DASJiraTableDefinition<ApplicationProperty> buildTable() {
+    return new DASJiraTableDefinition<>(
+        TABLE_NAME,
+        "The application properties that are accessible on the Advanced Settings page.",
+        List.of(
+            new DASJiraNormalColumnDefinition<>(
+                "id",
+                "The unique identifier of the property.",
+                createStringType(),
+                ApplicationProperty::getId),
+            new DASJiraNormalColumnDefinition<>(
+                "name",
+                "The name of the application property.",
+                createStringType(),
+                ApplicationProperty::getName),
+            new DASJiraNormalColumnDefinition<>(
+                "description",
+                "The description of the application property.",
+                createStringType(),
+                ApplicationProperty::getDesc),
+            new DASJiraNormalColumnDefinition<>(
+                "key",
+                "The key of the application property.",
+                createStringType(),
+                ApplicationProperty::getKey),
+            new DASJiraNormalColumnDefinition<>(
+                "type",
+                "The data type of the application property.",
+                createStringType(),
+                ApplicationProperty::getType),
+            new DASJiraNormalColumnDefinition<>(
+                "value", "The new value.", createStringType(), ApplicationProperty::getValue),
+            new DASJiraNormalColumnDefinition<>(
+                "allowed_values",
+                "The allowed values, if applicable.",
+                createListType(createStringType()),
+                ApplicationProperty::getAllowedValues),
+            new DASJiraNormalColumnDefinition<>(
+                "title", TITLE_DESC, createStringType(), ApplicationProperty::getName)),
+        (quals, _, _, limit) -> {
+          try {
+            assert quals != null;
+            String key = (String) extractEq(quals, "key");
+            List<ApplicationProperty> result =
+                key == null
+                    ? api.getAdvancedSettings()
+                    : api.getApplicationProperty(key, null, null);
 
-              List<ApplicationProperty> maybeLimited =
-                  limit == null ? result : result.subList(0, Math.toIntExact(limit));
+            List<ApplicationProperty> maybeLimited =
+                limit == null ? result : result.subList(0, Math.toIntExact(limit));
 
-              return maybeLimited.iterator();
-            } catch (ApiException e) {
-              throw new DASSdkException("Failed to fetch advanced settings", e);
-            }
-          });
+            return maybeLimited.iterator();
+          } catch (ApiException e) {
+            throw new DASSdkException("Failed to fetch advanced settings", e);
+          }
+        });
+  }
 }
