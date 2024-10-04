@@ -21,13 +21,17 @@ public class DASJiraWorkflowTable extends DASJiraTable {
         "A Jira workflow is a set of statuses and transitions that an issue moves through during its lifecycle, and typically represents a process within your organization.");
   }
 
-    @Override
-    protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-        return Map.of();
-    }
+  @Override
+  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
+    return Map.of();
+  }
 
-    @Override
-    public DASExecuteResult execute(List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys, @Nullable Long limit) {
-        return null;
-    }
+  @Override
+  public DASExecuteResult execute(
+      List<Qual> quals,
+      List<String> columns,
+      @Nullable List<SortKey> sortKeys,
+      @Nullable Long limit) {
+    return null;
+  }
 }

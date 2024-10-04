@@ -48,10 +48,10 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
       @Nullable Long limit) {
     try {
       DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, limit);
+      return parentResult;
     } catch (Exception e) {
       throw new DASSdkException(e.getMessage(), e);
     }
-    return super.execute(quals, columns, sortKeys, limit);
   }
 
   @Override
