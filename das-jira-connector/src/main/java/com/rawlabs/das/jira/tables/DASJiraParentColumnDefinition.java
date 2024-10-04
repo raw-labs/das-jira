@@ -1,14 +1,19 @@
 package com.rawlabs.das.jira.tables;
 
+import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.ColumnDefinition;
+import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
+import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Type;
 import com.rawlabs.protocol.raw.Value;
 
-import java.util.Iterator;
+import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Function;
 
@@ -35,18 +40,49 @@ public class DASJiraParentColumnDefinition<T, K> implements DASJiraColumnDefinit
   }
 
   @Override
-  public void putToRow(T object, Row.Builder rowBuilder) {
+  public DASExecuteResult getResult(
+      Row.Builder rowBuilder,
+      T object,
+      List<Qual> quals,
+      List<String> columns,
+      @Nullable List<SortKey> sortKeys,
+      @Nullable Long limit) {
     Value v = valueFactory.createValue(new ValueTypeTuple(transformation.apply(object), type));
-    rowBuilder.putData(columnDefinition.getName(), v);
-    if (childTableDefinition != null) {
-      Iterator<K> iterator = childTableDefinition.hydrate(null, null, null, null);
-      childTableDefinition.updateRow(rowBuilder, iterator.next());
+    Row newRow = rowBuilder.putData(columnDefinition.getName(), v).build();
+    try (DASExecuteResult result = childTableDefinition.execute(quals, columns, sortKeys, limit)) {
+      return new DASExecuteResult() {
+        final Row.Builder rowBuilder = newRow.toBuilder();
+
+        @Override
+        public void close() {}
+
+        @Override
+        public boolean hasNext() {
+          return result.hasNext();
+        }
+
+        @Override
+        public Row next() {
+          while (result.hasNext()) {
+            Row childRow = result.next();
+            childRow.getDataMap().forEach(rowBuilder::putData);
+          }
+          return rowBuilder.build();
+        }
+      };
+    } catch (IOException e) {
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
   @Override
   public ColumnDefinition getColumnDefinition() {
     return columnDefinition;
+  }
+
+  @Override
+  public String getName() {
+    return this.columnDefinition.getName();
   }
 
   @Override

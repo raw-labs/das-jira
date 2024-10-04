@@ -2,10 +2,7 @@ package com.rawlabs.das.jira.tables;
 
 import com.rawlabs.das.jira.HydrateFunction;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.das.TableDefinition;
+import com.rawlabs.protocol.das.*;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -15,9 +12,9 @@ import java.util.stream.Stream;
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
 
 public class DASJiraTableDefinition<T> {
-  List<DASJiraColumnDefinition<T>> columnDefinitions;
-  TableDefinition tableDefinition;
-  HydrateFunction<T> hydrateFunction;
+  private List<DASJiraColumnDefinition<T>> columnDefinitions;
+  private final TableDefinition tableDefinition;
+  private final HydrateFunction<T> hydrateFunction;
 
   public DASJiraTableDefinition(
       String name,
@@ -41,16 +38,52 @@ public class DASJiraTableDefinition<T> {
     return tableDefinition;
   }
 
-  public void updateRow(Row.Builder rowBuilder, T value) {
-    columnDefinitions.forEach((columnDefinition) -> columnDefinition.putToRow(value, rowBuilder));
-  }
-
-  public Iterator<T> hydrate(
+  public DASExecuteResult getResult(
+      Row.Builder rowBuilder,
+      T value,
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    return hydrateFunction.hydrate(quals, columns, sortKeys, limit);
+
+    return new DASExecuteResult() {
+      private final Iterator<DASJiraColumnDefinition<T>> definitions = columnDefinitions.iterator();
+      private DASExecuteResult currentResult = null;
+
+      @Override
+      public void close() {}
+
+      @Override
+      public boolean hasNext() {
+        return definitions.hasNext() || (currentResult != null && currentResult.hasNext());
+      }
+
+      @Override
+      public Row next() {
+        if (currentResult == null) {
+          DASJiraColumnDefinition<T> definition = definitions.next();
+          currentResult = definition.getResult(rowBuilder, value, quals, columns, sortKeys, limit);
+        }
+        if (!currentResult.hasNext()) {
+          currentResult = null;
+          return next();
+        }
+        Row.Builder rowBuilder = Row.newBuilder();
+        while (currentResult.hasNext()) {
+          Row childRow = currentResult.next();
+          childRow.getDataMap().forEach(rowBuilder::putData);
+        }
+        return rowBuilder.build();
+      }
+    };
+  }
+
+  public List<DASJiraColumnDefinition<T>> getColumnDefinitions() {
+    return columnDefinitions;
+  }
+
+  public void setColumnDefinitions(List<DASJiraColumnDefinition<T>> columnDefinitions) {
+    this.columnDefinitions = columnDefinitions;
   }
 
   public DASExecuteResult execute(
@@ -58,21 +91,28 @@ public class DASJiraTableDefinition<T> {
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    Iterator<T> iterator = hydrate(quals, columns, sortKeys, limit);
+    Iterator<T> iterator = hydrateFunction.hydrate(quals, columns, sortKeys, limit);
+
     return new DASExecuteResult() {
+      DASExecuteResult currentResult = null;
+
       @Override
       public void close() {}
 
       @Override
       public boolean hasNext() {
-        return iterator.hasNext();
+        return iterator.hasNext() || (currentResult != null && currentResult.hasNext());
       }
 
       @Override
       public Row next() {
         Row.Builder rowBuilder = Row.newBuilder();
-        updateRow(rowBuilder, iterator.next());
-        return rowBuilder.build();
+        if ((currentResult == null || !currentResult.hasNext()) && iterator.hasNext()) {
+          T next = iterator.next();
+          currentResult = getResult(rowBuilder, next, quals, columns, sortKeys, limit);
+        }
+        assert currentResult != null;
+        return currentResult.next();
       }
     };
   }
