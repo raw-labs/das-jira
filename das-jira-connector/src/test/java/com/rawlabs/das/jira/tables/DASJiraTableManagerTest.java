@@ -18,7 +18,7 @@ public class DASJiraTableManagerTest {
   @DisplayName("Table manager initialization test")
   public void testGetTableDefinition() {
     assertNotNull(dasJiraTableManager);
-    DASJiraBaseTable table = dasJiraTableManager.getTable(DASJiraAdvancedSettingsTable.TABLE_NAME);
+    DASJiraTable table = dasJiraTableManager.getTable(DASJiraAdvancedSettingsTable.TABLE_NAME);
     assertNotNull(table);
     int tableDefinitionsCount = dasJiraTableManager.getTableDefinitions().size();
     assertNotEquals(0, tableDefinitionsCount);

@@ -1,20 +1,31 @@
-package com.rawlabs.das.jira.tables;
-
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-
-import javax.annotation.Nullable;
-import java.util.List;
-
-public interface DASJiraColumnDefinition<T> {
-  void updateRow(Row.Builder rowBuilder, T object);
-
-  ColumnDefinition getColumnDefinition();
-
-  String getName();
-
-  List<ColumnDefinition> getChildColumns();
-}
+//package com.rawlabs.das.jira.tables;
+//
+//import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
+//import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
+//import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+//import com.rawlabs.protocol.das.ColumnDefinition;
+//import com.rawlabs.protocol.das.Row;
+//
+//import java.util.function.Function;
+//
+//public class DASJiraColumnDefinition {
+//  public final ColumnDefinition columnDefinition;
+//  public final Function<Object, Object> transformation;
+//  private final ValueFactory valueFactory = new DefaultValueFactory();
+//
+//  public DASJiraColumnDefinition(
+//      ColumnDefinition columnDefinition, Function<Object, Object> transformation) {
+//    this.columnDefinition = columnDefinition;
+//    this.transformation = transformation;
+//  }
+//
+//  public void updateRow(Row.Builder rowBuilder, Object object) {
+//    rowBuilder.putData(
+//        columnDefinition.getName(),
+//        valueFactory.createValue(new ValueTypeTuple(object, columnDefinition.getType())));
+//  }
+//
+//  public ColumnDefinition getColumnDefinition() {
+//    return columnDefinition;
+//  }
+//}

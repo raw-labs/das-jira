@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DASJiraTableManager {
-  private final List<DASJiraBaseTable> tables;
+  private final List<DASJiraTable> tables;
   private final List<TableDefinition> tableDefinitions;
 
   public DASJiraTableManager(Map<String, String> options) {
@@ -31,10 +31,10 @@ public class DASJiraTableManager {
             new DASJiraSprintTable(options),
             new DASJiraUserTable(options),
             new DASJiraWorkflowTable(options));
-    tableDefinitions = tables.stream().map(DASJiraBaseTable::getTableDefinition).toList();
+    tableDefinitions = tables.stream().map(DASJiraTable::getTableDefinition).toList();
   }
 
-  public List<DASJiraBaseTable> getTables() {
+  public List<DASJiraTable> getTables() {
     return tables;
   }
 
@@ -42,7 +42,7 @@ public class DASJiraTableManager {
     return tableDefinitions;
   }
 
-  public DASJiraBaseTable getTable(String tableName) {
+  public DASJiraTable getTable(String tableName) {
     return tables.stream()
         .filter(table -> table.getTableName().equals(tableName))
         .findFirst()
