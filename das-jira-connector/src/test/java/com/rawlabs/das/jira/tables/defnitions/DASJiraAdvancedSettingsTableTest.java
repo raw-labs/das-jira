@@ -6,6 +6,7 @@ import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
@@ -35,6 +36,8 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
 
   private static List<ApplicationProperty> appProps;
 
+  private static ValueFactory valueFactory = new DefaultValueFactory();
+
   @BeforeAll
   static void beforeAll() throws IOException {
     ArrayNode node = (ArrayNode) loadJson("application-properties.json");
@@ -60,7 +63,7 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
 
   @Test
   @DisplayName("Get all advanced settings")
-  public void testGetAllAdvancedSettings() throws IOException {
+  public void testGetAllAdvancedSettings() {
     try (DASExecuteResult result =
         dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null, null)) {
       assertTrue(result.hasNext());
@@ -129,7 +132,14 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
   @DisplayName("Get all advanced settings with limit")
   public void testGetAllAdvancedSettingsWithLimit() {
     try (DASExecuteResult result =
-        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null, 1L)) {
+        dasJiraAdvancedSettingsTable.execute(
+            List.of(
+                createEq(
+                    valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
+                    "key")),
+            List.of(),
+            null,
+            1L)) {
       assertTrue(result.hasNext());
       assertEquals(result.next().getDataMap().get("id").getString().getV(), "jira.home");
       assertFalse(result.hasNext());
@@ -143,7 +153,7 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
   public void testGetAllAdvancedSettingsWithWithError() {
     ValueFactory valueFactory = new DefaultValueFactory();
     assertThrows(
-        DASSdkException.class,
+        DASSdkApiException.class,
         () -> {
           try (DASExecuteResult result =
               dasJiraAdvancedSettingsTable.execute(

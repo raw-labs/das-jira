@@ -3,12 +3,9 @@ package com.rawlabs.das.jira.tables;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.RowsEstimation;
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.das.sdk.java.utils.factory.value.*;
 import com.rawlabs.protocol.das.*;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +18,7 @@ public abstract class DASJiraTable implements DASTable {
 
   protected final Map<String, String> options;
   protected final ValueFactory valueFactory = new DefaultValueFactory();
+  protected final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
 
   private final TableDefinition tableDefinition;
   private final Map<String, ColumnDefinition> columnDefinitions;
