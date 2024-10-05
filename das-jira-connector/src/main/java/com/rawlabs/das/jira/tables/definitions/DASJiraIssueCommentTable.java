@@ -5,7 +5,6 @@ import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.das.TableDefinition;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
