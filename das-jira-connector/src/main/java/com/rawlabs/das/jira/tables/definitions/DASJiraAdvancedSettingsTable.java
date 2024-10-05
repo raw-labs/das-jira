@@ -7,12 +7,11 @@ import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.jira.rest.platform.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.*;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
@@ -54,19 +53,21 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      assert quals != null;
       String key = (String) extractEq(quals, "key");
-      List<ApplicationProperty> result =
-          key == null ? api.getAdvancedSettings() : api.getApplicationProperty(key, null, null);
-
-      List<ApplicationProperty> maybeLimited =
-          limit == null ? result : result.subList(0, Math.toIntExact(limit));
+      List<ApplicationProperty> maybeLimited;
+      List<ApplicationProperty> result;
+      if (key != null) {
+        result = api.getApplicationProperty(key, null, null);
+      } else {
+        result = api.getAdvancedSettings();
+      }
+      maybeLimited = limit == null ? result : result.subList(0, Math.toIntExact(limit));
 
       return new DASExecuteResult() {
         private final Iterator<ApplicationProperty> iterator = maybeLimited.iterator();
 
         @Override
-        public void close() throws IOException {}
+        public void close() {}
 
         @Override
         public boolean hasNext() {
@@ -79,7 +80,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
         }
       };
     } catch (ApiException e) {
-      throw new DASSdkException("Failed to fetch advanced settings", e);
+      throw new DASSdkApiException("Failed to fetch advanced settings", e);
     }
   }
 
@@ -108,7 +109,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
           api.setApplicationProperty(id, applicationPropertyBean);
       return toRow(applicationProperty);
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw new DASSdkApiException(e.getMessage(), e);
     }
   }
 
