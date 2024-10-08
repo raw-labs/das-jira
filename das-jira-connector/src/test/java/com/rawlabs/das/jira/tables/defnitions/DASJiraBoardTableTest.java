@@ -37,12 +37,11 @@ public class DASJiraBoardTableTest extends MockTest {
 
   private static final ValueFactory valueFactory = new DefaultValueFactory();
 
-  private static GetAllBoards200Response allBoards;
-  private static GetAllBoards200ResponseValuesInner oneBoard;
-  private static GetConfiguration200Response boardConfig;
+  public static GetAllBoards200Response allBoards;
+  public static GetAllBoards200ResponseValuesInner oneBoard;
+  public static GetConfiguration200Response boardConfig;
 
-  @BeforeAll
-  static void beforeAll() throws IOException {
+  public static void configBeforeAll() throws IOException {
     JsonNode allBoardsJson = loadJson("all-boards.json");
     allBoards = GetAllBoards200Response.fromJson(allBoardsJson.toString());
 
@@ -53,8 +52,7 @@ public class DASJiraBoardTableTest extends MockTest {
     boardConfig = GetConfiguration200Response.fromJson(boardConfigJson.toString());
   }
 
-  @BeforeEach
-  void setUp() {
+  public static void configBeforeEach(BoardApi api) {
     try {
       when(api.getBoard(84L)).thenReturn(oneBoard);
       when(api.getAllBoards(
@@ -66,6 +64,16 @@ public class DASJiraBoardTableTest extends MockTest {
     } catch (ApiException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
     }
+  }
+
+  @BeforeAll
+  static void beforeAll() throws IOException {
+    configBeforeAll();
+  }
+
+  @BeforeEach
+  void setUp() {
+    configBeforeEach(api);
   }
 
   @Test

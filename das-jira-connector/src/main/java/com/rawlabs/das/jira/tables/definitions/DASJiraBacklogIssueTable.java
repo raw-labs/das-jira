@@ -1,21 +1,27 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.IssueBean;
+import com.rawlabs.das.jira.rest.software.model.MoveIssuesToBacklogForBoardRequest;
+import com.rawlabs.das.jira.rest.software.model.SearchResults;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.KeyColumns;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
@@ -23,21 +29,23 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
   private static final String TABLE_NAME = "jira_backlog_issue";
 
-  DASTable parentTable = new DASJiraBoardTable(options);
+  DASTable parentTable;
 
-  private BoardApi api = new BoardApi();
+  private BoardApi boardApi = new BoardApi();
 
   public DASJiraBacklogIssueTable(Map<String, String> options) {
     super(
         options,
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.");
+    parentTable = new DASJiraBoardTable(options);
   }
 
   /** Constructor for mocks */
-  DASJiraBacklogIssueTable(Map<String, String> options, BoardApi api) {
+  DASJiraBacklogIssueTable(Map<String, String> options, BoardApi boardApi) {
     this(options);
-    this.api = api;
+    this.boardApi = boardApi;
+    parentTable = new DASJiraBoardTable(options, boardApi);
   }
 
   @Override
@@ -47,21 +55,84 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, limit);
-      return parentResult;
+      List<Qual> qls = new ArrayList<>();
+      Object eqId = extractEq(quals, "board_id");
+      if (eqId != null) {
+        qls.add(
+            createEq(
+                valueFactory.createValue(
+                    new ValueTypeTuple(Long.valueOf((String) eqId), createLongType())),
+                "id"));
+      }
+
+      Integer maxResults = withMaxResult(limit);
+
+      return new DASExecuteResult() {
+        private final DASExecuteResult parentResult =
+            parentTable.execute(qls, columns, sortKeys, limit);
+        private Iterator<IssueBean> currentIssues;
+        private Long boardId;
+        private String boardName;
+        private Integer currentTotal;
+        private Long currentCount = 0L;
+
+        private boolean notHaveIssuesAndParentNotConsumed() {
+          return (currentIssues == null || !currentIssues.hasNext()) && parentResult.hasNext();
+        }
+
+        private boolean resultBatchesExhausted() {
+          return currentTotal == null || currentCount >= currentTotal;
+        }
+
+        private void getNextParentResult() {
+          Row row = parentResult.next();
+          boardId = (Long) extractValueFactory.extractValue(row.getDataMap().get("id"));
+          boardName = (String) extractValueFactory.extractValue(row.getDataMap().get("name"));
+          currentCount = 0L;
+        }
+
+        @Override
+        public void close() {}
+
+        @Override
+        public boolean hasNext() {
+          while (notHaveIssuesAndParentNotConsumed()) {
+            if (resultBatchesExhausted()) {
+              getNextParentResult();
+            }
+            try {
+              SearchResults searchResults =
+                  boardApi.getIssuesForBacklog(
+                      boardId, currentCount, maxResults, null, null, null, "names");
+              if (searchResults.getIssues() == null || searchResults.getIssues().isEmpty()) {
+                continue;
+              }
+              currentTotal = searchResults.getTotal();
+              currentCount += searchResults.getIssues().size();
+              currentIssues = searchResults.getIssues().iterator();
+              if (currentIssues.hasNext()) {
+                return true;
+              }
+            } catch (ApiException e) {
+              throw new DASSdkApiException(e.getMessage(), e);
+            }
+          }
+          return currentIssues != null && currentIssues.hasNext();
+        }
+
+        @Override
+        public Row next() {
+          return getRow(boardId, boardName, currentIssues.next());
+        }
+      };
     } catch (Exception e) {
       throw new DASSdkException(e.getMessage(), e);
     }
   }
 
   @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
-    return super.canSort(sortKeys);
-  }
-
-  @Override
   public List<KeyColumns> getPathKeys() {
-    return super.getPathKeys();
+    return List.of(new KeyColumns(List.of("id"), 1));
   }
 
   @Override
@@ -70,23 +141,27 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
   }
 
   @Override
-  public Row insertRow(Row row) {
-    return super.insertRow(row);
-  }
-
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return super.insertRows(rows);
-  }
-
-  @Override
   public Row updateRow(Value rowId, Row newValues) {
-    return super.updateRow(rowId, newValues);
-  }
+    Long boardId = (Long) extractValueFactory.extractValue(newValues.getDataMap().get("board_id"));
+    String issueId = (String) extractValueFactory.extractValue(rowId);
 
-  @Override
-  public void deleteRow(Value rowId) {
-    super.deleteRow(rowId);
+    if (boardId == null || issueId == null) {
+      throw new DASSdkUnsupportedException(
+          "The only update operation allowed is moving issues to backlog.");
+    }
+
+    MoveIssuesToBacklogForBoardRequest moveIssuesToBacklogForBoardRequest =
+        new MoveIssuesToBacklogForBoardRequest();
+    moveIssuesToBacklogForBoardRequest.setIssues(List.of(issueId));
+    try {
+      boardApi.moveIssuesToBoard(boardId, moveIssuesToBacklogForBoardRequest);
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage(), e);
+    }
+    return newValues.toBuilder()
+        .putData(
+            "board_id", valueFactory.createValue(new ValueTypeTuple(boardId, createLongType())))
+        .build();
   }
 
   protected Map<String, ColumnDefinition> buildColumnDefinitions() {
@@ -98,7 +173,7 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
             "board_name", "The name of the board the issue belongs to.", createStringType()));
     columnDefinitions.put(
         "board_id",
-        createColumn("board_id", "The ID of the board the issue belongs to.", createStringType()));
+        createColumn("board_id", "The ID of the board the issue belongs to.", createLongType()));
     columnDefinitions.put("key", createColumn("key", "The key of the issue.", createStringType()));
     columnDefinitions.put(
         "self", createColumn("self", "The URL of the issue details.", createStringType()));
@@ -206,14 +281,18 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
   }
 
   @SuppressWarnings("unchecked")
-  private Row getRow(String boardId, String boardName, IssueBean issueBean) {
+  private Row getRow(Long boardId, String boardName, IssueBean issueBean) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
 
-    addToRow("id", rowBuilder, issueBean);
-    addToRow("key", rowBuilder, issueBean);
-    addToRow("self", rowBuilder, issueBean);
+    addToRow("id", rowBuilder, issueBean.getId());
+    addToRow("key", rowBuilder, issueBean.getKey());
+
+    Optional.ofNullable(issueBean.getSelf())
+        .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
+
     addToRow("board_name", rowBuilder, boardName);
+
     addToRow("board_id", rowBuilder, boardId);
     Map<String, Object> fields = issueBean.getFields();
 
@@ -256,7 +335,12 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
                       });
               addToRow("description", rowBuilder, f.get("description"));
               addToRow("due_date", rowBuilder, f.get("duedate"));
-              Optional.ofNullable(f.get("epic")).ifPresent(e -> addToRow("key", rowBuilder, e));
+              Optional.ofNullable(f.get("epic"))
+                  .ifPresent(
+                      e -> {
+                        Map<String, Object> epic = (Map<String, Object>) e;
+                        addToRow("key", rowBuilder, epic.getOrDefault("key", null));
+                      });
               Optional.ofNullable(f.get("priority"))
                   .ifPresent(
                       p -> addToRow("priority", rowBuilder, ((Map<String, Object>) p).get("name")));
@@ -278,7 +362,11 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
                       t -> addToRow("type", rowBuilder, ((Map<String, Object>) t).get("name")));
               addToRow("updated", rowBuilder, f.get("updated"));
               addToRow("components", rowBuilder, f.get("components"));
-              addToRow("fields", rowBuilder, f);
+              try {
+                addToRow("fields", rowBuilder, objectMapper.writeValueAsString(f));
+              } catch (JsonProcessingException e) {
+                throw new DASSdkUnsupportedException("Error converting fields to json");
+              }
               addToRow("labels", rowBuilder, f.get("labels"));
               Optional.ofNullable(f.get("labels"))
                   .ifPresent(
