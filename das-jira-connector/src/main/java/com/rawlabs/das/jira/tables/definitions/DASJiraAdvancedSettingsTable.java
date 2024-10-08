@@ -21,7 +21,7 @@ import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_advanced_setting";
-  private JiraSettingsApi api = new JiraSettingsApi();
+  private JiraSettingsApi jiraSettingsApi = new JiraSettingsApi();
 
   public DASJiraAdvancedSettingsTable(Map<String, String> options) {
     super(
@@ -33,7 +33,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
   /** Constructor for mocks */
   DASJiraAdvancedSettingsTable(Map<String, String> options, JiraSettingsApi api) {
     this(options);
-    this.api = api;
+    this.jiraSettingsApi = api;
   }
 
   @Override
@@ -57,9 +57,9 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
       List<ApplicationProperty> maybeLimited;
       List<ApplicationProperty> result;
       if (key != null) {
-        result = api.getApplicationProperty(key, null, null);
+        result = jiraSettingsApi.getApplicationProperty(key, null, null);
       } else {
-        result = api.getAdvancedSettings();
+        result = jiraSettingsApi.getAdvancedSettings();
       }
       maybeLimited = limit == null ? result : result.subList(0, Math.toIntExact(limit));
 
@@ -106,7 +106,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     applicationPropertyBean.setValue(newValues.getDataMap().get("value").getString().getV());
     try {
       ApplicationProperty applicationProperty =
-          api.setApplicationProperty(id, applicationPropertyBean);
+          jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
       return toRow(applicationProperty);
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage(), e);

@@ -3,6 +3,8 @@ package com.rawlabs.das.jira.tables.defnitions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.stream.JsonReader;
+import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -16,6 +18,9 @@ import java.util.Scanner;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 public abstract class MockTest {
+
+  protected static final ValueFactory valueFactory = new DefaultValueFactory();
+
   public static JsonNode loadJson(String fileName) throws IOException {
     // Create ObjectMapper instance
     ObjectMapper objectMapper = new ObjectMapper();

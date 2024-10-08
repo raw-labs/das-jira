@@ -142,7 +142,7 @@
             }
           }
         ],
-        "updated": 1,
+        "updated": "2021-01-18T23:45:00.000+0000",
         "timetracking": {
           "originalEstimate": "10m",
           "originalEstimateSeconds": 600,
