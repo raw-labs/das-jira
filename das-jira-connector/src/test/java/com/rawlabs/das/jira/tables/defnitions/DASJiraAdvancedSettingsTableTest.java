@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("DAS Jira Advanced Settings Table Test")
 public class DASJiraAdvancedSettingsTableTest extends MockTest {
 
-  @Mock static JiraSettingsApi api;
+  @Mock static JiraSettingsApi jiraSettingsApi;
 
   @InjectMocks DASJiraAdvancedSettingsTable dasJiraAdvancedSettingsTable;
 
@@ -49,11 +49,12 @@ public class DASJiraAdvancedSettingsTableTest extends MockTest {
   @BeforeEach
   void setUp() {
     try {
-      when(api.getAdvancedSettings()).thenReturn(appProps);
-      when(api.getApplicationProperty("jira.home", null, null)).thenReturn(appProps.subList(0, 1));
-      when(api.getApplicationProperty("jira.clone.prefix", null, null))
+      when(jiraSettingsApi.getAdvancedSettings()).thenReturn(appProps);
+      when(jiraSettingsApi.getApplicationProperty("jira.home", null, null))
+          .thenReturn(appProps.subList(0, 1));
+      when(jiraSettingsApi.getApplicationProperty("jira.clone.prefix", null, null))
           .thenReturn(appProps.subList(1, 2));
-      when(api.getApplicationProperty("throw error", null, null))
+      when(jiraSettingsApi.getApplicationProperty("throw error", null, null))
           .thenThrow(new ApiException("couldn't fetch data"));
     } catch (ApiException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));

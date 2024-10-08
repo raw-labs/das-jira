@@ -4,7 +4,10 @@ import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.*;
 import com.rawlabs.das.jira.tables.*;
+import com.rawlabs.das.jira.tables.page.DASJiraPage;
+import com.rawlabs.das.jira.tables.page.DASJiraPagedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
@@ -23,7 +26,7 @@ public class DASJiraBoardTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_board";
 
-  private BoardApi boardApi;
+  private BoardApi boardApi = new BoardApi();
 
   public DASJiraBoardTable(Map<String, String> options) {
     super(
@@ -42,6 +45,11 @@ public class DASJiraBoardTable extends DASJiraTable {
     return sortKeys.stream()
         .filter(sortKey -> sortKey.getName().equals("name") || sortKey.getName().equals("title"))
         .toList();
+  }
+
+  @Override
+  public List<KeyColumns> getPathKeys() {
+    return List.of(new KeyColumns(List.of("id"), 1));
   }
 
   @Override
@@ -97,15 +105,13 @@ public class DASJiraBoardTable extends DASJiraTable {
         return fromRowIterator(
             List.of(toRow(getAllBoards200ResponseValuesInner, config)).iterator());
       } else {
-        int callLimit = 1000;
-        int maxResults = limit == null ? callLimit : Math.min(callLimit, Math.toIntExact(limit));
-        long startAt = 0;
+        int maxResults = withMaxResult(limit);
         String type = (String) extractEq(quals, "type");
         String name = (String) extractEq(quals, "name");
         name = name == null ? (String) extractEq(quals, "title") : name;
         Long filterId = (Long) extractEq(quals, "filter_id");
 
-        String orderBy = null;
+        String orderBy;
         if (sortKeys != null) {
           orderBy =
               sortKeys.stream()
@@ -115,40 +121,40 @@ public class DASJiraBoardTable extends DASJiraTable {
                   .findFirst()
                   .map(sortKey -> sortKey.getIsReversed() ? "-name" : "+name")
                   .orElse(null);
+        } else {
+          orderBy = null;
         }
 
-        GetAllBoards200Response getAllBoards200Response =
-            boardApi.getAllBoards(
-                startAt,
-                maxResults,
-                type,
-                name,
-                null,
-                null,
-                null,
-                null,
-                null,
-                orderBy,
-                null,
-                null,
-                filterId);
-        assert getAllBoards200Response.getValues() != null;
-        return new DASExecuteResult() {
-
-          private final Iterator<GetAllBoards200ResponseValuesInner> values =
-              getAllBoards200Response.getValues().iterator();
-
-          @Override
-          public void close() {}
-
-          @Override
-          public boolean hasNext() {
-            return values.hasNext();
-          }
+        String finalName = name;
+        return new DASJiraPagedResult<>(
+            (startAt) -> {
+              try {
+                GetAllBoards200Response getAllBoards200ResponsePage =
+                    boardApi.getAllBoards(
+                        startAt,
+                        maxResults,
+                        type,
+                        finalName,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        orderBy,
+                        null,
+                        null,
+                        filterId);
+                return new DASJiraPage<>(
+                    getAllBoards200ResponsePage.getValues(),
+                    getAllBoards200ResponsePage.getTotal());
+              } catch (ApiException e) {
+                throw new DASSdkApiException("Failed to fetch boards", e);
+              }
+            }) {
 
           @Override
           public Row next() {
-            GetAllBoards200ResponseValuesInner next = values.next();
+            GetAllBoards200ResponseValuesInner next = this.getNext();
             try {
               GetConfiguration200Response config = boardApi.getConfiguration(next.getId());
               return toRow(next, config);
@@ -178,7 +184,8 @@ public class DASJiraBoardTable extends DASJiraTable {
     addToRow("type", rowBuilder, getAllBoards200ResponseValuesInner.getType());
     Long filterId =
         Optional.ofNullable(config.getFilter())
-            .map(GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner::getId).map(id -> id.isEmpty() ? null : Long.parseLong(id))
+            .map(GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner::getId)
+            .map(id -> id.isEmpty() ? null : Long.parseLong(id))
             .orElse(null);
     addToRow("filter_id", rowBuilder, filterId);
     String subQuery =

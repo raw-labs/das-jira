@@ -1,5 +1,6 @@
 package com.rawlabs.das.jira.tables;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.RowsEstimation;
@@ -15,10 +16,12 @@ import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTa
 public abstract class DASJiraTable implements DASTable {
 
   protected static final String TITLE_DESC = "Title of the resource.";
+  protected static final int MAX_RESULTS = 1000;
 
   protected final Map<String, String> options;
   protected final ValueFactory valueFactory = new DefaultValueFactory();
   protected final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
+  protected ObjectMapper objectMapper = new ObjectMapper();
 
   private final TableDefinition tableDefinition;
   private final Map<String, ColumnDefinition> columnDefinitions;
@@ -73,5 +76,9 @@ public abstract class DASJiraTable implements DASTable {
         return rows.next();
       }
     };
+  }
+
+  public Integer withMaxResult(Long limit) {
+    return limit == null ? MAX_RESULTS : (int) Math.min(limit, MAX_RESULTS);
   }
 }
