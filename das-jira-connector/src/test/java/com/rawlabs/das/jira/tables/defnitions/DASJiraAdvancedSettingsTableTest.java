@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Advanced Settings Table Test")
-public class DASJiraAdvancedSettingsTableTest extends MockTest {
+public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
 
   @Mock static JiraSettingsApi jiraSettingsApi;
 

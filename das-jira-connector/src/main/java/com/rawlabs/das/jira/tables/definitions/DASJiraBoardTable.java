@@ -4,8 +4,8 @@ import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.*;
 import com.rawlabs.das.jira.tables.*;
-import com.rawlabs.das.jira.tables.page.DASJiraPage;
-import com.rawlabs.das.jira.tables.page.DASJiraPagedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraPage;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
@@ -18,7 +18,7 @@ import com.rawlabs.protocol.raw.Value;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
@@ -96,7 +96,7 @@ public class DASJiraBoardTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      Long id = (Long) extractEq(quals, "id");
+      Long id = (Long) extractEqDistinct(quals, "id");
 
       if (id != null) {
         GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner =
@@ -105,52 +105,53 @@ public class DASJiraBoardTable extends DASJiraTable {
         return fromRowIterator(
             List.of(toRow(getAllBoards200ResponseValuesInner, config)).iterator());
       } else {
-        int maxResults = withMaxResult(limit);
-        String type = (String) extractEq(quals, "type");
-        String name = (String) extractEq(quals, "name");
-        name = name == null ? (String) extractEq(quals, "title") : name;
-        Long filterId = (Long) extractEq(quals, "filter_id");
+        int maxResults = withMaxResultOrLimit(limit);
+        String type = (String) extractEqDistinct(quals, "type");
+        String name =
+            Optional.ofNullable(extractEqDistinct(quals, "name"))
+                .map(Object::toString)
+                .orElse((String) extractEqDistinct(quals, "title"));
+        Long filterId = (Long) extractEqDistinct(quals, "filter_id");
 
-        String orderBy;
-        if (sortKeys != null) {
-          orderBy =
-              sortKeys.stream()
-                  .filter(
-                      sortKey ->
-                          sortKey.getName().equals("name") || sortKey.getName().equals("title"))
-                  .findFirst()
-                  .map(sortKey -> sortKey.getIsReversed() ? "-name" : "+name")
-                  .orElse(null);
-        } else {
-          orderBy = null;
-        }
+        String orderBy =
+            Optional.ofNullable(sortKeys)
+                .map(
+                    keys -> {
+                      if (keys.size() > 1)
+                        throw new DASSdkApiException("Only one sort key is allowed.");
+                      return keys.getFirst();
+                    })
+                .map(
+                    key ->
+                        (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name"))
+                .orElse(null);
 
-        String finalName = name;
-        return new DASJiraPagedResult<>(
-            (startAt) -> {
-              try {
-                GetAllBoards200Response getAllBoards200ResponsePage =
-                    boardApi.getAllBoards(
-                        startAt,
-                        maxResults,
-                        type,
-                        finalName,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        orderBy,
-                        null,
-                        null,
-                        filterId);
-                return new DASJiraPage<>(
-                    getAllBoards200ResponsePage.getValues(),
-                    getAllBoards200ResponsePage.getTotal());
-              } catch (ApiException e) {
-                throw new DASSdkApiException("Failed to fetch boards", e);
-              }
-            }) {
+        return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>() {
+
+          @Override
+          public DASJiraPage<GetAllBoards200ResponseValuesInner> fetchPage(long offset) {
+            try {
+              GetAllBoards200Response getAllBoards200ResponsePage =
+                  boardApi.getAllBoards(
+                      offset,
+                      maxResults,
+                      type,
+                      name,
+                      null,
+                      null,
+                      null,
+                      null,
+                      null,
+                      orderBy,
+                      null,
+                      null,
+                      filterId);
+              return new DASJiraPage<>(
+                  getAllBoards200ResponsePage.getValues(), getAllBoards200ResponsePage.getTotal());
+            } catch (ApiException e) {
+              throw new DASSdkApiException("Failed to fetch boards", e);
+            }
+          }
 
           @Override
           public Row next() {
