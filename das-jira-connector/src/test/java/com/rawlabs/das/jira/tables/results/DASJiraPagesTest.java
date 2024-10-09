@@ -1,7 +1,5 @@
-package com.rawlabs.das.jira.tables.pages;
+package com.rawlabs.das.jira.tables.results;
 
-import com.rawlabs.das.jira.tables.page.DASJiraPage;
-import com.rawlabs.das.jira.tables.page.DASJiraPagedResult;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
@@ -38,8 +36,8 @@ public class DASJiraPagesTest {
   @DisplayName("Test paginated results")
   public void testPaginatedResults() throws IOException {
 
-    try (DASJiraPagedResult<String> pagedResult =
-        new DASJiraPagedResult<>(this::getPage) {
+    try (DASJiraPaginatedResult<String> pagedResult =
+        new DASJiraPaginatedResult<>() {
           @Override
           public Row next() {
             Row.Builder rowBuilder = Row.newBuilder();
@@ -47,6 +45,11 @@ public class DASJiraPagesTest {
                 "id",
                 valueFactory.createValue(new ValueTypeTuple(this.getNext(), createStringType())));
             return rowBuilder.build();
+          }
+
+          @Override
+          public DASJiraPage<String> fetchPage(long offset) {
+            return getPage(offset);
           }
         }) {
       Row row = pagedResult.next();

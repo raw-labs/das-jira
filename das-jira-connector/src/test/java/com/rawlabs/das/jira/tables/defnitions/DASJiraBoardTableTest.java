@@ -30,7 +30,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Board Table Test")
-public class DASJiraBoardTableTest extends MockTest {
+public class DASJiraBoardTableTest extends BaseMockTest {
   @Mock static BoardApi api;
 
   @InjectMocks DASJiraBoardTable dasJiraBoardTable;
