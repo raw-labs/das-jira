@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.RowsEstimation;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.utils.factory.value.*;
 import com.rawlabs.protocol.das.*;
 
@@ -11,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
 
 public abstract class DASJiraTable implements DASTable {
@@ -78,7 +80,8 @@ public abstract class DASJiraTable implements DASTable {
     };
   }
 
-  public Integer withMaxResult(Long limit) {
+  public Integer withMaxResultOrLimit(Long limit) {
     return limit == null ? MAX_RESULTS : (int) Math.min(limit, MAX_RESULTS);
   }
+
 }

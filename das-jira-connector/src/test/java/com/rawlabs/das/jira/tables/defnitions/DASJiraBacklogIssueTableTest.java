@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Backlog Issue Table Test")
-public class DASJiraBacklogIssueTableTest extends MockTest {
+public class DASJiraBacklogIssueTableTest extends BaseMockTest {
 
   @Mock static BoardApi api;
 

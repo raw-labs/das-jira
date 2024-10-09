@@ -1,23 +1,16 @@
-package com.rawlabs.das.jira.tables.page;
+package com.rawlabs.das.jira.tables.results;
 
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.protocol.das.Row;
 
-import java.io.IOException;
 import java.util.Iterator;
-import java.util.function.Function;
 
-public abstract class DASJiraPagedResult<T> implements DASExecuteResult {
+public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
 
   private long currentCount = 0;
   private long totalCount = 0;
   private Iterator<T> currentPage = null;
 
-  Function<Long, DASJiraPage<T>> fetchPage;
-
-  public DASJiraPagedResult(Function<Long, DASJiraPage<T>> fetchPage) {
-    this.fetchPage = fetchPage;
-  }
+  public DASJiraPaginatedResult() {}
 
   private boolean isPageExhausted() {
     return (currentPage == null || !currentPage.hasNext());
@@ -29,10 +22,12 @@ public abstract class DASJiraPagedResult<T> implements DASExecuteResult {
     } else throw new IllegalStateException("No more elements");
   }
 
+  public abstract DASJiraPage<T> fetchPage(long offset);
+
   @Override
   public boolean hasNext() {
     while (isPageExhausted()) {
-      DASJiraPage<T> result = fetchPage.apply(currentCount);
+      DASJiraPage<T> result = fetchPage(currentCount);
       currentCount += result.result().size();
       totalCount = result.total();
       currentPage = result.result().iterator();
@@ -41,5 +36,5 @@ public abstract class DASJiraPagedResult<T> implements DASExecuteResult {
   }
 
   @Override
-  public void close() throws IOException {}
+  public void close() {}
 }

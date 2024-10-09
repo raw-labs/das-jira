@@ -12,12 +12,10 @@ import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public abstract class MockTest {
+public abstract class BaseMockTest {
 
   protected static final ValueFactory valueFactory = new DefaultValueFactory();
 

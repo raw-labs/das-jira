@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
@@ -47,13 +48,29 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
   }
 
   @Override
+  public Row updateRow(Value rowId, Row newValues) {
+    String id = rowId.getString().getV();
+    SimpleApplicationPropertyBean applicationPropertyBean = new SimpleApplicationPropertyBean();
+    applicationPropertyBean.setId(id);
+    applicationPropertyBean.setValue(newValues.getDataMap().get("value").getString().getV());
+    try {
+      ApplicationProperty applicationProperty =
+          jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
+      return toRow(applicationProperty);
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage(), e);
+    }
+  }
+
+  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      String key = (String) extractEq(quals, "key");
+      String key = (String) extractEqDistinct(quals, "key");
+
       List<ApplicationProperty> maybeLimited;
       List<ApplicationProperty> result;
       if (key != null) {
@@ -96,21 +113,6 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     this.addToRow("allowed_values", rowBuilder, applicationProperty.getAllowedValues());
     this.addToRow("title", rowBuilder, applicationProperty.getName());
     return rowBuilder.build();
-  }
-
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
-    String id = rowId.getString().getV();
-    SimpleApplicationPropertyBean applicationPropertyBean = new SimpleApplicationPropertyBean();
-    applicationPropertyBean.setId(id);
-    applicationPropertyBean.setValue(newValues.getDataMap().get("value").getString().getV());
-    try {
-      ApplicationProperty applicationProperty =
-          jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
-      return toRow(applicationProperty);
-    } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
-    }
   }
 
   @Override

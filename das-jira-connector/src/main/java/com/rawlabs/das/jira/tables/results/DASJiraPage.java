@@ -1,4 +1,4 @@
-package com.rawlabs.das.jira.tables.page;
+package com.rawlabs.das.jira.tables.results;
 
 import java.util.List;
 
