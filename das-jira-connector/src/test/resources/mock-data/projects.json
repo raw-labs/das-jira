@@ -4,7 +4,7 @@
   "nextPage": "https://your-domain.atlassian.net/rest/api/3/project/search?startAt=2&maxResults=2",
   "self": "https://your-domain.atlassian.net/rest/api/3/project/search?startAt=0&maxResults=2",
   "startAt": 0,
-  "total": 7,
+  "total": 2,
   "values": [
     {
       "avatarUrls": {

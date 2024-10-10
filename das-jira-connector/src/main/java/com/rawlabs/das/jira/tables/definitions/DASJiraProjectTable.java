@@ -2,7 +2,6 @@ package com.rawlabs.das.jira.tables.definitions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
-import com.rawlabs.das.jira.rest.platform.api.ProjectPropertiesApi;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
 import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
@@ -126,19 +125,6 @@ public class DASJiraProjectTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    Integer maxResults = withMaxResultOrLimit(limit);
-
-    String orderBy =
-        Optional.ofNullable(sortKeys)
-            .map(
-                keys -> {
-                  if (keys.size() > 1)
-                    throw new DASSdkApiException("Only one sort key is allowed.");
-                  return keys.getFirst();
-                })
-            .map(key -> (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name"))
-            .orElse(null);
-
     Set<Long> ids =
         Optional.ofNullable(extractEqDistinct(quals, "id"))
             .map(i -> Set.of(Long.parseLong((String) i)))
@@ -163,8 +149,8 @@ public class DASJiraProjectTable extends DASJiraTable {
           PageBeanProject searchResult =
               projectsApi.searchProjects(
                   offset,
-                  maxResults,
-                  orderBy,
+                  withMaxResultOrLimit(limit),
+                  withOrderBy(sortKeys),
                   ids,
                   keys,
                   null,

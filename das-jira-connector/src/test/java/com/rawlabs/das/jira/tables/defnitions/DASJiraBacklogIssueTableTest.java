@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("DAS Jira Backlog Issue Table Test")
 public class DASJiraBacklogIssueTableTest extends BaseMockTest {
 
-  @Mock static BoardApi api;
+  @Mock static BoardApi boardApi;
 
   @InjectMocks DASJiraBacklogIssueTable dasJiraBacklogIssueTable;
 
@@ -40,8 +40,8 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
 
   @BeforeEach
   void setUp() throws ApiException {
-    DASJiraBoardTableTest.configBeforeEach(api);
-    when(api.getIssuesForBacklog(any(), any(), any(), any(), any(), any(), any()))
+    DASJiraBoardTableTest.configBeforeEach(boardApi);
+    when(boardApi.getIssuesForBacklog(any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(searchResults);
   }
 

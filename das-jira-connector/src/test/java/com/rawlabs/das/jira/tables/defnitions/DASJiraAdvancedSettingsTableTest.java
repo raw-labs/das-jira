@@ -35,8 +35,6 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
 
   private static List<ApplicationProperty> appProps;
 
-  private static ValueFactory valueFactory = new DefaultValueFactory();
-
   @BeforeAll
   static void beforeAll() throws IOException {
     ArrayNode node = (ArrayNode) loadJson("application-properties.json");

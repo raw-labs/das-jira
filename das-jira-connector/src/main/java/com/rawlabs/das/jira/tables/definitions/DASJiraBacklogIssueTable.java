@@ -23,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
 import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -93,19 +92,12 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      List<Qual> qls = new ArrayList<>();
-      Object eqId = extractEqDistinct(quals, "board_id");
-      if (eqId != null) {
-        qls.add(
-            createEq(
-                valueFactory.createValue(
-                    new ValueTypeTuple(Long.valueOf((String) eqId), createLongType())),
-                "id"));
-      }
-
-      Integer maxResults = withMaxResultOrLimit(limit);
-
-      return new DASJiraParentedResult(this.parentTable, qls, columns, sortKeys, limit) {
+      return new DASJiraParentedResult(
+          this.parentTable,
+          withParentJoin(quals, "board_id", "id"),
+          List.of("id", "name"),
+          sortKeys,
+          limit) {
 
         @Override
         public DASExecuteResult fetchChildResult(Row parentRow) {
@@ -124,7 +116,8 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
               try {
                 Long id = (Long) extractValueFactory.extractValue(parentRow, "id");
                 SearchResults searchResults =
-                    boardApi.getIssuesForBacklog(id, offset, maxResults, null, null, null, "names");
+                    boardApi.getIssuesForBacklog(
+                        id, offset, withMaxResultOrLimit(limit), null, null, null, "names");
 
                 return new DASJiraPage<>(
                     searchResults.getIssues(),
