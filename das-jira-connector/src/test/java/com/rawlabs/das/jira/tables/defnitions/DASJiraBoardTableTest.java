@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Board Table Test")
 public class DASJiraBoardTableTest extends BaseMockTest {
-  @Mock static BoardApi api;
+  @Mock static BoardApi boardApi;
 
   @InjectMocks DASJiraBoardTable dasJiraBoardTable;
 
@@ -73,7 +73,7 @@ public class DASJiraBoardTableTest extends BaseMockTest {
 
   @BeforeEach
   void setUp() {
-    configBeforeEach(api);
+    configBeforeEach(boardApi);
   }
 
   @Test

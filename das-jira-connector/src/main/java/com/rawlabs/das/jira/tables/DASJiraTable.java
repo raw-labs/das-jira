@@ -8,12 +8,12 @@ import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.utils.factory.value.*;
 import com.rawlabs.protocol.das.*;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createLongType;
 
 public abstract class DASJiraTable implements DASTable {
 
@@ -84,4 +84,31 @@ public abstract class DASJiraTable implements DASTable {
     return limit == null ? MAX_RESULTS : (int) Math.min(limit, MAX_RESULTS);
   }
 
+  public String withOrderBy(List<SortKey> sortKeys) {
+    return Optional.ofNullable(sortKeys)
+        .map(
+            keys -> {
+              if (keys.size() > 1) throw new DASSdkApiException("Only one sort key is allowed.");
+              return keys.getFirst();
+            })
+        .map(key -> (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name"))
+        .orElse(null);
+  }
+
+  public List<Qual> withParentJoin(List<Qual> quals, String childColumn, String parentColumn) {
+    List<Qual> qls = new ArrayList<>();
+    Object eqId = extractEqDistinct(quals, childColumn);
+    if (eqId != null) {
+      qls.add(
+          createEq(
+              valueFactory.createValue(
+                  new ValueTypeTuple(Long.valueOf((String) eqId), createLongType())),
+              parentColumn));
+    }
+    return qls;
+  }
+
+  public List<String> getColumns() {
+    return columnDefinitions.keySet().stream().toList();
+  }
 }
