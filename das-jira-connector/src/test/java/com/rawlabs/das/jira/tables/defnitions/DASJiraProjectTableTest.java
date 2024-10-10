@@ -7,9 +7,7 @@ import com.rawlabs.das.jira.rest.platform.model.PageBeanProject;
 import com.rawlabs.das.jira.tables.definitions.DASJiraProjectTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultExtractValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ExtractValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.protocol.das.Row;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,27 +26,34 @@ import static org.mockito.Mockito.when;
 @DisplayName("DAS Jira Project Table Test")
 public class DASJiraProjectTableTest extends BaseMockTest {
 
-  @Mock static ProjectsApi api;
+  @Mock static ProjectsApi projectsApi;
 
   @InjectMocks DASJiraProjectTable dasJiraProjectTable;
 
-  private static final ValueFactory valueFactory = new DefaultValueFactory();
   private static final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
 
   private static PageBeanProject searchResults;
 
-  @BeforeAll
-  static void beforeAll() throws IOException {
+  public static void setupBeforeAll() throws IOException {
     JsonNode node = loadJson("projects.json");
     searchResults = PageBeanProject.fromJson(node.toString());
   }
 
-  @BeforeEach
-  void setUp() throws ApiException, com.rawlabs.das.jira.rest.platform.ApiException {
+  @BeforeAll
+  static void beforeAll() throws IOException {
+    setupBeforeAll();
+  }
+
+  static void setupBeforeEach(ProjectsApi api) throws ApiException {
     when(api.searchProjects(
             any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
             any()))
         .thenReturn(searchResults);
+  }
+
+  @BeforeEach
+  void setUp() throws ApiException, com.rawlabs.das.jira.rest.platform.ApiException {
+    setupBeforeEach(projectsApi);
   }
 
   @Test

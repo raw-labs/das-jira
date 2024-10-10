@@ -2,22 +2,26 @@ package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectComponentsApi;
+import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
 import com.rawlabs.das.jira.rest.platform.model.ComponentIssuesCount;
+import com.rawlabs.das.jira.rest.platform.model.ComponentWithIssueCount;
+import com.rawlabs.das.jira.rest.platform.model.PageBeanComponentWithIssueCount;
 import com.rawlabs.das.jira.rest.platform.model.ProjectComponent;
-import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.jira.tables.results.DASJiraPage;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraParentedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.SortKey;
+import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -27,7 +31,7 @@ public class DASJiraComponentTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_component";
 
-  private final DASJiraTable parentTable;
+  private DASJiraTable parentTable;
 
   private ProjectComponentsApi projectComponentsApi = new ProjectComponentsApi();
 
@@ -45,25 +49,132 @@ public class DASJiraComponentTable extends DASJiraTable {
     this.projectComponentsApi = projectComponentsApi;
   }
 
+  public DASJiraComponentTable(
+      Map<String, String> options,
+      ProjectComponentsApi projectComponentsApi,
+      ProjectsApi projectsApi) {
+    this(options, projectComponentsApi);
+    this.parentTable = new DASJiraProjectTable(options, projectsApi);
+  }
+
+  @Override
+  public String getUniqueColumn() {
+    return "id";
+  }
+
+  @Override
+  public List<KeyColumns> getPathKeys() {
+    return List.of(new KeyColumns(List.of("id"), 1));
+  }
+
+  @Override
+  public List<SortKey> canSort(List<SortKey> sortKeys) {
+    List<String> availableForSorting = List.of("name", "description", "title");
+    return sortKeys.stream()
+        .filter(sortKey -> availableForSorting.contains(sortKey.getName()))
+        .toList();
+  }
+
+  @Override
+  public Row insertRow(Row row) {
+    try {
+      ProjectComponent projectComponent = new ProjectComponent();
+      ProjectComponent inserted = this.projectComponentsApi.createComponent(projectComponent);
+      return toRow(toComponentWithCount(inserted));
+    } catch (ApiException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<Row> insertRows(List<Row> rows) {
+    return rows.stream().map(this::insertRow).toList();
+  }
+
+  @Override
+  public Row updateRow(Value rowId, Row newValues) {
+    ProjectComponent projectComponent = new ProjectComponent();
+    projectComponent.setDescription(
+        (String) extractValueFactory.extractValue(newValues, "description"));
+    projectComponent.setName((String) extractValueFactory.extractValue(newValues, "name"));
+    projectComponent.setProject((String) extractValueFactory.extractValue(newValues, "project"));
+    projectComponent.setAssigneeType(
+        ProjectComponent.AssigneeTypeEnum.fromValue(
+            (String) extractValueFactory.extractValue(newValues, "assignee_type")));
+    projectComponent.setLeadAccountId(
+        (String) extractValueFactory.extractValue(newValues, "lead_account_id"));
+    projectComponent.setLeadUserName(
+        (String) extractValueFactory.extractValue(newValues, "lead_display_name"));
+    try {
+      projectComponentsApi.updateComponent(
+          (String) extractValueFactory.extractValue(rowId), projectComponent);
+    } catch (ApiException e) {
+      throw new RuntimeException(e);
+    }
+    return super.updateRow(rowId, newValues);
+  }
+
+  @Override
+  public void deleteRow(Value rowId) {
+    try {
+      projectComponentsApi.deleteComponent((String) extractValueFactory.extractValue(rowId), null);
+    } catch (ApiException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    return null;
+
+    return new DASJiraParentedResult(
+        parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, limit) {
+      @Override
+      public DASExecuteResult fetchChildResult(Row parentRow) {
+        return new DASJiraPaginatedResult<ComponentWithIssueCount>() {
+          @Override
+          public Row next() {
+            return toRow(this.getNext());
+          }
+
+          @Override
+          public DASJiraPage<ComponentWithIssueCount> fetchPage(long offset) {
+            try {
+              String projectId = (String) extractValueFactory.extractValue(parentRow, "id");
+              PageBeanComponentWithIssueCount components =
+                  projectComponentsApi.getProjectComponentsPaginated(
+                      projectId,
+                      offset,
+                      withMaxResultOrLimit(limit),
+                      withOrderBy(sortKeys),
+                      null,
+                      null);
+              return new DASJiraPage<>(components.getValues(), components.getTotal());
+            } catch (ApiException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        };
+      }
+    };
   }
 
-  public Row toRow(ProjectComponent projectComponent) {
+  public Row toRow(ComponentWithIssueCount componentWithIssueCount) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
-    addToRow("id", rowBuilder, projectComponent.getId());
-    addToRow("name", rowBuilder, projectComponent.getName());
-    addToRow("description", rowBuilder, projectComponent.getDescription());
-    addToRow("self", rowBuilder, projectComponent.getSelf());
-    addToRow("project", rowBuilder, projectComponent.getProject());
+    addToRow("id", rowBuilder, componentWithIssueCount.getId());
+    addToRow("name", rowBuilder, componentWithIssueCount.getName());
+    addToRow("description", rowBuilder, componentWithIssueCount.getDescription());
 
-    Optional.ofNullable(projectComponent.getAssignee())
+    Optional.ofNullable(componentWithIssueCount.getSelf())
+        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
+
+    addToRow("project", rowBuilder, componentWithIssueCount.getProject());
+
+    Optional.ofNullable(componentWithIssueCount.getAssignee())
         .ifPresent(
             assignee -> {
               addToRow("assignee_account_id", rowBuilder, assignee.getAccountId());
@@ -73,22 +184,23 @@ public class DASJiraComponentTable extends DASJiraTable {
                       accountType -> addToRow("assignee_type", rowBuilder, accountType.getValue()));
             });
 
-    addToRow("is_assignee_type_valid", rowBuilder, projectComponent.getIsAssigneeTypeValid());
-    try {
-      ComponentIssuesCount issuesCount =
-          projectComponentsApi.getComponentRelatedIssues(projectComponent.getId());
-      addToRow("issue_count", rowBuilder, issuesCount.getIssueCount());
-    } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
-    }
-    Optional.ofNullable(projectComponent.getLead())
+    addToRow(
+        "is_assignee_type_valid", rowBuilder, componentWithIssueCount.getIsAssigneeTypeValid());
+
+    Optional.ofNullable(componentWithIssueCount.getIssueCount())
+        .ifPresent(issueCount -> addToRow("issue_count", rowBuilder, Math.toIntExact(issueCount)));
+
+    Optional.ofNullable(componentWithIssueCount.getLead())
         .ifPresent(
             lead -> {
               addToRow("lead_account_id", rowBuilder, lead.getAccountId());
               addToRow("lead_display_name", rowBuilder, lead.getDisplayName());
             });
-    addToRow("project_id", rowBuilder, projectComponent.getProjectId());
-    Optional.ofNullable(projectComponent.getRealAssignee())
+
+    Optional.ofNullable(componentWithIssueCount.getProjectId())
+        .ifPresent(projectId -> addToRow("project_id", rowBuilder, Math.toIntExact(projectId)));
+
+    Optional.ofNullable(componentWithIssueCount.getRealAssignee())
         .ifPresent(
             realAssignee -> {
               addToRow("real_assignee_account_id", rowBuilder, realAssignee.getAccountId());
@@ -98,8 +210,44 @@ public class DASJiraComponentTable extends DASJiraTable {
                       accountType ->
                           addToRow("real_assignee_type", rowBuilder, accountType.getValue()));
             });
-    addToRow("title", rowBuilder, projectComponent.getName());
+    addToRow("title", rowBuilder, componentWithIssueCount.getName());
     return rowBuilder.build();
+  }
+
+  public ComponentWithIssueCount toComponentWithCount(ProjectComponent projectComponent) {
+    try {
+      ComponentWithIssueCount.AssigneeTypeEnum assigneeType =
+          Optional.ofNullable(projectComponent.getAssigneeType())
+              .flatMap(
+                  assigneeTypeEnum ->
+                      Optional.ofNullable(assigneeTypeEnum.getValue())
+                          .map(ComponentWithIssueCount.AssigneeTypeEnum::fromValue))
+              .orElse(null);
+
+      ComponentWithIssueCount.RealAssigneeTypeEnum realAssigneeType =
+          Optional.ofNullable(projectComponent.getRealAssigneeType())
+              .flatMap(
+                  realAssigneeTypeEnum ->
+                      Optional.ofNullable(realAssigneeTypeEnum.getValue())
+                          .map(ComponentWithIssueCount.RealAssigneeTypeEnum::fromValue))
+              .orElse(null);
+      ComponentIssuesCount issuesCount =
+          projectComponentsApi.getComponentRelatedIssues(projectComponent.getId());
+
+      return new ComponentWithIssueCount(
+          assigneeType,
+          projectComponent.getDescription(),
+          projectComponent.getId(),
+          projectComponent.getIsAssigneeTypeValid(),
+          issuesCount.getIssueCount(),
+          projectComponent.getName(),
+          projectComponent.getProject(),
+          projectComponent.getProjectId(),
+          realAssigneeType,
+          projectComponent.getSelf());
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage(), e);
+    }
   }
 
   @Override

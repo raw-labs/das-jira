@@ -69,7 +69,7 @@ public class DASJiraBoardTable extends DASJiraTable {
     board.setType(CreateBoardRequest.TypeEnum.fromValue(type));
     try {
       GetAllBoards200ResponseValuesInner result = boardApi.createBoard(board);
-      return toRow(result, boardApi.getConfiguration(result.getId()));
+      return toRow(result, null);
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -101,9 +101,8 @@ public class DASJiraBoardTable extends DASJiraTable {
       if (id != null) {
         GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner =
             boardApi.getBoard(id);
-        GetConfiguration200Response config = boardApi.getConfiguration(id);
         return fromRowIterator(
-            List.of(toRow(getAllBoards200ResponseValuesInner, config)).iterator());
+            List.of(toRow(getAllBoards200ResponseValuesInner, columns)).iterator());
       } else {
         int maxResults = withMaxResultOrLimit(limit);
         String type = (String) extractEqDistinct(quals, "type");
@@ -112,19 +111,6 @@ public class DASJiraBoardTable extends DASJiraTable {
                 .map(Object::toString)
                 .orElse((String) extractEqDistinct(quals, "title"));
         Long filterId = (Long) extractEqDistinct(quals, "filter_id");
-
-        String orderBy =
-            Optional.ofNullable(sortKeys)
-                .map(
-                    keys -> {
-                      if (keys.size() > 1)
-                        throw new DASSdkApiException("Only one sort key is allowed.");
-                      return keys.getFirst();
-                    })
-                .map(
-                    key ->
-                        (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name"))
-                .orElse(null);
 
         return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>() {
 
@@ -142,7 +128,7 @@ public class DASJiraBoardTable extends DASJiraTable {
                       null,
                       null,
                       null,
-                      orderBy,
+                      withOrderBy(sortKeys),
                       null,
                       null,
                       filterId);
@@ -157,8 +143,7 @@ public class DASJiraBoardTable extends DASJiraTable {
           public Row next() {
             GetAllBoards200ResponseValuesInner next = this.getNext();
             try {
-              GetConfiguration200Response config = boardApi.getConfiguration(next.getId());
-              return toRow(next, config);
+              return toRow(next, columns);
             } catch (ApiException e) {
               throw new DASSdkApiException("Failed to fetch board configuration", e);
             }
@@ -171,8 +156,25 @@ public class DASJiraBoardTable extends DASJiraTable {
   }
 
   private Row toRow(
-      GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner,
-      GetConfiguration200Response config) {
+      GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner, List<String> columns)
+      throws ApiException {
+    try {
+      Row row = getBoardsRow(getAllBoards200ResponseValuesInner);
+      if (columns == null
+          || columns.isEmpty()
+          || columns.contains("filter_id")
+          || columns.contains("sub_query")) {
+        GetConfiguration200Response config =
+            boardApi.getConfiguration(getAllBoards200ResponseValuesInner.getId());
+        row = addConfigToRow(row, config);
+      }
+      return row;
+    } catch (ApiException e) {
+      throw new DASSdkApiException("Failed to fetch board configuration", e);
+    }
+  }
+
+  private Row getBoardsRow(GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
     addToRow("id", rowBuilder, getAllBoards200ResponseValuesInner.getId());
@@ -183,6 +185,12 @@ public class DASJiraBoardTable extends DASJiraTable {
             .orElse(null);
     addToRow("self", rowBuilder, self);
     addToRow("type", rowBuilder, getAllBoards200ResponseValuesInner.getType());
+    addToRow("title", rowBuilder, getAllBoards200ResponseValuesInner.getName());
+    return rowBuilder.build();
+  }
+
+  private Row addConfigToRow(Row row, GetConfiguration200Response config) {
+    Row.Builder rowBuilder = row.toBuilder();
     Long filterId =
         Optional.ofNullable(config.getFilter())
             .map(GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner::getId)
@@ -194,7 +202,6 @@ public class DASJiraBoardTable extends DASJiraTable {
             .map(GetConfiguration200ResponseSubQuery::getQuery)
             .orElse(null);
     addToRow("sub_query", rowBuilder, subQuery);
-    addToRow("title", rowBuilder, getAllBoards200ResponseValuesInner.getName());
     return rowBuilder.build();
   }
 
