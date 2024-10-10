@@ -1,20 +1,23 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.Dashboard;
+import com.rawlabs.das.jira.rest.platform.model.PageOfDashboards;
 import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.jira.tables.results.DASJiraPage;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.SortKey;
+import com.rawlabs.protocol.raw.Value;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -37,12 +40,66 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   @Override
+  public String getUniqueColumn() {
+    return "id";
+  }
+
+  @Override
+  public List<SortKey> canSort(List<SortKey> sortKeys) {
+    return super.canSort(sortKeys);
+  }
+
+  @Override
+  public List<KeyColumns> getPathKeys() {
+    return super.getPathKeys();
+  }
+
+  @Override
+  public Row insertRow(Row row) {
+    return super.insertRow(row);
+  }
+
+  @Override
+  public List<Row> insertRows(List<Row> rows) {
+    return super.insertRows(rows);
+  }
+
+  @Override
+  public Row updateRow(Value rowId, Row newValues) {
+    return super.updateRow(rowId, newValues);
+  }
+
+  @Override
+  public void deleteRow(Value rowId) {
+    super.deleteRow(rowId);
+  }
+
+  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    return null;
+    return new DASJiraPaginatedResult<Dashboard>() {
+
+      @Override
+      public Row next() {
+        return toRow(this.getNext());
+      }
+
+      @Override
+      public DASJiraPage<Dashboard> fetchPage(long offset) {
+        try {
+          PageOfDashboards page =
+              dashboardsApi.getAllDashboards(
+                  null, Math.toIntExact(offset), withMaxResultOrLimit(limit));
+          return new DASJiraPage<>(
+              page.getDashboards(), Long.valueOf(Objects.requireNonNullElse(page.getTotal(), 0)));
+        } catch (ApiException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 
   private Row toRow(Dashboard dashboard) {
