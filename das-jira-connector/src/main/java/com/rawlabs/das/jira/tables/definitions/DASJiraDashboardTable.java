@@ -1,15 +1,16 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
-import com.rawlabs.das.jira.rest.platform.model.Dashboard;
-import com.rawlabs.das.jira.rest.platform.model.PageOfDashboards;
+import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
@@ -17,6 +18,7 @@ import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Value;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -45,33 +47,64 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
-    return super.canSort(sortKeys);
-  }
-
-  @Override
   public List<KeyColumns> getPathKeys() {
-    return super.getPathKeys();
-  }
-
-  @Override
-  public Row insertRow(Row row) {
-    return super.insertRow(row);
+    return List.of(new KeyColumns(List.of("id"), 1));
   }
 
   @Override
   public List<Row> insertRows(List<Row> rows) {
-    return super.insertRows(rows);
+    return rows.stream().map(this::insertRow).toList();
+  }
+
+  private List<SharePermission> getPermissions(Row row, String columnName) throws IOException {
+    ArrayNode arrayNode = (ArrayNode) extractValueFactory.extractValue(row, columnName);
+    List<SharePermission> editPermissions = new ArrayList<>();
+    for (int i = 0; i < arrayNode.size(); i++) {
+      editPermissions.add(SharePermission.fromJson(arrayNode.get(i).toString()));
+    }
+    return editPermissions;
+  }
+
+  private DashboardDetails getDashboardDetails(Row row) throws IOException {
+    DashboardDetails dashboardDetails = new DashboardDetails();
+    dashboardDetails.setDescription((String) extractValueFactory.extractValue(row, "description"));
+    dashboardDetails.setName((String) extractValueFactory.extractValue(row, "name"));
+    dashboardDetails.setSharePermissions(getPermissions(row, "share_permissions"));
+    dashboardDetails.setEditPermissions(getPermissions(row, "edit_permissions"));
+    return dashboardDetails;
+  }
+
+  @Override
+  public Row insertRow(Row row) {
+    try {
+      Dashboard result = dashboardsApi.createDashboard(getDashboardDetails(row), null);
+      return toRow(result);
+    } catch (ApiException | IOException e) {
+      throw new DASSdkApiException(e.getMessage(), e);
+    }
   }
 
   @Override
   public Row updateRow(Value rowId, Row newValues) {
-    return super.updateRow(rowId, newValues);
+    try {
+      Dashboard result =
+          dashboardsApi.updateDashboard(
+              extractValueFactory.extractValue(rowId).toString(),
+              getDashboardDetails(newValues),
+              null);
+      return toRow(result);
+    } catch (ApiException | IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public void deleteRow(Value rowId) {
-    super.deleteRow(rowId);
+    try {
+      dashboardsApi.deleteDashboard(extractValueFactory.extractValue(rowId).toString());
+    } catch (ApiException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -103,26 +136,39 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   private Row toRow(Dashboard dashboard) {
-    Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, dashboard.getId());
-    addToRow("name", rowBuilder, dashboard.getName());
-    Optional.ofNullable(dashboard.getSelf())
-        .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
-    addToRow("is_favourite", rowBuilder, dashboard.getIsFavourite());
-    Optional.ofNullable(dashboard.getOwner())
-        .ifPresent(
-            o -> {
-              addToRow("owner_account_id", rowBuilder, o.getAccountId());
-              addToRow("owner_display_name", rowBuilder, o.getDisplayName());
-            });
-    addToRow("popularity", rowBuilder, dashboard.getPopularity());
-    addToRow("rank", rowBuilder, dashboard.getRank());
-    addToRow("view", rowBuilder, dashboard.getView());
-    addToRow("edit_permissions", rowBuilder, dashboard.getEditPermissions());
-    addToRow("share_permissions", rowBuilder, dashboard.getSharePermissions());
-    addToRow("title", rowBuilder, dashboard.getName());
-    return rowBuilder.build();
+    try {
+      Row.Builder rowBuilder = Row.newBuilder();
+      initRow(rowBuilder);
+      addToRow("id", rowBuilder, dashboard.getId());
+      addToRow("name", rowBuilder, dashboard.getName());
+      Optional.ofNullable(dashboard.getSelf())
+          .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
+      addToRow("is_favourite", rowBuilder, dashboard.getIsFavourite());
+      Optional.ofNullable(dashboard.getOwner())
+          .ifPresent(
+              o -> {
+                addToRow("owner_account_id", rowBuilder, o.getAccountId());
+                addToRow("owner_display_name", rowBuilder, o.getDisplayName());
+              });
+
+      Optional.ofNullable(dashboard.getPopularity())
+          .ifPresent(p -> addToRow("popularity", rowBuilder, p.toString()));
+
+      addToRow("rank", rowBuilder, dashboard.getRank());
+      addToRow("view", rowBuilder, dashboard.getView());
+      addToRow(
+          "edit_permissions",
+          rowBuilder,
+          objectMapper.writeValueAsString(dashboard.getEditPermissions()));
+      addToRow(
+          "share_permissions",
+          rowBuilder,
+          objectMapper.writeValueAsString(dashboard.getSharePermissions()));
+      addToRow("title", rowBuilder, dashboard.getName());
+      return rowBuilder.build();
+    } catch (JsonProcessingException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
   }
 
   @Override
@@ -165,8 +211,8 @@ public class DASJiraDashboardTable extends DASJiraTable {
         createColumn(
             "share_permissions",
             "The details of any view share permissions for the dashboard.",
-            createStringType()));
-    columns.put("title", createColumn("title", "Title of the resource.", createAnyType()));
+            createAnyType()));
+    columns.put("title", createColumn("title", "Title of the resource.", createStringType()));
     return columns;
   }
 }
