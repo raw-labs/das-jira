@@ -1,9 +1,14 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
+import com.rawlabs.das.jira.rest.platform.api.GroupsApi;
+import com.rawlabs.das.jira.rest.software.api.SprintApi;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
+import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
+import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.SortKey;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,11 +19,34 @@ public class DASJiraSprintTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_sprint";
 
+  private SprintApi sprintApi = new SprintApi();
+
   public DASJiraSprintTable(Map<String, String> options) {
     super(
         options,
         TABLE_NAME,
         "Sprint is a short period in which the development team implements and delivers a discrete and potentially shippable application increment.");
+  }
+
+  /** Constructor for mocks */
+  DASJiraSprintTable(Map<String, String> options, SprintApi sprintApi) {
+    this(options);
+    this.sprintApi = sprintApi;
+  }
+
+  @Override
+  public String getUniqueColumn() {
+    return "id";
+  }
+
+  @Override
+  public List<KeyColumns> getPathKeys() {
+    return List.of(new KeyColumns(List.of("id"), 1));
+  }
+
+  @Override
+  public List<Row> insertRows(List<Row> rows) {
+    return rows.stream().map(this::insertRow).toList();
   }
 
   @Override
