@@ -1,7 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.software.api.EpicApi;
+import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
@@ -23,7 +22,7 @@ public class DASJiraEpicTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_epic";
 
-  private EpicApi epicApi = new EpicApi();
+  private BoardApi boardApi = new BoardApi();
 
   public DASJiraEpicTable(Map<String, String> options) {
     super(
@@ -33,9 +32,9 @@ public class DASJiraEpicTable extends DASJiraTable {
   }
 
   /** Constructor for mocks */
-  DASJiraEpicTable(Map<String, String> options, EpicApi epicApi) {
+  DASJiraEpicTable(Map<String, String> options, BoardApi boardApi) {
     this(options);
-    this.epicApi = epicApi;
+    this.boardApi = boardApi;
   }
 
   @Override
@@ -45,7 +44,7 @@ public class DASJiraEpicTable extends DASJiraTable {
 
   @Override
   public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
+    return List.of(new KeyColumns(List.of("id"), 1), new KeyColumns(List.of("key"), 1));
   }
 
   @Override
@@ -62,8 +61,11 @@ public class DASJiraEpicTable extends DASJiraTable {
     return null;
   }
 
-  private Row toRow() {
-    return null;
+  private Row toRow(Map<String, Object> epic) {
+    Row.Builder rowBuilder = Row.newBuilder();
+    initRow(rowBuilder);
+    addToRow("id", rowBuilder, epic.get("id"));
+    return rowBuilder.build();
   }
 
   @Override
