@@ -3,7 +3,6 @@ package com.rawlabs.das.jira.tables.defnitions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.platform.model.PageBeanComponentWithIssueCount;
 import com.rawlabs.das.jira.rest.platform.model.PageOfDashboards;
 import com.rawlabs.das.jira.tables.definitions.DASJiraDashboardTable;
 import org.junit.jupiter.api.BeforeAll;

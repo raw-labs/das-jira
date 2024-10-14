@@ -4,6 +4,8 @@ import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.software.api.EpicApi;
 import com.rawlabs.das.jira.tables.definitions.DASJiraEpicTable;
 import com.rawlabs.das.jira.tables.definitions.DASJiraGlobalSettingTable;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,4 +17,10 @@ public class DASJiraGlobalSettingTableTest extends BaseMockTest {
 
     @InjectMocks
     DASJiraGlobalSettingTable dasJiraGlobalSettingTable;
+
+    @BeforeAll
+    static void beforeAll() {}
+
+    @BeforeEach
+    void setUp() {}
 }
