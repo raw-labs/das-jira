@@ -10,7 +10,7 @@ import com.rawlabs.das.jira.rest.platform.model.ProjectComponent;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.jira.tables.results.DASJiraParentedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
@@ -75,24 +75,7 @@ public class DASJiraComponentTable extends DASJiraTable {
         .toList();
   }
 
-  @Override
-  public Row insertRow(Row row) {
-    try {
-      ProjectComponent projectComponent = new ProjectComponent();
-      ProjectComponent inserted = this.projectComponentsApi.createComponent(projectComponent);
-      return toRow(toComponentWithCount(inserted));
-    } catch (ApiException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
-  }
-
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  private ProjectComponent createProjectComponent(Row newValues) {
     ProjectComponent projectComponent = new ProjectComponent();
     projectComponent.setDescription(
         (String) extractValueFactory.extractValue(newValues, "description"));
@@ -105,9 +88,30 @@ public class DASJiraComponentTable extends DASJiraTable {
         (String) extractValueFactory.extractValue(newValues, "lead_account_id"));
     projectComponent.setLeadUserName(
         (String) extractValueFactory.extractValue(newValues, "lead_display_name"));
+    return projectComponent;
+  }
+
+  @Override
+  public Row insertRow(Row row) {
+    try {
+      ProjectComponent inserted =
+          this.projectComponentsApi.createComponent(createProjectComponent(row));
+      return toRow(toComponentWithCount(inserted));
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public List<Row> insertRows(List<Row> rows) {
+    return rows.stream().map(this::insertRow).toList();
+  }
+
+  @Override
+  public Row updateRow(Value rowId, Row newValues) {
     try {
       projectComponentsApi.updateComponent(
-          (String) extractValueFactory.extractValue(rowId), projectComponent);
+          (String) extractValueFactory.extractValue(rowId), createProjectComponent(newValues));
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -130,7 +134,7 @@ public class DASJiraComponentTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    return new DASJiraParentedResult(
+    return new DASJiraWithParentTableResult(
         parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {

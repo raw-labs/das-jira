@@ -25,7 +25,6 @@ public class DASJiraTableManager {
             new DASJiraIssueTable(options),
             new DASJiraIssueTypeTable(options),
             new DASJiraIssueWorklogTable(options),
-            new DASJiraPriorityTable(options),
             new DASJiraProjectRoleTable(options),
             new DASJiraProjectTable(options),
             new DASJiraSprintTable(options),

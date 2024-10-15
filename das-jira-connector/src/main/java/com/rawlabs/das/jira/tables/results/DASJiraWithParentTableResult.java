@@ -10,14 +10,12 @@ import com.rawlabs.protocol.das.SortKey;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class DASJiraParentedResult implements DASExecuteResult {
+public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
 
   private final DASExecuteResult parentResult;
   private DASExecuteResult childResult;
 
-  private Row currentParentRow;
-
-  public DASJiraParentedResult(
+    public DASJiraWithParentTableResult(
       DASTable parentTable,
       List<Qual> quals,
       List<String> columns,
@@ -41,8 +39,8 @@ public abstract class DASJiraParentedResult implements DASExecuteResult {
       return true;
     }
     while (parentResult.hasNext()) {
-      this.currentParentRow = parentResult.next();
-      childResult = fetchChildResult(this.currentParentRow);
+        Row currentParentRow = parentResult.next();
+      childResult = fetchChildResult(currentParentRow);
       if (childResult.hasNext()) {
         return true;
       }
