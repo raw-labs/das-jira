@@ -54,13 +54,13 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
       assertTrue(result.hasNext());
       Row row = result.next();
       assertNotNull(row);
-      assertEquals("10001", row.getDataMap().get("id").getString().getV());
-      assertEquals(84L, row.getDataMap().get("board_id").getLong().getV());
+      assertEquals("10001", extractValueFactory.extractValue(row, "id"));
+      assertEquals(84L, extractValueFactory.extractValue(row, "board_id"));
       assertTrue(result.hasNext());
       row = result.next();
       assertNotNull(row);
-      assertEquals("10001", row.getDataMap().get("id").getString().getV());
-      assertEquals(92L, row.getDataMap().get("board_id").getLong().getV());
+      assertEquals("10001", extractValueFactory.extractValue(row, "id"));
+      assertEquals(92L, extractValueFactory.extractValue(row, "board_id"));
       assertFalse(result.hasNext());
     } catch (IOException e) {
       fail("Should not throw an exception");

@@ -1,6 +1,5 @@
 package com.rawlabs.das.jira.tables.results;
 
-import com.rawlabs.das.jira.DASJira;
 import com.rawlabs.das.jira.tables.MockTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
@@ -11,7 +10,6 @@ import com.rawlabs.protocol.das.Row;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +26,8 @@ public class DASJiraParentedResultTest {
   @DisplayName("Test parented result results")
   public void testPaginatedResults() {
 
-    try (DASJiraParentedResult res =
-        new DASJiraParentedResult(parentTable, List.of(), List.of(), List.of(), null) {
+    try (DASJiraWithParentTableResult res =
+        new DASJiraWithParentTableResult(parentTable, List.of(), List.of(), List.of(), null) {
           private int count = 1;
 
           @Override

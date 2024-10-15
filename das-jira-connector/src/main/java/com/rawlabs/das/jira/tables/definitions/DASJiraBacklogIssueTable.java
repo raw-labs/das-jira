@@ -9,7 +9,7 @@ import com.rawlabs.das.jira.rest.software.model.SearchResults;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.jira.tables.results.DASJiraParentedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
@@ -90,7 +90,7 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      return new DASJiraParentedResult(
+      return new DASJiraWithParentTableResult(
           this.parentTable,
           withParentJoin(quals, "board_id", "id"),
           List.of("id", "name"),
