@@ -1,0 +1,15 @@
+{
+  "attachmentsEnabled": true,
+  "issueLinkingEnabled": true,
+  "subTasksEnabled": false,
+  "timeTrackingConfiguration": {
+    "defaultUnit": "day",
+    "timeFormat": "pretty",
+    "workingDaysPerWeek": 5,
+    "workingHoursPerDay": 8
+  },
+  "timeTrackingEnabled": true,
+  "unassignedIssuesAllowed": false,
+  "votingEnabled": true,
+  "watchingEnabled": true
+}

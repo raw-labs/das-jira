@@ -14,7 +14,6 @@ import com.rawlabs.protocol.raw.*;
 import javax.annotation.Nullable;
 import java.util.*;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEq;
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;

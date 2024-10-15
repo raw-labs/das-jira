@@ -1,7 +1,5 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.platform.api.GroupsApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
@@ -12,8 +10,12 @@ import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.SortKey;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
 
 public class DASJiraIssueWorklogTable extends DASJiraTable {
 
@@ -50,16 +52,25 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    return Map.of();
-  }
-
-  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     return null;
+  }
+
+  private Row toRow() {
+    Row.Builder rowBuilder = Row.newBuilder();
+    initRow(rowBuilder);
+//    addToRow("voting_enabled", rowBuilder, configuration.getVotingEnabled());
+    return rowBuilder.build();
+  }
+
+  @Override
+  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
+    Map<String, ColumnDefinition> columns = new HashMap<>();
+    columns.put("name", createColumn("name", "The name of the group.", createStringType()));
+    return columns;
   }
 }
