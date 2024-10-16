@@ -18,7 +18,6 @@ public class DASJiraTest {
     DASJiraBuilder dasJiraBuilder = new DASJiraBuilder();
     assertNotNull(dasJiraBuilder);
     assertEquals(dasJiraBuilder.getDasType(), "jira");
-
     DASSdk dasJira =
         dasJiraBuilder.build(Map.of("base_url", "test_url", "personal_access_token", "pat"), null);
     assertNotNull(dasJira);
