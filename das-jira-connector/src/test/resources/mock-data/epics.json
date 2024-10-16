@@ -1,28 +1,21 @@
 {
-  "isLast": false,
-  "maxResults": 2,
-  "startAt": 1,
-  "total": 5,
+  "maxResults": 100,
+  "startAt": 0,
+  "isLast": true,
   "values": [
     {
-      "id": 37,
-      "self": "https://your-domain.atlassian.net/rest/agile/1.0/epic/23",
-      "name": "epic 1",
-      "summary": "epic 1 summary",
+      "id": 20890,
+      "key": "RD-3216",
+      "self": "https://raw-labs.atlassian.net/rest/agile/1.0/epic/20890",
+      "name": "[Ph.2] Client-focused",
+      "summary": "[Ph.2] Client-focused",
       "color": {
-        "key": "color_4"
+        "key": "color_7"
+      },
+      "issueColor": {
+        "key": "purple"
       },
       "done": true
-    },
-    {
-      "id": 37,
-      "self": "https://your-domain.atlassian.net/rest/agile/1.0/epic/13",
-      "name": "epic 2",
-      "summary": "epic 2 summary",
-      "color": {
-        "key": "color_2"
-      },
-      "done": false
     }
   ]
 }

@@ -30,7 +30,7 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
   private static final String TABLE_NAME = "jira_backlog_issue";
 
-  DASTable parentTable;
+  private DASTable parentTable;
 
   private BoardApi boardApi = new BoardApi();
 
@@ -47,11 +47,6 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
     this(options);
     this.boardApi = boardApi;
     parentTable = new DASJiraBoardTable(options, boardApi);
-  }
-
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
   }
 
   @Override

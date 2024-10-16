@@ -1,8 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.rest.platform.ApiException;
-import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.platform.api.GroupsApi;
 import com.rawlabs.das.jira.rest.platform.api.UsersApi;
 import com.rawlabs.das.jira.rest.platform.model.GroupName;
 import com.rawlabs.das.jira.rest.platform.model.NewUserDetails;
