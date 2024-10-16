@@ -1,11 +1,9 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.WorkflowsApi;
 import com.rawlabs.das.jira.rest.platform.model.PageBeanWorkflow;
-import com.rawlabs.das.jira.rest.platform.model.Transition;
 import com.rawlabs.das.jira.rest.platform.model.Workflow;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
@@ -48,11 +46,6 @@ public class DASJiraWorkflowTable extends DASJiraTable {
   @Override
   public String getUniqueColumn() {
     return "entity_id";
-  }
-
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("entity_id"), 1));
   }
 
   @Override
