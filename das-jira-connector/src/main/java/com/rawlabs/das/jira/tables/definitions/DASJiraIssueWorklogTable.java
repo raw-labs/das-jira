@@ -1,8 +1,11 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.rest.platform.ApiException;
+import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
 import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
+import com.rawlabs.das.jira.rest.platform.model.JsonNode;
+import com.rawlabs.das.jira.rest.platform.model.UserDetails;
 import com.rawlabs.das.jira.rest.platform.model.Worklog;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
@@ -18,6 +21,10 @@ import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +54,11 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
   }
 
   public DASJiraIssueWorklogTable(
-      Map<String, String> options, IssueWorklogsApi issueWorklogsApi, IssuesApi issuesApi) {
+      Map<String, String> options,
+      IssueWorklogsApi issueWorklogsApi,
+      IssueSearchApi issueSearchApi) {
     this(options, issueWorklogsApi);
-    this.parentTable = new DASJiraIssueTable(options, issuesApi);
+    this.parentTable = new DASJiraIssueTable(options, issueSearchApi);
   }
 
   @Override
@@ -58,8 +67,20 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
   }
 
   private Worklog extractWorklog(Row row) {
-    String issueId = (String) extractValueFactory.extractValue(row, "issue_id");
-    Worklog worklog = new Worklog();
+    try {
+      JsonNode userDetail = (JsonNode) extractValueFactory.extractValue(row, "author");
+      JsonNode updateAuthor = (JsonNode) extractValueFactory.extractValue(row, "update_author");
+      return new Worklog(
+          UserDetails.fromJson(userDetail.toJson()),
+          (OffsetDateTime) extractValueFactory.extractValue(row, "created"),
+          extractValueFactory.extractValue(row, "id").toString(),
+          extractValueFactory.extractValue(row, "issue_id").toString(),
+          new URI(extractValueFactory.extractValue(row, "self").toString()),
+          UserDetails.fromJson(updateAuthor.toJson()),
+          (OffsetDateTime) extractValueFactory.extractValue(row, "updated"));
+    } catch (IOException | URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -95,10 +116,10 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     }
   }
 
-  //  @Override
-  //  public void deleteRow(Value rowId) {
-  //    issueWorklogsApi.deleteWorklog(issueId, (String) extractValueFactory.extractValue(rowId));
-  //  }
+  //    @Override
+  //    public void deleteRow(Value rowId) {
+  //      issueWorklogsApi.deleteWorklog(issueId, (String) extractValueFactory.extractValue(rowId));
+  //    }
 
   @Override
   public DASExecuteResult execute(
