@@ -48,9 +48,9 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
   }
 
   public DASJiraIssueCommentTable(
-      Map<String, String> options, IssueCommentsApi issueCommentsApi, IssuesApi issuesApi) {
+      Map<String, String> options, IssueCommentsApi issueCommentsApi, IssueSearchApi issueSearchApi) {
     this(options, issueCommentsApi);
-    this.parentTable = new DASJiraIssueTable(options, issuesApi);
+    this.parentTable = new DASJiraIssueTable(options, issueSearchApi);
   }
 
   @Override
