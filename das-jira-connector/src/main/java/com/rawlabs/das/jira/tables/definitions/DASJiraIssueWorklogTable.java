@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -145,8 +146,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               var result =
                   issueWorklogsApi.getIssueWorklog(
                       issueId, offset, withMaxResultOrLimit(limit), null, null, null);
-              var total = result.getTotal() == null ? 0 : Long.valueOf(result.getTotal());
-              return new DASJiraPage<>(result.getWorklogs(), total);
+              return new DASJiraPage<>(result.getWorklogs(), Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)));
             } catch (ApiException e) {
               throw new RuntimeException(e);
             }

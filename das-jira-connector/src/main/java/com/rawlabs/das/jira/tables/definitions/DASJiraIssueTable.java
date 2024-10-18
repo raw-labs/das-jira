@@ -1,20 +1,27 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.DASJiraBuilder;
+import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
-import com.rawlabs.das.jira.tables.DASJiraTable;
+import com.rawlabs.das.jira.rest.platform.model.IssueBean;
+import com.rawlabs.das.jira.tables.DASJiraIssueTransformationTable;
+import com.rawlabs.das.jira.tables.DASJiraJqlQueryBuilder;
+import com.rawlabs.das.jira.tables.results.DASJiraPage;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResultWithNames;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.protocol.das.*;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
-public class DASJiraIssueTable extends DASJiraTable {
+public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
   public static final String TABLE_NAME = "jira_issue";
 
@@ -37,31 +44,97 @@ public class DASJiraIssueTable extends DASJiraTable {
   }
 
   @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
-  }
-
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
-  }
-
-
-
-  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-//    issueSearchApi.searchForIssuesUsingJql();
-    return null;
+
+    return new DASJiraPaginatedResultWithNames<IssueBean>() {
+
+      @Override
+      public Row next() {
+        return toRow(this.getNext(), names());
+      }
+
+      @Override
+      public DASJiraPage<IssueBean> fetchPage(long offset) {
+        try {
+          var result =
+              issueSearchApi.searchForIssuesUsingJql(
+                  DASJiraJqlQueryBuilder.buildJqlQuery(quals),
+                  Math.toIntExact(offset),
+                  withMaxResultOrLimit(limit),
+                  null,
+                  null,
+                  "names",
+                  null,
+                  null,
+                  null);
+          return new DASJiraPage<>(
+              result.getIssues(),
+              Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)),
+              result.getNames());
+        } catch (ApiException e) {
+          throw new DASSdkApiException(e.getMessage());
+        }
+      }
+    };
   }
 
-  private Row toRow() {
+  @SuppressWarnings("unchecked")
+  private Row toRow(IssueBean issueBean, Map<String, String> names) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
-    //    addToRow("voting_enabled", rowBuilder, configuration.getVotingEnabled());
+    addToRow("id", rowBuilder, issueBean.getId());
+    addToRow("key", rowBuilder, issueBean.getKey());
+    Optional.ofNullable(issueBean.getSelf())
+        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
+    Optional.ofNullable(issueBean.getFields())
+        .ifPresent(
+            fields -> {
+              processFields(fields, names, rowBuilder);
+
+              Optional.ofNullable(fields.get(names.get("Parent")))
+                  .ifPresent(
+                      p ->
+                          Optional.ofNullable(((Map<String, Object>) p).get("fields"))
+                              .flatMap(
+                                  parentFields ->
+                                      Optional.ofNullable(
+                                              ((Map<String, Object>) parentFields)
+                                                  .get(names.get("Issue Type")))
+                                          .flatMap(
+                                              issueType ->
+                                                  Optional.ofNullable(
+                                                      ((Map<String, Object>) issueType)
+                                                          .get("name"))))
+                              .ifPresent(
+                                  name -> {
+                                    if (name.equals("Epic")) {
+                                      addToRow(
+                                          "epic_key",
+                                          rowBuilder,
+                                          ((Map<String, Object>) p).get("key"));
+                                    }
+                                  }));
+              Optional.ofNullable(fields.get(names.get("Sprint")))
+                  .ifPresent(
+                      sprints -> {
+                        List<Map<String, Object>> sprintList = (List<Map<String, Object>>) sprints;
+                        addToRow(
+                            "sprint_ids",
+                            rowBuilder,
+                            sprintList.stream().map(s -> s.get("id")).toArray());
+                        addToRow(
+                            "sprint_names",
+                            rowBuilder,
+                            sprintList.stream().map(s -> s.get("name")).toArray());
+                      });
+            });
+
+    addToRow("title", rowBuilder, issueBean.getKey());
+
     return rowBuilder.build();
   }
 

@@ -8,12 +8,11 @@ import com.rawlabs.das.jira.rest.software.model.MoveIssuesToBacklogForBoardReque
 import com.rawlabs.das.jira.rest.software.model.SearchResults;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
-import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResultWithNames;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
-import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
@@ -26,7 +25,7 @@ import java.util.*;
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
-public class DASJiraBacklogIssueTable extends DASJiraTable {
+public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private static final String TABLE_NAME = "jira_backlog_issue";
 
@@ -94,14 +93,14 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
         @Override
         public DASExecuteResult fetchChildResult(Row parentRow) {
-          return new DASJiraPaginatedResult<IssueBean>() {
+          return new DASJiraPaginatedResultWithNames<IssueBean>() {
 
             @Override
             public Row next() {
               Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
               String boardName = (String) extractValueFactory.extractValue(parentRow, "name");
 
-              return toRow(boardId, boardName, this.getNext());
+              return toRow(boardId, boardName, this.getNext(), this.names());
             }
 
             @Override
@@ -114,7 +113,8 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
 
                 return new DASJiraPage<>(
                     searchResults.getIssues(),
-                    Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)));
+                    Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)),
+                    searchResults.getNames());
               } catch (ApiException e) {
                 throw new DASSdkApiException(e.getMessage(), e);
               }
@@ -129,7 +129,8 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
   }
 
   @SuppressWarnings("unchecked")
-  private Row toRow(Long boardId, String boardName, IssueBean issueBean) {
+  private Row toRow(
+      Long boardId, String boardName, IssueBean issueBean, Map<String, String> names) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
 
@@ -140,89 +141,17 @@ public class DASJiraBacklogIssueTable extends DASJiraTable {
         .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
 
     addToRow("board_name", rowBuilder, boardName);
-
     addToRow("board_id", rowBuilder, boardId);
-    Map<String, Object> fields = issueBean.getFields();
 
-    Optional.ofNullable(fields)
+    Optional.ofNullable(issueBean.getFields())
         .ifPresent(
-            f -> {
-              Optional.ofNullable(f.get("project"))
-                  .ifPresent(
-                      p -> {
-                        addToRow("project_key", rowBuilder, ((Map<String, Object>) p).get("key"));
-                        addToRow("project_id", rowBuilder, ((Map<String, Object>) p).get("id"));
-                      });
-              Optional.ofNullable(f.get("status"))
-                  .ifPresent(
-                      s -> addToRow("status", rowBuilder, ((Map<String, Object>) s).get("name")));
-              Optional.ofNullable(f.get("assignee"))
-                  .ifPresent(
-                      a -> {
-                        addToRow(
-                            "assignee_account_id",
-                            rowBuilder,
-                            ((Map<String, Object>) a).get("accountId"));
-                        addToRow(
-                            "assignee_display_name",
-                            rowBuilder,
-                            ((Map<String, Object>) a).get("displayName"));
-                      });
-              addToRow("created", rowBuilder, f.get("created"));
-              Optional.ofNullable(f.get("creator"))
-                  .ifPresent(
-                      c -> {
-                        addToRow(
-                            "creator_account_id",
-                            rowBuilder,
-                            ((Map<String, Object>) c).get("accountId"));
-                        addToRow(
-                            "creator_display_name",
-                            rowBuilder,
-                            ((Map<String, Object>) c).get("displayName"));
-                      });
-              addToRow("description", rowBuilder, f.get("description"));
-              addToRow("due_date", rowBuilder, f.get("duedate"));
-              Optional.ofNullable(f.get("epic"))
+            fields -> {
+              processFields(issueBean.getFields(), names, rowBuilder);
+              Optional.ofNullable(fields.get("epic"))
                   .ifPresent(
                       e -> {
                         Map<String, Object> epic = (Map<String, Object>) e;
                         addToRow("key", rowBuilder, epic.getOrDefault("key", null));
-                      });
-              Optional.ofNullable(f.get("priority"))
-                  .ifPresent(
-                      p -> addToRow("priority", rowBuilder, ((Map<String, Object>) p).get("name")));
-              Optional.ofNullable(f.get("reporter"))
-                  .ifPresent(
-                      r -> {
-                        addToRow(
-                            "reporter_account_id",
-                            rowBuilder,
-                            ((Map<String, Object>) r).get("accountId"));
-                        addToRow(
-                            "reporter_display_name",
-                            rowBuilder,
-                            ((Map<String, Object>) r).get("displayName"));
-                      });
-              addToRow("summary", rowBuilder, f.get("summary"));
-              Optional.ofNullable(f.get("type"))
-                  .ifPresent(
-                      t -> addToRow("type", rowBuilder, ((Map<String, Object>) t).get("name")));
-              addToRow("updated", rowBuilder, f.get("updated"));
-              addToRow("components", rowBuilder, f.get("components"));
-              try {
-                addToRow("fields", rowBuilder, objectMapper.writeValueAsString(f));
-              } catch (JsonProcessingException e) {
-                throw new DASSdkUnsupportedException("Error converting fields to json");
-              }
-              addToRow("labels", rowBuilder, f.get("labels"));
-              Optional.ofNullable(f.get("labels"))
-                  .ifPresent(
-                      l -> {
-                        List<String> labels = (List<String>) l;
-                        Map<String, Boolean> tags = new HashMap<>();
-                        labels.forEach(label -> tags.put(label, true));
-                        addToRow("tags", rowBuilder, tags);
                       });
             });
 

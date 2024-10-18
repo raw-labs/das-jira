@@ -3,16 +3,17 @@ package com.rawlabs.das.jira.tables.results;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 
 import java.util.Iterator;
+import java.util.Map;
 
 public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
 
-  private long currentCount = 0;
-  private long totalCount = 0;
-  private Iterator<T> currentPage = null;
+  protected long currentCount = 0;
+  protected long totalCount = 0;
+  protected Iterator<T> currentPage = null;
 
   public DASJiraPaginatedResult() {}
 
-  private boolean isPageExhausted() {
+  protected boolean isPageExhausted() {
     return (currentPage == null || !currentPage.hasNext());
   }
 

@@ -111,4 +111,5 @@ public abstract class DASJiraTable implements DASTable {
   public List<String> getColumns() {
     return columnDefinitions.keySet().stream().toList();
   }
+
 }

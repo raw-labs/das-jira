@@ -20,17 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class DASJiraJqlQueryBuilderTest {
 
   private final ValueFactory valueFactory = new DefaultValueFactory();
-  DASJiraJqlQueryBuilder builder = new DASJiraJqlQueryBuilder();
 
   @Test
   @DisplayName("Should map only string or temporal values")
   public void shouldMapValues() {
 
     var string =
-        builder.mapValue(valueFactory.createValue(new ValueTypeTuple("DAS", createStringType())));
+        DASJiraJqlQueryBuilder.mapValue(
+            valueFactory.createValue(new ValueTypeTuple("DAS", createStringType())));
 
     var timestamp =
-        builder.mapValue(
+        DASJiraJqlQueryBuilder.mapValue(
             valueFactory.createValue(
                 new ValueTypeTuple("2021-01-01T00:00:00Z", createTimestampType())));
 
@@ -38,7 +38,9 @@ public class DASJiraJqlQueryBuilderTest {
     assertEquals("2021-01-01 00:00", timestamp);
     assertThrows(
         IllegalArgumentException.class,
-        () -> builder.mapValue(valueFactory.createValue(new ValueTypeTuple(1, createIntType()))));
+        () ->
+            DASJiraJqlQueryBuilder.mapValue(
+                valueFactory.createValue(new ValueTypeTuple(1, createIntType()))));
   }
 
   @Test
@@ -46,13 +48,14 @@ public class DASJiraJqlQueryBuilderTest {
   public void shouldMapOperators() {
 
     var geq =
-        builder.mapOperator(
+        DASJiraJqlQueryBuilder.mapOperator(
             Operator.newBuilder()
                 .setGreaterThanOrEqual(GreaterThanOrEqual.newBuilder().build())
                 .build());
 
     var eq =
-        builder.mapOperator(Operator.newBuilder().setEquals(Equals.newBuilder().build()).build());
+        DASJiraJqlQueryBuilder.mapOperator(
+            Operator.newBuilder().setEquals(Equals.newBuilder().build()).build());
 
     assertEquals(">=", geq);
     assertEquals("=", eq);
@@ -62,7 +65,7 @@ public class DASJiraJqlQueryBuilderTest {
   @DisplayName("Should generate proper JQL queries")
   public void shouldGenerateJqlQuery() {
     String result =
-        builder.buildJqlQuery(
+        DASJiraJqlQueryBuilder.buildJqlQuery(
             List.of(
                 createEq(
                     valueFactory.createValue(new ValueTypeTuple("DAS", createStringType())),
