@@ -127,7 +127,7 @@ public class DASJiraSprintTable extends DASJiraTable {
             try {
               var result =
                   boardApi.getAllSprints(boardId, offset, withMaxResultOrLimit(limit), null);
-              return new DASJiraPage<>(result.getValues(), Long.valueOf(result.getTotal()));
+              return new DASJiraPage<>(result.getValues(), result.getTotal());
             } catch (ApiException e) {
               throw new RuntimeException(e);
             }

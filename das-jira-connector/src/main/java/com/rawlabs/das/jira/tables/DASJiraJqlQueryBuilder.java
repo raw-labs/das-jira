@@ -14,10 +14,10 @@ import java.util.StringJoiner;
 
 public class DASJiraJqlQueryBuilder {
 
-  private final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
-  final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+  private static final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
+  static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-  String mapOperator(Operator operator) {
+  static String mapOperator(Operator operator) {
     return switch (operator) {
       case Operator op when op.hasEquals() -> "=";
       case Operator op when op.hasNotEquals() -> "!=";
@@ -29,7 +29,7 @@ public class DASJiraJqlQueryBuilder {
     };
   }
 
-  String mapValue(Value value) {
+  static String mapValue(Value value) {
     return switch (value) {
       case Value v when v.hasString() -> v.getString().getV();
       case Value v when v.hasTime() -> {
@@ -44,11 +44,11 @@ public class DASJiraJqlQueryBuilder {
     };
   }
 
-  private String getIssueJqlKey(String columnName) {
+  private static String getIssueJqlKey(String columnName) {
     return columnName.split("_")[0].toLowerCase();
   }
 
-  public String buildJqlQuery(List<Qual> quals) {
+  public static String buildJqlQuery(List<Qual> quals) {
     StringBuilder jqlQuery = new StringBuilder();
     StringJoiner joiner = new StringJoiner(" AND ");
     quals.stream()
