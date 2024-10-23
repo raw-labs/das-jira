@@ -50,8 +50,11 @@
   },
   "id": 10000,
   "location": {
-    "projectKeyOrId": "projectKeyOrId",
-    "type": "project"
+    "type": "project",
+    "key": "RD",
+    "id": "10100",
+    "self": "https://raw-labs.atlassian.net/rest/api/2/project/10100",
+    "name": "RAW Development"
   },
   "name": "Board",
   "ranking": {

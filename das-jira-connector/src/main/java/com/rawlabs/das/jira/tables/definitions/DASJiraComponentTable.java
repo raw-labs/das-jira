@@ -138,7 +138,7 @@ public class DASJiraComponentTable extends DASJiraTable {
         parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<ComponentWithIssueCount>() {
+        return new DASJiraPaginatedResult<ComponentWithIssueCount>(limit) {
           @Override
           public Row next() {
             return toRow(this.getNext());
@@ -158,7 +158,8 @@ public class DASJiraComponentTable extends DASJiraTable {
                       null);
               return new DASJiraPage<>(components.getValues(), components.getTotal());
             } catch (ApiException e) {
-              throw new RuntimeException(e);
+              throw new DASSdkApiException(
+                  "Error fetching components: %s".formatted(e.getResponseBody()), e);
             }
           }
         };

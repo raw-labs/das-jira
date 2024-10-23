@@ -1,7 +1,12 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueCommentsApi;
+import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
+import com.rawlabs.das.jira.rest.platform.model.PageOfComments;
+import com.rawlabs.das.jira.rest.platform.model.PageOfWorklogs;
 import com.rawlabs.das.jira.tables.definitions.DASJiraIssueCommentTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.protocol.das.Row;
@@ -17,20 +22,32 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Issue Comment Table Test")
 public class DASJiraIssueCommentTableTest extends BaseMockTest {
 
   @Mock static IssueCommentsApi issueCommentsApi;
-  @Mock static IssuesApi issuesApi;
+  @Mock static IssueSearchApi issueSearchApi;
 
   @InjectMocks DASJiraIssueCommentTable dasJiraIssueCommentTable;
 
+  private static PageOfComments pageOfComments;
+
   @BeforeAll
-  static void beforeAll() {}
+  static void beforeAll() throws IOException {
+    JsonNode node = loadJson("issue-comments.json");
+    pageOfComments = PageOfComments.fromJson(node.toString());
+    DASJiraIssueTableTest.configBeforeAll();
+  }
 
   @BeforeEach
-  void setUp() {}
+  void setUp() throws ApiException {
+    DASJiraIssueTableTest.configBeforeEach(issueSearchApi);
+    when(issueCommentsApi.getComments(any(), any(), any(), any(), any()))
+        .thenReturn(pageOfComments);
+  }
 
   @Test
   @DisplayName("Get issue comments")

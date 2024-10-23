@@ -115,7 +115,7 @@ public class DASJiraSprintTable extends DASJiraTable {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
         final Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
-        return new DASJiraPaginatedResult<Sprint>() {
+        return new DASJiraPaginatedResult<Sprint>(limit) {
 
           @Override
           public Row next() {
