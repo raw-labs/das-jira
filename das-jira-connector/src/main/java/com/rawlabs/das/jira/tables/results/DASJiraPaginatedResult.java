@@ -2,16 +2,19 @@ package com.rawlabs.das.jira.tables.results;
 
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.Map;
 
 public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
 
   protected long currentCount = 0;
   protected long totalCount = 0;
   protected Iterator<T> currentPage = null;
+  protected final Long limit;
 
-  public DASJiraPaginatedResult() {}
+  public DASJiraPaginatedResult(@Nullable Long limit) {
+    this.limit = limit;
+  }
 
   protected boolean isPageExhausted() {
     return (currentPage == null || !currentPage.hasNext());
@@ -33,7 +36,22 @@ public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
       totalCount = result.total();
       currentPage = result.result().iterator();
     }
-    return currentPage != null && currentPage.hasNext() && currentCount <= totalCount;
+    return currentPageHasNext() && totalNotReached() && limitNotReached();
+  }
+
+  protected boolean currentPageHasNext() {
+    return currentPage != null && currentPage.hasNext();
+  }
+
+  protected boolean totalNotReached() {
+    return currentCount <= totalCount;
+  }
+
+  protected boolean limitNotReached() {
+    if (limit == null) {
+      return true;
+    }
+    return currentCount <= limit;
   }
 
   @Override

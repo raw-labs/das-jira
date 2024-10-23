@@ -78,7 +78,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
     final String name = (String) extractEqDistinct(quals, "name");
     final Set<String> setOfNames = name == null ? null : Set.of(name);
 
-    return new DASJiraPaginatedResult<Workflow>() {
+    return new DASJiraPaginatedResult<Workflow>(limit) {
       @Override
       public Row next() {
         return toRow(getNext());

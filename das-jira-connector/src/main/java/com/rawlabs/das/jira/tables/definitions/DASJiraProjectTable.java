@@ -135,7 +135,7 @@ public class DASJiraProjectTable extends DASJiraTable {
             .map(i -> Set.of((String) i))
             .orElse(null);
 
-    return new DASJiraPaginatedResult<Project>() {
+    return new DASJiraPaginatedResult<Project>(limit) {
 
       @Override
       public Row next() {

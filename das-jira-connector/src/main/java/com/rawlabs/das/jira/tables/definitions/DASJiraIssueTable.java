@@ -1,19 +1,19 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rawlabs.das.jira.DASJiraBuilder;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
+import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
+import com.rawlabs.das.jira.rest.platform.model.CreatedIssue;
 import com.rawlabs.das.jira.rest.platform.model.IssueBean;
+import com.rawlabs.das.jira.rest.platform.model.IssueUpdateDetails;
 import com.rawlabs.das.jira.tables.DASJiraIssueTransformationTable;
 import com.rawlabs.das.jira.tables.DASJiraJqlQueryBuilder;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
-import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResultWithNames;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.protocol.das.*;
+import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -26,6 +26,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   public static final String TABLE_NAME = "jira_issue";
 
   private IssueSearchApi issueSearchApi = new IssueSearchApi();
+  private IssuesApi issuesApi = new IssuesApi();
 
   public DASJiraIssueTable(Map<String, String> options) {
     super(
@@ -44,13 +45,42 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   }
 
   @Override
+  public List<Row> insertRows(List<Row> rows) {
+    return rows.stream().map(this::insertRow).toList();
+  }
+
+  @Override
+  public Row insertRow(Row row) {
+    try {
+      IssueUpdateDetails issueUpdateDetails = new IssueUpdateDetails();
+      var result = this.issuesApi.createIssue(issueUpdateDetails, null);
+      Row.Builder builder = Row.newBuilder();
+      addToRow("id", builder, result.getId());
+      addToRow("key", builder, result.getKey());
+      addToRow("self", builder, result.getSelf());
+      return builder.build();
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
+  }
+
+  @Override
+  public void deleteRow(Value rowId) {
+    try {
+      issuesApi.deleteIssue(extractValueFactory.extractValue(rowId).toString(), null);
+    } catch (ApiException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
+  }
+
+  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    return new DASJiraPaginatedResultWithNames<IssueBean>() {
+    return new DASJiraPaginatedResultWithNames<IssueBean>(limit) {
 
       @Override
       public Row next() {
@@ -125,11 +155,11 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
                         addToRow(
                             "sprint_ids",
                             rowBuilder,
-                            sprintList.stream().map(s -> s.get("id")).toArray());
+                            sprintList.stream().map(s -> s.get("id").toString()).toList());
                         addToRow(
                             "sprint_names",
                             rowBuilder,
-                            sprintList.stream().map(s -> s.get("name")).toArray());
+                            sprintList.stream().map(s -> s.get("name")).toList());
                       });
             });
 
@@ -207,9 +237,9 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
         "created",
         createColumn("created", "Time when the issue was created", createTimestampType()));
     columns.put(
-        "duedate",
+        "due_date",
         createColumn(
-            "duedate",
+            "due_date",
             "Time by which the issue is expected to be completed",
             createTimestampType()));
     columns.put(
@@ -258,15 +288,13 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
     columns.put(
         "fields",
         createColumn(
-            "fields",
-            "Json object containing important subfields of the issue",
-            createListType(createAnyType())));
+            "fields", "Json object containing important subfields of the issue", createAnyType()));
     columns.put(
         "tags",
         createColumn(
             "tags",
             "A map of label names associated with this issue, in Steampipe standard format",
-            createListType(createAnyType())));
+            createAnyType()));
     columns.put("title", createColumn("title", TITLE_DESC, createStringType()));
     return columns;
   }

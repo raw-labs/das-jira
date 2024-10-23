@@ -6,6 +6,11 @@ import com.google.common.collect.HashBiMap;
 import java.util.Map;
 
 public abstract class DASJiraPaginatedResultWithNames<T> extends DASJiraPaginatedResult<T> {
+
+  public DASJiraPaginatedResultWithNames(Long limit) {
+    super(limit);
+  }
+
   private BiMap<String, String> names;
 
   @Override
@@ -19,7 +24,7 @@ public abstract class DASJiraPaginatedResultWithNames<T> extends DASJiraPaginate
       totalCount = result.total();
       currentPage = result.result().iterator();
     }
-    return currentPage != null && currentPage.hasNext() && currentCount <= totalCount;
+    return currentPageHasNext() && totalNotReached() && limitNotReached();
   }
 
   public Map<String, String> names() {

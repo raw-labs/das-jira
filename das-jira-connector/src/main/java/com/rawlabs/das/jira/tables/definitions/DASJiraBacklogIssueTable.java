@@ -1,6 +1,5 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.IssueBean;
@@ -83,49 +82,43 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    try {
-      return new DASJiraWithParentTableResult(
-          this.parentTable,
-          withParentJoin(quals, "board_id", "id"),
-          List.of("id", "name"),
-          sortKeys,
-          limit) {
+    return new DASJiraWithParentTableResult(
+        this.parentTable,
+        withParentJoin(quals, "board_id", "id"),
+        List.of("id", "name"),
+        sortKeys,
+        limit) {
 
-        @Override
-        public DASExecuteResult fetchChildResult(Row parentRow) {
-          return new DASJiraPaginatedResultWithNames<IssueBean>() {
+      @Override
+      public DASExecuteResult fetchChildResult(Row parentRow) {
+        return new DASJiraPaginatedResultWithNames<IssueBean>(limit) {
 
-            @Override
-            public Row next() {
-              Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
-              String boardName = (String) extractValueFactory.extractValue(parentRow, "name");
+          @Override
+          public Row next() {
+            Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
+            String boardName = (String) extractValueFactory.extractValue(parentRow, "name");
 
-              return toRow(boardId, boardName, this.getNext(), this.names());
+            return toRow(boardId, boardName, this.getNext(), this.names());
+          }
+
+          @Override
+          public DASJiraPage<IssueBean> fetchPage(long offset) {
+            try {
+              Long id = (Long) extractValueFactory.extractValue(parentRow, "id");
+              SearchResults searchResults =
+                  boardApi.getIssuesForBacklog(
+                      id, offset, withMaxResultOrLimit(limit), null, null, null, "names");
+              return new DASJiraPage<>(
+                  searchResults.getIssues(),
+                  Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)),
+                  searchResults.getNames());
+            } catch (ApiException e) {
+              throw new DASSdkApiException(e.getMessage(), e);
             }
-
-            @Override
-            public DASJiraPage<IssueBean> fetchPage(long offset) {
-              try {
-                Long id = (Long) extractValueFactory.extractValue(parentRow, "id");
-                SearchResults searchResults =
-                    boardApi.getIssuesForBacklog(
-                        id, offset, withMaxResultOrLimit(limit), null, null, null, "names");
-
-                return new DASJiraPage<>(
-                    searchResults.getIssues(),
-                    Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)),
-                    searchResults.getNames());
-              } catch (ApiException e) {
-                throw new DASSdkApiException(e.getMessage(), e);
-              }
-            }
-          };
-        }
-      };
-
-    } catch (Exception e) {
-      throw new DASSdkException(e.getMessage(), e);
-    }
+          }
+        };
+      }
+    };
   }
 
   @SuppressWarnings("unchecked")
