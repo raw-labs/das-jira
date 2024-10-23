@@ -7,10 +7,12 @@ import com.rawlabs.das.jira.rest.platform.Configuration;
 import com.rawlabs.das.jira.rest.platform.auth.Authentication;
 import com.rawlabs.das.jira.rest.platform.auth.HttpBasicAuth;
 import com.rawlabs.das.jira.rest.platform.auth.OAuth;
+import okhttp3.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,10 +46,11 @@ public class DASJiraInitializerTest {
     com.rawlabs.das.jira.rest.software.auth.Authentication softwareAuth =
         softwareApiClient.getAuthentication(DasJiraBasicAuthStrategy.NAME);
     assertInstanceOf(com.rawlabs.das.jira.rest.software.auth.HttpBasicAuth.class, softwareAuth);
-    com.rawlabs.das.jira.rest.software.auth.HttpBasicAuth softwareBasicAuth =
-        (com.rawlabs.das.jira.rest.software.auth.HttpBasicAuth) softwareAuth;
-    assertEquals("admin", softwareBasicAuth.getUsername());
-    assertEquals("password", softwareBasicAuth.getPassword());
+    Request.Builder reqBuilder = new Request.Builder();
+    reqBuilder.url("http://localhost:8080");
+    softwareApiClient.processHeaderParams(Map.of(), reqBuilder);
+    assertTrue(
+        Objects.requireNonNull(reqBuilder.build().header("Authorization")).startsWith("Basic"));
   }
 
   @Test

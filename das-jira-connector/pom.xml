@@ -95,7 +95,7 @@
 
         <!-- RAW Labs Dependencies -->
         <das-java-sdk-version>0.1.0-SNAPSHOT</das-java-sdk-version>
-        <das-server-scala-version>0.1.1</das-server-scala-version>
+        <das-server-scala-version>0.1.5</das-server-scala-version>
         <jira-rest-client-version>1.0-SNAPSHOT</jira-rest-client-version>
 
         <!-- Scala Version -->

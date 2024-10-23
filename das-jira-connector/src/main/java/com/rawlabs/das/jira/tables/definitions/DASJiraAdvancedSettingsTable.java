@@ -96,7 +96,8 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
         }
       };
     } catch (ApiException e) {
-      throw new DASSdkApiException("Failed to fetch advanced settings", e);
+      throw new DASSdkApiException(
+          "Failed to fetch advanced settings: %s".formatted(e.getResponseBody()), e);
     }
   }
 

@@ -112,7 +112,7 @@ public class DASJiraBoardTable extends DASJiraTable {
                 .orElse((String) extractEqDistinct(quals, "title"));
         Long filterId = (Long) extractEqDistinct(quals, "filter_id");
 
-        return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>() {
+        return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>(limit) {
 
           @Override
           public DASJiraPage<GetAllBoards200ResponseValuesInner> fetchPage(long offset) {
@@ -135,7 +135,8 @@ public class DASJiraBoardTable extends DASJiraTable {
               return new DASJiraPage<>(
                   getAllBoards200ResponsePage.getValues(), getAllBoards200ResponsePage.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkApiException("Failed to fetch boards", e);
+              throw new DASSdkApiException(
+                  "Failed to fetch boards: %s".formatted(e.getResponseBody()));
             }
           }
 

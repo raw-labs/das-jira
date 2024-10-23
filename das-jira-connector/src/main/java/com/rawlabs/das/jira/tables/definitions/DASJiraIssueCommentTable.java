@@ -48,7 +48,9 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
   }
 
   public DASJiraIssueCommentTable(
-      Map<String, String> options, IssueCommentsApi issueCommentsApi, IssueSearchApi issueSearchApi) {
+      Map<String, String> options,
+      IssueCommentsApi issueCommentsApi,
+      IssueSearchApi issueSearchApi) {
     this(options, issueCommentsApi);
     this.parentTable = new DASJiraIssueTable(options, issueSearchApi);
   }
@@ -109,16 +111,6 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     }
   }
 
-//  @Override
-//  public void deleteRow(Value rowId) {
-//    String issueId = extractValueFactory.extractValue(rowId).toString();
-//    try {
-//      issueCommentsApi.deleteComment(issueId, extractValueFactory.extractValue(rowId).toString());
-//    } catch (ApiException e) {
-//      throw new RuntimeException(e);
-//    }
-//  }
-
   @Override
   public DASExecuteResult execute(
       List<Qual> quals,
@@ -128,7 +120,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<Comment>() {
+        return new DASJiraPaginatedResult<Comment>(limit) {
 
           final String issueId = extractValueFactory.extractValue(parentRow, "id").toString();
 
@@ -159,9 +151,12 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     addToRow("id", rowBuilder, comment.getId());
     addToRow("issue_id", rowBuilder, issueId);
     addToRow("self", rowBuilder, comment.getSelf());
-    addToRow("body", rowBuilder, comment.getBody());
-    addToRow("created", rowBuilder, comment.getCreated());
-    addToRow("updated", rowBuilder, comment.getUpdated());
+    Optional.ofNullable(comment.getBody())
+        .ifPresent(body -> addToRow("body", rowBuilder, body.toString()));
+    Optional.ofNullable(comment.getCreated())
+        .ifPresent(created -> addToRow("created", rowBuilder, created.toString()));
+    Optional.ofNullable(comment.getUpdated())
+        .ifPresent(updated -> addToRow("updated", rowBuilder, updated.toString()));
     addToRow("jsd_public", rowBuilder, comment.getJsdPublic());
     Optional.ofNullable(comment.getAuthor())
         .ifPresent(author -> addToRow("author", rowBuilder, author.toJson()));
@@ -205,65 +200,4 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     columns.put("title", createColumn("title", TITLE_DESC, createStringType()));
     return columns;
   }
-
-  //  Columns: commonColumns([]*plugin.Column{
-  //    // top fields
-  //    {
-  //      Name:        "id",
-  //              Description: "The ID of the issue comment.",
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromGo(),
-  //    },
-  //    {
-  //      Name:        "issue_id",
-  //              Description: "The ID of the issue.",
-  //            Type:        proto.ColumnType_STRING,
-  //    },
-  //    {
-  //      Name:        "self",
-  //              Description: "The URL of the issue comment.",
-  //            Type:        proto.ColumnType_STRING,
-  //    },
-  //    {
-  //      Name:        "body",
-  //              Description: "The content of the issue comment.",
-  //            Type:        proto.ColumnType_STRING,
-  //    },
-  //    {
-  //      Name:        "created",
-  //              Description: "Time when the issue comment was created.",
-  //            Type:        proto.ColumnType_TIMESTAMP,
-  //    },
-  //    {
-  //      Name:        "updated",
-  //              Description: "Time when the issue comment was last updated.",
-  //            Type:        proto.ColumnType_TIMESTAMP,
-  //    },
-  //    {
-  //      Name:        "jsd_public",
-  //              Description: "JsdPublic set to false does not hide comments in Service Desk
-  // projects.",
-  //            Type:        proto.ColumnType_BOOL,
-  //    },
-  //
-  //    // JSON fields
-  //    {
-  //      Name:        "author",
-  //              Description: "The user information who added the issue comment.",
-  //            Type:        proto.ColumnType_JSON,
-  //    },
-  //    {
-  //      Name:        "update_author",
-  //              Description: "The user information who updated the issue comment.",
-  //            Type:        proto.ColumnType_JSON,
-  //    },
-  //
-  //    // Standard columns
-  //    {
-  //      Name:        "title",
-  //              Description: ColumnDescriptionTitle,
-  //            Type:        proto.ColumnType_STRING,
-  //            Transform:   transform.FromField("ID"),
-  //    },
-  //  }),
 }

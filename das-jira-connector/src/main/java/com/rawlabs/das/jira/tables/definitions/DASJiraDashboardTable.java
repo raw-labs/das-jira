@@ -113,7 +113,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
       List<String> columns,
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
-    return new DASJiraPaginatedResult<Dashboard>() {
+    return new DASJiraPaginatedResult<Dashboard>(limit) {
 
       @Override
       public Row next() {

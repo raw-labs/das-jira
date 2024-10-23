@@ -1,9 +1,9 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
-import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
 import com.rawlabs.das.jira.rest.platform.model.JsonNode;
 import com.rawlabs.das.jira.rest.platform.model.UserDetails;
 import com.rawlabs.das.jira.rest.platform.model.Worklog;
@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -117,11 +114,6 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     }
   }
 
-  //    @Override
-  //    public void deleteRow(Value rowId) {
-  //      issueWorklogsApi.deleteWorklog(issueId, (String) extractValueFactory.extractValue(rowId));
-  //    }
-
   @Override
   public DASExecuteResult execute(
       List<Qual> quals,
@@ -131,7 +123,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<Worklog>() {
+        return new DASJiraPaginatedResult<Worklog>(limit) {
 
           final String issueId = extractValueFactory.extractValue(parentRow, "id").toString();
 
@@ -146,7 +138,9 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               var result =
                   issueWorklogsApi.getIssueWorklog(
                       issueId, offset, withMaxResultOrLimit(limit), null, null, null);
-              return new DASJiraPage<>(result.getWorklogs(), Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)));
+              return new DASJiraPage<>(
+                  result.getWorklogs(),
+                  Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)));
             } catch (ApiException e) {
               throw new RuntimeException(e);
             }
@@ -156,21 +150,39 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     };
   }
 
+  @SuppressWarnings("unchecked")
   private Row toRow(Worklog worklog) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
     addToRow("id", rowBuilder, worklog.getId());
     addToRow("issue_id", rowBuilder, worklog.getIssueId());
-    addToRow("self", rowBuilder, worklog.getSelf());
-    addToRow("comment", rowBuilder, worklog.getComment());
-    addToRow("started", rowBuilder, worklog.getStarted());
-    addToRow("created", rowBuilder, worklog.getCreated());
-    addToRow("updated", rowBuilder, worklog.getUpdated());
+    Optional.ofNullable(worklog.getSelf())
+        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
+    Optional.ofNullable(worklog.getComment())
+        .ifPresent(
+            comment -> {
+              addToRow("comment", rowBuilder, comment.toString());
+            });
+    Optional.ofNullable(worklog.getStarted())
+        .ifPresent(started -> addToRow("started", rowBuilder, started.toString()));
+    Optional.ofNullable(worklog.getCreated())
+        .ifPresent(created -> addToRow("created", rowBuilder, created.toString()));
+    Optional.ofNullable(worklog.getUpdated())
+        .ifPresent(updated -> addToRow("updated", rowBuilder, updated.toString()));
     addToRow("time_spent", rowBuilder, worklog.getTimeSpent());
-    addToRow("time_spent_seconds", rowBuilder, worklog.getTimeSpentSeconds());
-    addToRow("properties", rowBuilder, worklog.getProperties());
-    addToRow("author", rowBuilder, worklog.getAuthor());
-    addToRow("update_author", rowBuilder, worklog.getUpdateAuthor());
+    Optional.ofNullable(worklog.getTimeSpentSeconds())
+        .ifPresent(
+            timeSpentSeconds ->
+                addToRow("time_spent_seconds", rowBuilder, timeSpentSeconds.toString()));
+    try {
+      addToRow("properties", rowBuilder, objectMapper.writeValueAsString(worklog.getProperties()));
+    } catch (JsonProcessingException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
+    Optional.ofNullable(worklog.getUpdateAuthor())
+        .ifPresent(updateAuthor -> addToRow("update_author", rowBuilder, updateAuthor.toJson()));
+    Optional.ofNullable(worklog.getAuthor())
+        .ifPresent(author -> addToRow("author", rowBuilder, author.toJson()));
     addToRow("title", rowBuilder, worklog.getId());
     return rowBuilder.build();
   }

@@ -37,7 +37,7 @@ public class DASJiraPagesTest {
   public void testPaginatedResults() throws IOException {
 
     try (DASJiraPaginatedResult<String> pagedResult =
-        new DASJiraPaginatedResult<>() {
+        new DASJiraPaginatedResult<>(null) {
           @Override
           public Row next() {
             Row.Builder rowBuilder = Row.newBuilder();

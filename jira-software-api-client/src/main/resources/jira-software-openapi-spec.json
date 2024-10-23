@@ -6723,7 +6723,16 @@
                     "location": {
                       "additionalProperties": false,
                       "properties": {
-                        "projectKeyOrId": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "self": {
                           "type": "string"
                         },
                         "type": {

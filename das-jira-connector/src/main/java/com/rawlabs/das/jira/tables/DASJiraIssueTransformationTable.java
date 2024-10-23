@@ -1,13 +1,11 @@
 package com.rawlabs.das.jira.tables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.protocol.das.Row;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
@@ -61,7 +59,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
             });
 
     addToRow("description", rowBuilder, fields.get("Description"));
-    addToRow("due_date", rowBuilder, fields.get(names.get("Due Date")));
+    addToRow("due_date", rowBuilder, fields.get(names.get("Due date")));
 
     Optional.ofNullable(fields.get(names.get("Priority")))
         .ifPresent(p -> addToRow("priority", rowBuilder, ((Map<String, Object>) p).get("name")));
@@ -84,14 +82,19 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
 
     addToRow("updated", rowBuilder, fields.get(names.get("Updated")));
 
+    ArrayList<Object> components = (ArrayList<Object>) fields.get(names.get("Components"));
+    Optional.ofNullable(components)
+        .ifPresent(
+            c -> {
+              List<String> componentIds = new ArrayList<>();
+              components.forEach(
+                  comp -> componentIds.add(((Map<String, Object>) comp).get("id").toString()));
+              addToRow("components", rowBuilder, componentIds);
+            });
     try {
-      addToRow(
-          "components",
-          rowBuilder,
-          objectMapper.writeValueAsString(fields.get(names.get("Components"))));
       addToRow("fields", rowBuilder, objectMapper.writeValueAsString(fields));
     } catch (JsonProcessingException e) {
-      throw new DASSdkUnsupportedException("Error converting fields to json");
+      throw new DASSdkApiException(e.getMessage());
     }
 
     addToRow("labels", rowBuilder, fields.get(names.get("Labels")));
@@ -101,7 +104,11 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
               List<String> labels = (List<String>) l;
               Map<String, Boolean> tags = new HashMap<>();
               labels.forEach(label -> tags.put(label, true));
-              addToRow("tags", rowBuilder, tags);
+              try {
+                addToRow("tags", rowBuilder, objectMapper.writeValueAsString(tags));
+              } catch (JsonProcessingException e) {
+                throw new DASSdkApiException(e.getMessage());
+              }
             });
   }
 }

@@ -22,6 +22,8 @@ public class DASJiraTableManager {
             new DASJiraDashboardTable(options),
             new DASJiraEpicTable(options),
             new DASJiraGlobalSettingTable(options),
+            new DASJiraGroupTable(options),
+            new DASJiraIssueCommentTable(options),
             new DASJiraIssueTable(options),
             new DASJiraIssueTypeTable(options),
             new DASJiraIssueWorklogTable(options),
@@ -29,7 +31,8 @@ public class DASJiraTableManager {
             new DASJiraProjectTable(options),
             new DASJiraSprintTable(options),
             new DASJiraUserTable(options),
-            new DASJiraWorkflowTable(options));
+            new DASJiraWorkflowTable(options)
+        );
     tableDefinitions = tables.stream().map(DASJiraTable::getTableDefinition).toList();
   }
 

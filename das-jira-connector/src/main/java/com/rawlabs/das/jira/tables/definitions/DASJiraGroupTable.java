@@ -90,7 +90,7 @@ public class DASJiraGroupTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    return new DASJiraPaginatedResult<GroupDetails>() {
+    return new DASJiraPaginatedResult<GroupDetails>(limit) {
 
       @Override
       public Row next() {
@@ -104,7 +104,7 @@ public class DASJiraGroupTable extends DASJiraTable {
             || columns.contains("member_names")
             || columns.isEmpty()) {
           try (var childResult =
-              new DASJiraPaginatedResult<UserDetails>() {
+              new DASJiraPaginatedResult<UserDetails>(limit) {
 
                 @Override
                 public Row next() {
