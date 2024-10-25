@@ -2,7 +2,6 @@ package com.rawlabs.das.jira.tables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.protocol.das.Row;
 
 import java.util.*;
@@ -23,7 +22,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
               addToRow("project_id", rowBuilder, ((Map<String, Object>) p).get("id"));
             });
 
-    Optional.ofNullable(fields.get(names.get("Status")))
+    Optional.ofNullable(fields.get(names.containsKey("Status") ? names.get("status") : "Status"))
         .ifPresent(
             s -> {
               Map<String, Object> status = (Map<String, Object>) s;
@@ -85,7 +84,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
     ArrayList<Object> components = (ArrayList<Object>) fields.get(names.get("Components"));
     Optional.ofNullable(components)
         .ifPresent(
-            c -> {
+                _ -> {
               List<String> componentIds = new ArrayList<>();
               components.forEach(
                   comp -> componentIds.add(((Map<String, Object>) comp).get("id").toString()));
