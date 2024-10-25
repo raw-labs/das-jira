@@ -3,13 +3,12 @@ package com.rawlabs.das.jira.tables.definitions;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
-import com.rawlabs.das.jira.rest.platform.model.CreatedIssue;
 import com.rawlabs.das.jira.rest.platform.model.IssueBean;
 import com.rawlabs.das.jira.rest.platform.model.IssueUpdateDetails;
 import com.rawlabs.das.jira.tables.DASJiraIssueTransformationTable;
 import com.rawlabs.das.jira.tables.DASJiraJqlQueryBuilder;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
-import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResultWithNames;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.*;
@@ -80,7 +79,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
 
-    return new DASJiraPaginatedResultWithNames<IssueBean>(limit) {
+    return new DASJiraPaginatedResult<IssueBean>(limit) {
 
       @Override
       public Row next() {

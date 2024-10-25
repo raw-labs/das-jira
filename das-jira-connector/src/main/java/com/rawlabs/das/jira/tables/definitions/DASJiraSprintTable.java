@@ -129,7 +129,7 @@ public class DASJiraSprintTable extends DASJiraTable {
                   boardApi.getAllSprints(boardId, offset, withMaxResultOrLimit(limit), null);
               return new DASJiraPage<>(result.getValues(), result.getTotal());
             } catch (ApiException e) {
-              throw new RuntimeException(e);
+              throw new DASSdkApiException(e.getResponseBody());
             }
           }
         };
@@ -143,7 +143,8 @@ public class DASJiraSprintTable extends DASJiraTable {
     addToRow("id", rowBuilder, sprint.getId());
     addToRow("name", rowBuilder, sprint.getName());
     addToRow("board_id", rowBuilder, boardId);
-    addToRow("self", rowBuilder, sprint.getSelf().toString());
+    Optional.ofNullable(sprint.getSelf())
+        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
     addToRow("state", rowBuilder, sprint.getState());
     Optional.ofNullable(sprint.getStartDate())
         .ifPresent(startDate -> addToRow("start_date", rowBuilder, startDate.toString()));

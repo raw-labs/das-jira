@@ -34,12 +34,6 @@
       },
       "Sprint": {
         "type": "object",
-        "required": [
-          "id",
-          "self",
-          "state",
-          "name"
-        ],
         "properties": {
           "id": {
             "type": "integer"
@@ -71,6 +65,9 @@
             "format": "int64"
           },
           "goal": {
+            "type": "string"
+          },
+          "createdDate": {
             "type": "string"
           }
         }

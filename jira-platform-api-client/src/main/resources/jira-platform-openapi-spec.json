@@ -559,7 +559,6 @@
           },
           "created": {
             "description": "The datetime the attachment was created.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -751,7 +750,6 @@
           },
           "created": {
             "description": "The datetime the attachment was created.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -852,7 +850,6 @@
           },
           "created": {
             "description": "The date and time on which the audit record was created.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -1583,7 +1580,6 @@
         "properties": {
           "created": {
             "description": "A timestamp of when the task was submitted.",
-            "format": "date-time",
             "type": "string"
           },
           "failedAccessibleIssues": {
@@ -1616,7 +1612,6 @@
           },
           "started": {
             "description": "A timestamp of when the task was started.",
-            "format": "date-time",
             "type": "string"
           },
           "status": {
@@ -1647,7 +1642,6 @@
           },
           "updated": {
             "description": "A timestamp of when the task progress was last updated.",
-            "format": "date-time",
             "type": "string"
           }
         },
@@ -1940,7 +1934,6 @@
           },
           "created": {
             "description": "The date on which the change took place.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -2014,7 +2007,6 @@
           },
           "created": {
             "description": "The date and time at which the comment was created.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -2061,7 +2053,6 @@
           },
           "updated": {
             "description": "The date and time at which the comment was updated last.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -2217,7 +2208,50 @@
             "format": "uri",
             "readOnly": true,
             "type": "string"
-          }
+          },
+          "componentBean": {
+            "type": "object",
+            "properties": {
+              "self": {
+                "type": "string",
+                "format": "uri"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "lead": {
+                "$ref": "#/components/schemas/User"
+              },
+              "assigneeType": {
+                "type": "string"
+              },
+              "assignee": {
+                "$ref": "#/components/schemas/User"
+              },
+              "realAssigneeType": {
+                "type": "string"
+              },
+              "realAssignee": {
+                "$ref": "#/components/schemas/User"
+              },
+              "isAssigneeTypeValid": {
+                "type": "boolean"
+              },
+              "project": {
+                "type": "string"
+              },
+              "projectId": {
+                "type": "integer"
+              }
+            },
+            "required": ["self", "id", "name", "projectId"]
+           }
         },
         "type": "object"
       },
@@ -5297,7 +5331,6 @@
             "type": "string"
           },
           "submittedTime": {
-            "format": "date-time",
             "type": "string"
           },
           "taskId": {
@@ -5828,7 +5861,6 @@
           },
           "value": {
             "description": "The date when the value of the field last changed.",
-            "format": "date-time",
             "type": "string"
           }
         },
@@ -6158,7 +6190,6 @@
         "properties": {
           "approximateLastUsed": {
             "description": "\\[Experimental\\] Approximate last used time. Returns the date and time when the filter was last used. Returns `null` if the filter hasn't been used after tracking was enabled. For performance reasons, timestamps aren't updated in real time and therefore may not be exactly accurate.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -6263,7 +6294,6 @@
         "properties": {
           "approximateLastUsed": {
             "description": "\\[Experimental\\] Approximate last used time. Returns the date and time when the filter was last used. Returns `null` if the filter hasn't been used after tracking was enabled. For performance reasons, timestamps aren't updated in real time and therefore may not be exactly accurate.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -8033,6 +8063,11 @@
           },
           "name": {
             "description": "The name of the issue type.",
+            "readOnly": true,
+            "type": "string"
+          },
+          "untranslatedName": {
+            "description": "The untranslated name of the issue type.",
             "readOnly": true,
             "type": "string"
           },
@@ -10298,7 +10333,6 @@
           },
           "created": {
             "description": "The timestamp of the precomputation creation.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -10334,13 +10368,11 @@
           },
           "updated": {
             "description": "The timestamp of the precomputation last update.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
           "used": {
             "description": "The timestamp of the precomputation last usage.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -15499,7 +15531,6 @@
           },
           "archivedDate": {
             "description": "The date when the project was archived.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -15545,7 +15576,6 @@
           },
           "deletedDate": {
             "description": "The date when the project was marked as deleted.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -15653,12 +15683,19 @@
           },
           "projectTypeKey": {
             "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
-            "enum": [
-              "software",
-              "service_desk",
-              "business"
-            ],
             "readOnly": true,
+            "type": "string"
+          },
+          "projectKeys": {
+            "description": "Project keys",
+            "items": {
+                "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "entityId": {
+            "description": "Entity Id",
             "type": "string"
           },
           "properties": {
@@ -15671,7 +15708,6 @@
           },
           "retentionTillDate": {
             "description": "The date when the project is deleted permanently.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -16169,7 +16205,6 @@
         "properties": {
           "lastIssueUpdateTime": {
             "description": "The last issue update time.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -17204,6 +17239,11 @@
             "readOnly": true,
             "type": "string"
           },
+          "user": {
+            "description": "The group of the user",
+            "readOnly": true,
+            "type": "string"
+          },
           "type": {
             "description": "The type of role actor.",
             "enum": [
@@ -18059,7 +18099,6 @@
           },
           "buildDate": {
             "description": "The timestamp when the Jira version was built.",
-            "format": "date-time",
             "type": "string"
           },
           "buildNumber": {
@@ -18096,7 +18135,6 @@
           },
           "serverTime": {
             "description": "The time in Jira when this request was responded to.",
-            "format": "date-time",
             "type": "string"
           },
           "serverTimeZone": {
@@ -21468,7 +21506,6 @@
         "properties": {
           "created": {
             "description": "The creation date of the workflow.",
-            "format": "date-time",
             "type": "string"
           },
           "description": {
@@ -21519,7 +21556,6 @@
           },
           "updated": {
             "description": "The last edited date of the workflow.",
-            "format": "date-time",
             "type": "string"
           }
         },
@@ -23189,7 +23225,6 @@
           },
           "created": {
             "description": "The datetime on which the worklog was created.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
@@ -23218,7 +23253,6 @@
           },
           "started": {
             "description": "The datetime on which the worklog effort was started. Required when creating a worklog. Optional when updating a worklog.",
-            "format": "date-time",
             "type": "string"
           },
           "timeSpent": {
@@ -23241,7 +23275,6 @@
           },
           "updated": {
             "description": "The datetime on which the worklog was last updated.",
-            "format": "date-time",
             "readOnly": true,
             "type": "string"
           },
