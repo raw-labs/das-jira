@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -43,6 +42,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
         options,
         TABLE_NAME,
         "Jira worklog is a feature within the Jira software that allows users to record the amount of time they have spent working on various tasks or issues.");
+    parentTable = new DASJiraIssueTable(options);
   }
 
   /** Constructor for mocks */
@@ -70,14 +70,14 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
       JsonNode updateAuthor = (JsonNode) extractValueFactory.extractValue(row, "update_author");
       return new Worklog(
           UserDetails.fromJson(userDetail.toJson()),
-          (OffsetDateTime) extractValueFactory.extractValue(row, "created"),
+          extractValueFactory.extractValue(row, "created").toString(),
           extractValueFactory.extractValue(row, "id").toString(),
           extractValueFactory.extractValue(row, "issue_id").toString(),
           new URI(extractValueFactory.extractValue(row, "self").toString()),
           UserDetails.fromJson(updateAuthor.toJson()),
-          (OffsetDateTime) extractValueFactory.extractValue(row, "updated"));
+          extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException | URISyntaxException e) {
-      throw new RuntimeException(e);
+      throw new DASSdkApiException(e.getMessage());
     }
   }
 
@@ -150,7 +150,6 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     };
   }
 
-  @SuppressWarnings("unchecked")
   private Row toRow(Worklog worklog) {
     Row.Builder rowBuilder = Row.newBuilder();
     initRow(rowBuilder);
@@ -164,11 +163,11 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               addToRow("comment", rowBuilder, comment.toString());
             });
     Optional.ofNullable(worklog.getStarted())
-        .ifPresent(started -> addToRow("started", rowBuilder, started.toString()));
+        .ifPresent(started -> addToRow("started", rowBuilder, started));
     Optional.ofNullable(worklog.getCreated())
-        .ifPresent(created -> addToRow("created", rowBuilder, created.toString()));
+        .ifPresent(created -> addToRow("created", rowBuilder, created));
     Optional.ofNullable(worklog.getUpdated())
-        .ifPresent(updated -> addToRow("updated", rowBuilder, updated.toString()));
+        .ifPresent(updated -> addToRow("updated", rowBuilder, updated));
     addToRow("time_spent", rowBuilder, worklog.getTimeSpent());
     Optional.ofNullable(worklog.getTimeSpentSeconds())
         .ifPresent(

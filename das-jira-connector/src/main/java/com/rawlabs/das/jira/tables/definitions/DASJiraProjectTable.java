@@ -186,7 +186,10 @@ public class DASJiraProjectTable extends DASJiraTable {
               this.addToRow("lead_display_name", rowBuilder, lead.getDisplayName());
               this.addToRow("lead_account_id", rowBuilder, lead.getAccountId());
             });
-    this.addToRow("project_type_key", rowBuilder, project.getProjectTypeKey());
+    Optional.ofNullable(project.getProjectTypeKey())
+        .ifPresent(
+            projectTypeKey ->
+                this.addToRow("project_type_key", rowBuilder, projectTypeKey));
     Optional.ofNullable(project.getUrl()).ifPresent(url -> this.addToRow("url", rowBuilder, url));
 
     Optional.ofNullable(project.getComponents())
@@ -209,9 +212,11 @@ public class DASJiraProjectTable extends DASJiraTable {
     Optional.ofNullable(project.getIssueTypes())
         .ifPresent(
             issueTypes -> {
-              List<String> issueTypeJsons =
-                  issueTypes.stream().map(IssueTypeDetails::toJson).toList();
-              this.addToRow("issue_types", rowBuilder, issueTypeJsons);
+              try {
+                objectMapper.writeValueAsString(issueTypes);
+              } catch (JsonProcessingException e) {
+                throw new DASSdkException(e.getMessage());
+              }
             });
 
     Optional.ofNullable(project.getProjectCategory())

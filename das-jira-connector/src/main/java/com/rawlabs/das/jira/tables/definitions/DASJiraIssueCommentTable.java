@@ -19,7 +19,6 @@ import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,14 +68,14 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     try {
       return new Comment(
           UserDetails.fromJson(extractValueFactory.extractValue(row, "author").toString()),
-          (OffsetDateTime) extractValueFactory.extractValue(row, "created"),
+          extractValueFactory.extractValue(row, "created").toString(),
           null,
           null,
           (Boolean) extractValueFactory.extractValue(row, "jsd_public"),
           extractValueFactory.extractValue(row, "body").toString(),
           null,
           UserDetails.fromJson(extractValueFactory.extractValue(row, "update_author").toString()),
-          (OffsetDateTime) extractValueFactory.extractValue(row, "updated"));
+          extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -137,7 +136,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
                       issueId, offset, withMaxResultOrLimit(limit), withOrderBy(sortKeys), null);
               return new DASJiraPage<>(result.getComments(), result.getTotal());
             } catch (ApiException e) {
-              throw new RuntimeException(e);
+              throw new DASSdkApiException(e.getResponseBody());
             }
           }
         };
@@ -154,9 +153,9 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     Optional.ofNullable(comment.getBody())
         .ifPresent(body -> addToRow("body", rowBuilder, body.toString()));
     Optional.ofNullable(comment.getCreated())
-        .ifPresent(created -> addToRow("created", rowBuilder, created.toString()));
+        .ifPresent(created -> addToRow("created", rowBuilder, created));
     Optional.ofNullable(comment.getUpdated())
-        .ifPresent(updated -> addToRow("updated", rowBuilder, updated.toString()));
+        .ifPresent(updated -> addToRow("updated", rowBuilder, updated));
     addToRow("jsd_public", rowBuilder, comment.getJsdPublic());
     Optional.ofNullable(comment.getAuthor())
         .ifPresent(author -> addToRow("author", rowBuilder, author.toJson()));

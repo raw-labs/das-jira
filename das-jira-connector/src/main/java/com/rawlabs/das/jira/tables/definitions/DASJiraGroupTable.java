@@ -116,7 +116,7 @@ public class DASJiraGroupTable extends DASJiraTable {
                   try {
                     var result =
                         groupsApi.getUsersFromGroup(
-                            groupDetails.getName(),
+                            null,
                             groupDetails.getGroupId(),
                             null,
                             offset,

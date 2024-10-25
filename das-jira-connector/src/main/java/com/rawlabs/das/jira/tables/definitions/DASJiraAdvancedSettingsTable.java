@@ -77,7 +77,10 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
       } else {
         result = jiraSettingsApi.getAdvancedSettings();
       }
-      maybeLimited = limit == null ? result : result.subList(0, Math.toIntExact(limit));
+      maybeLimited =
+          limit == null
+              ? result
+              : result.subList(0, Math.min(Math.toIntExact(limit), result.size()));
 
       return new DASExecuteResult() {
         private final Iterator<ApplicationProperty> iterator = maybeLimited.iterator();

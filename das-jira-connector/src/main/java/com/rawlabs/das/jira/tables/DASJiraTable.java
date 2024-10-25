@@ -8,6 +8,8 @@ import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.utils.factory.value.*;
 import com.rawlabs.protocol.das.*;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
@@ -19,6 +21,8 @@ public abstract class DASJiraTable implements DASTable {
 
   protected static final String TITLE_DESC = "Title of the resource.";
   protected static final int MAX_RESULTS = 1000;
+  private static final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
   protected final Map<String, String> options;
   protected final ValueFactory valueFactory = new DefaultValueFactory();
@@ -112,4 +116,8 @@ public abstract class DASJiraTable implements DASTable {
     return columnDefinitions.keySet().stream().toList();
   }
 
+  public OffsetDateTime getDateTime(String dateString) {
+    // Parse the string to an OffsetDateTime object
+    return OffsetDateTime.parse(dateString, formatter);
+  }
 }

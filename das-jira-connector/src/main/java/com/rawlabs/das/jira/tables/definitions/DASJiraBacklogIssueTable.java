@@ -7,9 +7,8 @@ import com.rawlabs.das.jira.rest.software.model.MoveIssuesToBacklogForBoardReque
 import com.rawlabs.das.jira.rest.software.model.SearchResults;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
-import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResultWithNames;
+import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
@@ -91,7 +90,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResultWithNames<IssueBean>(limit) {
+        return new DASJiraPaginatedResult<IssueBean>(limit) {
 
           @Override
           public Row next() {
@@ -251,7 +250,9 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
     columnDefinitions.put(
         "components",
         createColumn(
-            "components", "List of components associated with the issue.", createAnyType()));
+            "components",
+            "List of components associated with the issue.",
+            createListType(createStringType())));
     columnDefinitions.put(
         "fields",
         createColumn(

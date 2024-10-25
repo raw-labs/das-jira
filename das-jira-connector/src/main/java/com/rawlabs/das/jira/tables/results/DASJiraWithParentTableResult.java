@@ -2,6 +2,7 @@ package com.rawlabs.das.jira.tables.results;
 
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.DASTable;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
@@ -15,7 +16,7 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
   private final DASExecuteResult parentResult;
   private DASExecuteResult childResult;
 
-    public DASJiraWithParentTableResult(
+  public DASJiraWithParentTableResult(
       DASTable parentTable,
       List<Qual> quals,
       List<String> columns,
@@ -39,10 +40,13 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
       return true;
     }
     while (parentResult.hasNext()) {
-        Row currentParentRow = parentResult.next();
-      childResult = fetchChildResult(currentParentRow);
-      if (childResult.hasNext()) {
-        return true;
+      Row currentParentRow = parentResult.next();
+      try {
+        childResult = fetchChildResult(currentParentRow);
+        if (childResult.hasNext()) {
+          return true;
+        }
+      } catch (DASSdkApiException _) {
       }
     }
     return false;
