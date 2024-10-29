@@ -31,6 +31,7 @@ jobs:
       - uses: mikepenz/action-junit-report@v4
         if: success() || failure()
         with:
+          annotate_only: true
           check_name: "das-jira-connector tests report"
           report_paths: das-jira-connector/target/surefire-reports/*.xml
           detailed_summary: true
