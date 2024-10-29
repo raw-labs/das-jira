@@ -27,6 +27,9 @@ jobs:
           cache: 'maven'
           server-id: github
           settings-path: ${{ github.workspace }}
+      - uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.9
       - run: mvn -B clean install --settings settings.xml
       - uses: mikepenz/action-junit-report@v4
         if: success() || failure()
