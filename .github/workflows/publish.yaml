@@ -20,6 +20,6 @@ jobs:
           server-id: github
           settings-path: ${{ github.workspace }}
       - name: set version from tag
-        run: mvn versions:set -DnewVersion=${GITHUB_REF#refs/tags/v}
+        run: mvn -B versions:set -DnewVersion=${GITHUB_REF#refs/tags/v}
       - name: build and deploy
-        run: mvn clean deploy --settings settings.xml
+        run: mvn -B clean deploy --settings settings.xml
