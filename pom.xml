@@ -21,18 +21,30 @@
         <url>https://www.raw-labs.com/</url>
     </organization>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub RAW Labs Packages</name>
+            <url>https://maven.pkg.github.com/raw-labs/*</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <!-- Distribution Management -->
     <distributionManagement>
         <repository>
-            <id>das-jira</id>
+            <id>github</id>
             <name>GitHub raw-labs Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/raw-labs/das-jira</url>
         </repository>
     </distributionManagement>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Plugins Dependencies -->
