@@ -28,3 +28,9 @@ jobs:
           server-id: github
           settings-path: ${{ github.workspace }}
       - run: mvn -B clean install --settings settings.xml
+      - uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          check_name: "das-jira-connector tests report"
+          report_paths: das-jira-connector/target/surefire-reports/*.xml
+          detailed_summary: true
