@@ -29,6 +29,30 @@
                     <failOnWarning>true</failOnWarning>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.rawlabs.das.server.DASServerMain</mainClass>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer">
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -43,6 +67,11 @@
             <groupId>com.raw-labs</groupId>
             <artifactId>das-server-scala_${scala-version}</artifactId>
             <version>${das-server-scala-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>protocol-das_${scala.version}</artifactId>
+            <version>${protocol-das.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rawlabs.das.jira.rest</groupId>
@@ -92,10 +121,12 @@
         <maven-surface-plugin-version>3.5.0</maven-surface-plugin-version>
         <maven-openapi-generator-plugin-version>7.8.0</maven-openapi-generator-plugin-version>
         <maven-dependency-plugin-version>3.8.0</maven-dependency-plugin-version>
+        <maven-shade-plugin>3.6.0</maven-shade-plugin>
 
         <!-- RAW Labs Dependencies -->
         <das-java-sdk-version>0.1.0-SNAPSHOT</das-java-sdk-version>
         <das-server-scala-version>0.1.5</das-server-scala-version>
+        <protocol-das.version>0.1.0</protocol-das.version>
         <jira-rest-client-version>1.0-SNAPSHOT</jira-rest-client-version>
 
         <!-- Scala Version -->
