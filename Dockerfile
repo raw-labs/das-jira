@@ -10,7 +10,7 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Runtime Stage
-FROM amazoncorretto:21
+FROM amazoncorretto:23
 
 # Set labels
 LABEL vendor="RAW Labs SA"
