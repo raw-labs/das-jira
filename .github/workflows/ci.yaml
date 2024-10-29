@@ -1,0 +1,40 @@
+name: CI
+on:
+  pull_request:
+    paths:
+      - .github/workflows/ci.yaml
+      - pom.xml
+      - "**/src/**"
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GITHUB_TOKEN: ${{ secrets.READ_PACKAGES }}
+
+jobs:
+  # TO DEFINE
+  # code check job
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+      - uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.9
+      - run: mvn -B clean install --settings settings.xml
+      - uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          annotate_only: true
+          check_name: "das-jira-connector tests report"
+          report_paths: das-jira-connector/target/surefire-reports/*.xml
+          detailed_summary: true
