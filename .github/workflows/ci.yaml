@@ -27,4 +27,4 @@ jobs:
           cache: 'maven'
           server-id: github
           settings-path: ${{ github.workspace }}
-      - run: mvn clean install --settings settings.xml
+      - run: mvn -B clean install --settings settings.xml
