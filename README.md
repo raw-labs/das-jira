@@ -4,17 +4,15 @@
 
 First you need to build the project:
 ```bash
-$ sbt "project docker" "docker:publishLocal"
+$ docker build -t das-jira:latest .
 ```
 
 This will create a docker image with the name `das-jira`.
 
 Then you can run the image with the following command:
 ```bash
-$ docker run -p 50051:50051 <image_id>
+$ docker run -p 50051:50051 das-jira:latest
 ```
-... where `<image_id>` is the id of the image created in the previous step.
-This will start the server on port 50051.
 
 You can find the image id by looking at the sbt output or by running:
 ```bash
@@ -22,7 +20,6 @@ $ docker images
 ```
 
 ## Options
-
 
 | Name                    | Description                                                        | Default | Required |
 |-------------------------|--------------------------------------------------------------------|---------|----------|
