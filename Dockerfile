@@ -55,7 +55,7 @@ EXPOSE 50051
 
 # Set labels as per the SBT configuration
 LABEL vendor="RAW Labs SA" \
-      product="das-jira-connector" \
+      product="das-jira" \
       image-type="final" \
       org.opencontainers.image.source="https://github.com/raw-labs/das-jira"
 
