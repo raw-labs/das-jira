@@ -1,39 +1,63 @@
 # Build Stage
-FROM maven:3.9.9-amazoncorretto-23-debian-bookworm AS build
+FROM maven:3.9.9-amazoncorretto-23-debian-bookworm as build
 
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the entire project into the build context
-COPY . .
+# Copy the pom files and source code
+COPY pom.xml .
+COPY jira-platform-api-client/pom.xml jira-platform-api-client/pom.xml
+COPY jira-platform-api-client/src jira-platform-api-client/src
+COPY jira-software-api-client/pom.xml jira-software-api-client/pom.xml
+COPY jira-software-api-client/src jira-software-api-client/src
+COPY das-jira-connector/pom.xml das-jira-connector/pom.xml
+COPY das-jira-connector/src das-jira-connector/src
 
-# Build the Maven project
+# Build the project and package the application
 RUN mvn clean package -DskipTests
 
 # Runtime Stage
-FROM amazoncorretto:23
+FROM --platform=amd64 debian:bookworm-slim
 
-# Set labels
-LABEL vendor="RAW Labs SA"
-LABEL product="das-jira-server"
-LABEL image-type="final"
-LABEL org.opencontainers.image.source="https://github.com/raw-labs/das-jira"
+# Environment variables for Amazon Corretto JDK 21
+ENV amzn_jdk_version=23.0.1.8-1 \
+    amzn_corretto_bin=java-23-amazon-corretto-jdk_23.0.1.8-1_amd64.deb \
+    amzn_corretto_bin_dl_url=https://corretto.aws/downloads/resources/23.0.1.8.1
+
+# Install necessary packages and Amazon Corretto JDK 21
+RUN set -eux \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl wget ca-certificates gnupg software-properties-common fontconfig java-common \
+    && wget ${amzn_corretto_bin_dl_url}/${amzn_corretto_bin} \
+    && dpkg --install ${amzn_corretto_bin} \
+    && rm -f ${amzn_corretto_bin} \
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+        wget gnupg software-properties-common
 
 # Set environment variables
-ENV LANG="C.UTF-8"
+ENV LANG=C.UTF-8 \
+    JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto \
+    PATH="/usr/lib/jvm/java-23-amazon-corretto/bin:${PATH}"
 
-# Create non-root user 'raw' and switch to it
-RUN useradd -ms /bin/bash raw
+# Create a non-root user 'raw' and switch to it
+RUN useradd -m raw
 USER raw
 
-# Set working directory
-WORKDIR /home/raw
+# Set the working directory
+WORKDIR /app
 
-# Copy the built application JAR from the build stage
-COPY --from=build /app/das-jira-connector/target/das-jira-connector-*.jar ./app.jar
+# Copy the packaged application from the build stage
+COPY --from=build /app/das-jira-connector/target/das-jira-connector.jar ./das-jira-connector.jar
 
-# Expose ports and volumes
+# Expose the application port
 EXPOSE 50051
-VOLUME ["/var/log/raw"]
 
-# Set the entry point to run your application
-CMD ["java", "-jar", "app.jar"]
+# Set labels as per the SBT configuration
+LABEL vendor="RAW Labs SA" \
+      product="das-jira-connector" \
+      image-type="final" \
+      org.opencontainers.image.source="https://github.com/raw-labs/das-jira"
+
+# Set the entry point to run the application
+CMD ["java", "-jar", "das-jira-connector.jar"]
