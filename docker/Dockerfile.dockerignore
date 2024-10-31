@@ -1,0 +1,9 @@
+licenses
+LICENSE
+README.md
+docker
+!docker/settings.xml
+.github
+.git
+.gitignore
+.dockerignore
