@@ -1,0 +1,24 @@
+#!/bin/bash -e
+SCRIPT_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_HOME="$( cd "${SCRIPT_HOME}"/.. && pwd )"
+
+cd "${REPO_HOME}"
+
+export DOCKER_BUILDKIT=1
+
+# read version from pom.xml
+VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "Error: GITHUB_TOKEN is not set. Exiting..."
+  exit 1
+fi
+
+PUBLISH_REGISTRY=${PUBLISH_REGISTRY:-"ghcr.io"}
+PUBLISH_REPOSITORY=${PUBLISH_REPOSITORY:-"${PUBLISH_REGISTRY}/raw-labs/das-jira"}
+
+docker build \
+  -f docker/Dockerfile \
+  --platform linux/amd64 \
+  --secret id=github_token,env=GITHUB_TOKEN \
+  -t ${PUBLISH_REPOSITORY}/das-jira:${VERSION} .

@@ -1,0 +1,21 @@
+name: Docker CI
+on:
+  pull_request:
+    paths:
+      - .github/workflows/docker-ci.yaml
+      - pom.xml
+      - docker/**
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GITHUB_TOKEN: ${{ secrets.READ_PACKAGES }}
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker/build
