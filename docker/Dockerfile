@@ -30,15 +30,14 @@ FROM --platform=${BUILDPLATFORM} debian:bookworm-slim
 
 ARG AMZN_JDK_VERSION="22.0.2.9-1"
 
-ENV amzn_corretto_bin=java-22-amazon-corretto-jdk_${AMZN_JDK_VERSION}_amd64.deb \
-    amzn_corretto_bin_dl_url=https://corretto.aws/downloads/resources/${AMZN_JDK_VERSION//-/.}
+ENV amzn_corretto_bin=java-22-amazon-corretto-jdk_${AMZN_JDK_VERSION}_amd64.deb
 
 # Install necessary packages and Amazon Corretto JDK 21
 RUN set -eux \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         curl wget ca-certificates gnupg software-properties-common fontconfig java-common \
-    && wget ${amzn_corretto_bin_dl_url}/${amzn_corretto_bin} \
+    && wget https://corretto.aws/downloads/resources/${AMZN_JDK_VERSION//-/.}/${amzn_corretto_bin} \
     && dpkg --install ${amzn_corretto_bin} \
     && rm -f ${amzn_corretto_bin} \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
