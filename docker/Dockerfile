@@ -37,7 +37,8 @@ RUN set -eux \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         curl wget ca-certificates gnupg software-properties-common fontconfig java-common \
-    && wget https://corretto.aws/downloads/resources/${AMZN_JDK_VERSION//-/.}/${amzn_corretto_bin} \
+    && export AMZN_JDK_VERSION_DOTS=$(echo "$AMZN_JDK_VERSION" | sed 's/-/./g') \
+    && wget https://corretto.aws/downloads/resources/${AMZN_JDK_VERSION_DOTS}/${amzn_corretto_bin} \
     && dpkg --install ${amzn_corretto_bin} \
     && rm -f ${amzn_corretto_bin} \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
