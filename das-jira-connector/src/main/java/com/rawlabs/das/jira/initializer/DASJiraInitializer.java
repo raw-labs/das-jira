@@ -10,19 +10,23 @@ import java.util.Map;
 public class DASJiraInitializer {
 
   public static void initialize(Map<String, String> options) {
+    if (options.get("base_url") == null) {
+      throw new IllegalArgumentException("base_url is required");
+    }
     setupPlatformApi(options);
     setupSoftwareApi(options);
   }
 
-  private static void setupPlatformApi(Map<String, String> options){
+  private static void setupPlatformApi(Map<String, String> options) {
     ApiClient apiClient = Configuration.getDefaultApiClient();
     apiClient.setBasePath(options.get("base_url"));
     DASJiraAuthStrategy auth = DASJiraAuthStrategyFactory.createAuthStrategy(options);
     auth.setupAuthentication(options);
   }
 
-  private static void setupSoftwareApi(Map<String, String> options){
-    com.rawlabs.das.jira.rest.software.ApiClient apiClient = com.rawlabs.das.jira.rest.software.Configuration.getDefaultApiClient();
+  private static void setupSoftwareApi(Map<String, String> options) {
+    com.rawlabs.das.jira.rest.software.ApiClient apiClient =
+        com.rawlabs.das.jira.rest.software.Configuration.getDefaultApiClient();
     apiClient.setBasePath(options.get("base_url"));
     DASJiraAuthStrategy auth = DASJiraAuthStrategyFactory.createAuthStrategy(options);
     auth.setupAuthentication(options);
