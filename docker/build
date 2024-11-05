@@ -21,4 +21,4 @@ docker build \
   -f docker/Dockerfile \
   --platform linux/amd64 \
   --secret id=github_token,env=GITHUB_TOKEN \
-  -t ${PUBLISH_REPOSITORY}/das-jira:${VERSION} .
+  -t ${PUBLISH_REPOSITORY}/das-jira-server:${VERSION} .
