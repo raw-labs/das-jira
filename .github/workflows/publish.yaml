@@ -39,7 +39,9 @@ jobs:
         password: ${{ secrets.WRITE_PACKAGES }}
         logout: false
     - name: set version from tag
-      run: mvn -B versions:set -DnewVersion=${GITHUB_REF#refs/tags/v}
+      run: |
+        mvn -B versions:set -DnewVersion=${GITHUB_REF#refs/tags/v}
+        mvn -B properties:set -Djira-rest-client-version=${GITHUB_REF#refs/tags/v}
     - name: build docker image
       run: docker/build
     - name: publish docker image
