@@ -25,31 +25,33 @@ jobs:
       - name: build and deploy
         run: mvn -B clean deploy --settings settings.xml
   publish-docker-image:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       should_trigger_deploy: ${{ steps.should_trigger_deploy.outputs.should_trigger_deploy }}
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.WRITE_PACKAGES }}
-        logout: false
-    - name: set version from tag
-      run: mvn -B versions:set -DnewVersion=${GITHUB_REF#refs/tags/v} -DprocessAllModules
-    - name: build docker image
-      run: docker/build
-    - name: publish docker image
-      run: docker/publish
-    - name: set should_trigger_deploy
-      id: should_trigger_deploy
-      shell: bash
-      run: |
-        pattern='^refs/tags/v[0-9]+\.[0-9]+\.([1-9][0-9]*$|[0-9]+-.*$)'
-        echo "should_trigger_deploy=$([[ "$GITHUB_REF" =~ $pattern ]] && echo true || echo false)" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.WRITE_PACKAGES }}
+          logout: false
+      - uses: s4u/setup-maven-action@v1.16.0
+        with:
+          java-version: 22
+          maven-version: 3.9.9
+      - name: set version from tag
+        run: mvn -B versions:set -DnewVersion=${GITHUB_REF#refs/tags/v} -DprocessAllModules
+      - name: build docker image
+        run: docker/build
+      - name: publish docker image
+        run: docker/publish
+      - name: set should_trigger_deploy
+        id: should_trigger_deploy
+        shell: bash
+        run: |
+          pattern='^refs/tags/v[0-9]+\.[0-9]+\.([1-9][0-9]*$|[0-9]+-.*$)'
+          echo "should_trigger_deploy=$([[ "$GITHUB_REF" =~ $pattern ]] && echo true || echo false)" >> $GITHUB_OUTPUT
   gh-release:
     needs: [publish-jars, publish-docker-image]
     runs-on: self-hosted
