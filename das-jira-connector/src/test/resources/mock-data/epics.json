@@ -1,0 +1,21 @@
+{
+  "maxResults": 100,
+  "startAt": 0,
+  "isLast": true,
+  "values": [
+    {
+      "id": 20890,
+      "key": "RD-3216",
+      "self": "https://raw-labs.atlassian.net/rest/agile/1.0/epic/20890",
+      "name": "[Ph.2] Client-focused",
+      "summary": "[Ph.2] Client-focused",
+      "color": {
+        "key": "color_7"
+      },
+      "issueColor": {
+        "key": "purple"
+      },
+      "done": true
+    }
+  ]
+}
