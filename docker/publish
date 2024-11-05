@@ -17,4 +17,4 @@ fi
 PUBLISH_REGISTRY=${PUBLISH_REGISTRY:-"ghcr.io"}
 PUBLISH_REPOSITORY=${PUBLISH_REPOSITORY:-"${PUBLISH_REGISTRY}/raw-labs/das-jira"}
 
-docker push ${PUBLISH_REPOSITORY}/das-jira:${VERSION} .
+docker push ${PUBLISH_REPOSITORY}/das-jira:${VERSION}
