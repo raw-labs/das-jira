@@ -69,12 +69,12 @@
         <dependency>
             <groupId>com.rawlabs.das.jira.rest</groupId>
             <artifactId>jira-platform-api-client</artifactId>
-            <version>${jira-rest-client-version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rawlabs.das.jira.rest</groupId>
             <artifactId>jira-software-api-client</artifactId>
-            <version>${jira-rest-client-version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.raw-labs</groupId>

@@ -1,29 +1,13 @@
-# Download dependencies
-FROM maven:3.9.9-eclipse-temurin-22-jammy AS deps
-
-WORKDIR /app
-
-COPY pom.xml .
-COPY jira-platform-api-client/pom.xml jira-platform-api-client/pom.xml
-COPY jira-software-api-client/pom.xml jira-software-api-client/pom.xml
-COPY das-jira-connector/pom.xml das-jira-connector/pom.xml
-COPY docker/settings.xml .
-
-RUN --mount=type=secret,id=github_token \
-    export GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
-    mvn -B dependency:go-offline dependency:resolve-plugins -DskipTests \
-    --settings settings.xml
-
 # Build Stage
 FROM maven:3.9.9-eclipse-temurin-22-jammy AS build
 
 WORKDIR /app
 
-COPY --from=deps /root/.m2 /root/.m2
-
 COPY . .
 
-RUN mvn -B clean package -DskipTests
+RUN --mount=type=secret,id=github_token \
+    export GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
+    mvn -B clean package -DskipTests --settings docker/settings.xml
 
 #Runtime Stage
 FROM --platform=${BUILDPLATFORM} debian:bookworm-slim
