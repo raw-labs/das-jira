@@ -1,0 +1,9 @@
+*.class
+.metals/
+.git/
+.vscode/
+target/
+.bsp/
+.idea/
+/das-jira-connector/dependency-reduced-pom.xml
+pom.xml.versionsBackup

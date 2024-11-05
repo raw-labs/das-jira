@@ -1,0 +1,19 @@
+[
+  {
+    "defaultValue": "",
+    "desc": "Jira home directory",
+    "id": "jira.home",
+    "key": "jira.home",
+    "name": "jira.home",
+    "type": "string",
+    "value": "/var/jira/jira-home"
+  },
+  {
+    "defaultValue": "CLONE -",
+    "id": "jira.clone.prefix",
+    "key": "jira.clone.prefix",
+    "name": "The prefix added to the Summary field of cloned issues",
+    "type": "string",
+    "value": "CLONE -"
+  }
+]

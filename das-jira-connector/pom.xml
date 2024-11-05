@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.rawlabs.das.jira</groupId>
+        <artifactId>das-jira</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>das-jira-connector</artifactId>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surface-plugin-version}</version>
+                <configuration>
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <failOnError>true</failOnError>
+                    <failOnWarning>true</failOnWarning>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven-shade-plugin-version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!-- Specify the main class from the dependency -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.rawlabs.das.server.DASServerMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- RAW Labs Dependencies -->
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>das-sdk-java</artifactId>
+            <version>${das-java-sdk-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>das-server-scala_${scala-version}</artifactId>
+            <version>${das-server-scala-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rawlabs.das.jira.rest</groupId>
+            <artifactId>jira-platform-api-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rawlabs.das.jira.rest</groupId>
+            <artifactId>jira-software-api-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raw-labs</groupId>
+            <artifactId>protocol-das_${scala-version}</artifactId>
+            <version>${protocol-das.version}</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${junit-jupiter-version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${junit-jupiter-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <properties>
+        <maven.compiler.source>22</maven.compiler.source>
+        <maven.compiler.target>22</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Plugins Dependencies -->
+        <maven-surface-plugin-version>3.5.0</maven-surface-plugin-version>
+        <maven-openapi-generator-plugin-version>7.8.0</maven-openapi-generator-plugin-version>
+        <maven-dependency-plugin-version>3.8.0</maven-dependency-plugin-version>
+        <maven-shade-plugin-version>3.4.1</maven-shade-plugin-version>
+
+        <!-- RAW Labs Dependencies -->
+        <das-java-sdk-version>0.1.2</das-java-sdk-version>
+        <das-server-scala-version>0.1.5</das-server-scala-version>
+        <jira-rest-client-version>1.0-SNAPSHOT</jira-rest-client-version>
+        <protocol-das.version>0.1.4</protocol-das.version>
+
+        <!-- Scala Version -->
+        <scala-version>2.12</scala-version>
+    </properties>
+
+</project>
