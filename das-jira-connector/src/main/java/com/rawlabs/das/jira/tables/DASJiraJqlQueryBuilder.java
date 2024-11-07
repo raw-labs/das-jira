@@ -34,11 +34,11 @@ public class DASJiraJqlQueryBuilder {
       case Value v when v.hasString() -> v.getString().getV();
       case Value v when v.hasTime() -> {
         OffsetTime time = (OffsetTime) extractValueFactory.extractValue(value);
-        yield time.format(formatter);
+        yield "\"" + time.format(formatter) + "\"";
       }
       case Value v when (v.hasTimestamp() || v.hasDate()) -> {
         OffsetDateTime time = (OffsetDateTime) extractValueFactory.extractValue(value);
-        yield time.format(formatter);
+        yield "\"" + time.format(formatter) + "\"";
       }
       default -> throw new IllegalArgumentException("Unexpected value: " + value);
     };
