@@ -76,7 +76,7 @@ jobs:
           with:
             token: ${{ secrets.RAW_CI_PAT }}
             repository: raw-labs/mvp-deployer
-            event-type: deploy-patch-das-jira
+            event-type: das-jira-integration-cd
             client-payload: |-
               {
                 "aws_region": "eu-west-1",
