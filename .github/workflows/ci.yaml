@@ -4,6 +4,7 @@ on:
     paths:
       - .github/workflows/ci.yaml
       - pom.xml
+      - "**/pom.xml"
       - "**/src/**"
 
 defaults:
