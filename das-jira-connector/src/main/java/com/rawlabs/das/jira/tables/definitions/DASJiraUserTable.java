@@ -2,9 +2,7 @@ package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.UsersApi;
-import com.rawlabs.das.jira.rest.platform.model.GroupName;
-import com.rawlabs.das.jira.rest.platform.model.NewUserDetails;
-import com.rawlabs.das.jira.rest.platform.model.User;
+import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.das.sdk.java.KeyColumns;
@@ -62,7 +60,7 @@ public class DASJiraUserTable extends DASJiraTable {
           (String) extractValueFactory.extractValue(row, "email_address"));
       newUserDetails.setProducts(Collections.emptySet());
       User user = usersApi.createUser(newUserDetails);
-      return toRow(user);
+      return toRow(user, List.of());
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -85,37 +83,44 @@ public class DASJiraUserTable extends DASJiraTable {
       @Nullable Long limit) {
     try {
       List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(limit));
-      return fromRowIterator(users.stream().map(this::toRow).iterator());
+      return fromRowIterator(users.stream().map(u -> toRow(u, columns)).iterator());
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Row toRow(User user) {
+  private Row toRow(User user, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("display_name", rowBuilder, user.getDisplayName());
-    addToRow("account_id", rowBuilder, user.getAccountId());
-    addToRow("email_address", rowBuilder, user.getEmailAddress());
-    Optional.ofNullable(user.getAccountType())
-        .ifPresent(accountType -> addToRow("account_type", rowBuilder, accountType.getValue()));
-    addToRow("active", rowBuilder, user.getActive());
-    Optional.ofNullable(user.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
-    Optional.ofNullable(user.getAvatarUrls())
-        .ifPresent(avatarUrls -> addToRow("avatar_urls", rowBuilder, avatarUrls.toJson()));
-    Optional.ofNullable(user.getGroups())
-        .flatMap(groups -> Optional.ofNullable(groups.getItems()))
-        .ifPresent(
-            group ->
-                addToRow(
-                    "group_names", rowBuilder, group.stream().map(GroupName::getName).toList()));
+    addToRow("display_name", rowBuilder, user.getDisplayName(), columns);
+    addToRow("account_id", rowBuilder, user.getAccountId(), columns);
+    addToRow("email_address", rowBuilder, user.getEmailAddress(), columns);
+
+    var accountType = Optional.ofNullable(user.getAccountType()).map(Enum::name).orElse(null);
+    addToRow("account_type", rowBuilder, accountType, columns);
+
+    addToRow("active", rowBuilder, user.getActive(), columns);
+
+    var self = Optional.ofNullable(user.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
+
+    var avatarUrls =
+        Optional.ofNullable(user.getAvatarUrls()).map(AvatarUrlsBean::toJson).orElse(null);
+    addToRow("avatar_urls", rowBuilder, avatarUrls, columns);
+
+    var groups =
+        Optional.ofNullable(user.getGroups())
+            .map(SimpleListWrapperGroupName::getItems)
+            .map(g -> g.stream().map(GroupName::getName))
+            .orElse(null);
+
+    addToRow("group_names", rowBuilder, groups, columns);
+    addToRow("title", rowBuilder, user.getDisplayName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put(
         "display_name",
         createColumn(
