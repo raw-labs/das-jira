@@ -9,7 +9,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
@@ -19,10 +18,7 @@ import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -31,7 +27,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_issue_comment";
 
-  private DASTable parentTable;
+  private DASJiraTable parentTable;
 
   private IssueCommentsApi issueCommentsApi = new IssueCommentsApi();
 
@@ -86,7 +82,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     try {
       String issueIdOrKey = extractValueFactory.extractValue(row, "issue_id").toString();
       Comment resultComment = issueCommentsApi.addComment(issueIdOrKey, extractComment(row), null);
-      return toRow(resultComment, issueIdOrKey);
+      return toRow(resultComment, issueIdOrKey, List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -104,7 +100,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
               null,
               null,
               null);
-      return toRow(comment, issueIdOrKey);
+      return toRow(comment, issueIdOrKey, List.of());
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -125,7 +121,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
           @Override
           public Row next() {
-            return toRow(getNext(), issueId);
+            return toRow(getNext(), issueId, columns);
           }
 
           @Override
@@ -144,30 +140,36 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Comment comment, String issueId) {
+  private Row toRow(Comment comment, String issueId, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, comment.getId());
-    addToRow("issue_id", rowBuilder, issueId);
-    addToRow("self", rowBuilder, comment.getSelf());
-    Optional.ofNullable(comment.getBody())
-        .ifPresent(body -> addToRow("body", rowBuilder, body.toString()));
-    Optional.ofNullable(comment.getCreated())
-        .ifPresent(created -> addToRow("created", rowBuilder, created));
-    Optional.ofNullable(comment.getUpdated())
-        .ifPresent(updated -> addToRow("updated", rowBuilder, updated));
-    addToRow("jsd_public", rowBuilder, comment.getJsdPublic());
-    Optional.ofNullable(comment.getAuthor())
-        .ifPresent(author -> addToRow("author", rowBuilder, author.toJson()));
-    Optional.ofNullable(comment.getUpdateAuthor())
-        .ifPresent(updateAuthor -> addToRow("update_author", rowBuilder, updateAuthor.toJson()));
-    addToRow("title", rowBuilder, comment.getId());
+    addToRow("id", rowBuilder, comment.getId(), columns);
+    addToRow("issue_id", rowBuilder, issueId, columns);
+    addToRow("self", rowBuilder, comment.getSelf(), columns);
+    var body = Optional.ofNullable(comment.getBody()).map(Object::toString).orElse(null);
+    addToRow("body", rowBuilder, body, columns);
+
+    var created = Optional.ofNullable(comment.getCreated()).map(Object::toString).orElse(null);
+    addToRow("created", rowBuilder, created, columns);
+
+    var updated = Optional.ofNullable(comment.getUpdated()).map(Object::toString).orElse(null);
+    addToRow("updated", rowBuilder, updated, columns);
+
+    addToRow("jsd_public", rowBuilder, comment.getJsdPublic(), columns);
+
+    var author = Optional.ofNullable(comment.getAuthor()).map(UserDetails::toJson).orElse(null);
+    addToRow("author", rowBuilder, author, columns);
+
+    var updateAuthor =
+        Optional.ofNullable(comment.getUpdateAuthor()).map(UserDetails::toJson).orElse(null);
+    addToRow("update_author", rowBuilder, updateAuthor, columns);
+
+    addToRow("title", rowBuilder, comment.getId(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the issue comment.", createStringType()));
     columns.put("issue_id", createColumn("issue_id", "The ID of the issue.", createStringType()));
     columns.put("self", createColumn("self", "The URL of the issue comment.", createStringType()));

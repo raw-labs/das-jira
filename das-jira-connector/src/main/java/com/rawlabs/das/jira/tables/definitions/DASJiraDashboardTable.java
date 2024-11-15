@@ -78,7 +78,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
   public Row insertRow(Row row) {
     try {
       Dashboard result = dashboardsApi.createDashboard(getDashboardDetails(row), null);
-      return toRow(result);
+      return toRow(result, List.of());
     } catch (ApiException | IOException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -92,7 +92,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
               extractValueFactory.extractValue(rowId).toString(),
               getDashboardDetails(newValues),
               null);
-      return toRow(result);
+      return toRow(result, List.of());
     } catch (ApiException | IOException e) {
       throw new RuntimeException(e);
     }
@@ -117,7 +117,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
 
       @Override
       public Row next() {
-        return toRow(this.getNext());
+        return toRow(this.getNext(), columns);
       }
 
       @Override
@@ -135,36 +135,46 @@ public class DASJiraDashboardTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Dashboard dashboard) {
+  private Row toRow(Dashboard dashboard, List<String> columns) {
     try {
       Row.Builder rowBuilder = Row.newBuilder();
-      initRow(rowBuilder);
-      addToRow("id", rowBuilder, dashboard.getId());
-      addToRow("name", rowBuilder, dashboard.getName());
-      Optional.ofNullable(dashboard.getSelf())
-          .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
-      addToRow("is_favourite", rowBuilder, dashboard.getIsFavourite());
-      Optional.ofNullable(dashboard.getOwner())
-          .ifPresent(
-              o -> {
-                addToRow("owner_account_id", rowBuilder, o.getAccountId());
-                addToRow("owner_display_name", rowBuilder, o.getDisplayName());
-              });
+      addToRow("id", rowBuilder, dashboard.getId(), columns);
+      addToRow("name", rowBuilder, dashboard.getName(), columns);
 
-      Optional.ofNullable(dashboard.getPopularity())
-          .ifPresent(p -> addToRow("popularity", rowBuilder, p.toString()));
+      var self = Optional.ofNullable(dashboard.getSelf()).map(Object::toString).orElse(null);
+      addToRow("self", rowBuilder, self, columns);
 
-      addToRow("rank", rowBuilder, dashboard.getRank());
-      addToRow("view", rowBuilder, dashboard.getView());
+      addToRow("is_favourite", rowBuilder, dashboard.getIsFavourite(), columns);
+
+      var maybeOwner = Optional.ofNullable(dashboard.getOwner());
+      addToRow(
+          "owner_account_id",
+          rowBuilder,
+          maybeOwner.map(UserBean::getAccountId).orElse(null),
+          columns);
+      addToRow(
+          "owner_display_name",
+          rowBuilder,
+          maybeOwner.map(UserBean::getDisplayName).orElse(null),
+          columns);
+
+      var popularity =
+          Optional.ofNullable(dashboard.getPopularity()).map(Object::toString).orElse(null);
+      addToRow("popularity", rowBuilder, popularity, columns);
+
+      addToRow("rank", rowBuilder, dashboard.getRank(), columns);
+      addToRow("view", rowBuilder, dashboard.getView(), columns);
       addToRow(
           "edit_permissions",
           rowBuilder,
-          objectMapper.writeValueAsString(dashboard.getEditPermissions()));
+          objectMapper.writeValueAsString(dashboard.getEditPermissions()),
+          columns);
       addToRow(
           "share_permissions",
           rowBuilder,
-          objectMapper.writeValueAsString(dashboard.getSharePermissions()));
-      addToRow("title", rowBuilder, dashboard.getName());
+          objectMapper.writeValueAsString(dashboard.getSharePermissions()),
+          columns);
+      addToRow("title", rowBuilder, dashboard.getName(), columns);
       return rowBuilder.build();
     } catch (JsonProcessingException e) {
       throw new DASSdkApiException(e.getMessage());
@@ -172,8 +182,8 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the dashboard.", createStringType()));
     columns.put("name", createColumn("name", "The name of the dashboard.", createStringType()));
     columns.put(

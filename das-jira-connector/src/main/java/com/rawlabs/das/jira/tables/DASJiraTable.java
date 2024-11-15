@@ -54,18 +54,21 @@ public abstract class DASJiraTable implements DASTable {
     return rowsEstimation;
   }
 
-  protected void addToRow(String columnName, Row.Builder rowBuilder, Object value) {
-    rowBuilder.putData(
-        columnName,
-        valueFactory.createValue(
-            new ValueTypeTuple(value, columnDefinitions.get(columnName).getType())));
+  protected void addToRow(
+      String columnName, Row.Builder rowBuilder, Object value, List<String> columns) {
+    if (hasProjection(columns, columnName)) {
+      rowBuilder.putData(
+          columnName,
+          valueFactory.createValue(
+              new ValueTypeTuple(value, columnDefinitions.get(columnName).getType())));
+    }
   }
 
-  protected void initRow(Row.Builder rowBuilder) {
-    columnDefinitions.keySet().forEach(columnName -> addToRow(columnName, rowBuilder, null));
+  private boolean hasProjection(List<String> columns, String columnName) {
+    return columns == null || columns.isEmpty() || columns.contains(columnName);
   }
 
-  protected abstract Map<String, ColumnDefinition> buildColumnDefinitions();
+  protected abstract LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions();
 
   public DASExecuteResult fromRowIterator(Iterator<Row> rows) {
     return new DASExecuteResult() {

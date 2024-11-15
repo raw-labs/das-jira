@@ -8,6 +8,7 @@ import com.rawlabs.protocol.das.SortKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +24,11 @@ public class MockTable extends DASJiraTable {
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    return Map.of(
-        "id", createColumn("id", "id", createStringType()),
-        "name", createColumn("name", "name", createStringType()));
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
+    columnDefinitions.put("id", createColumn("id", "id", createStringType()));
+    columnDefinitions.put("name", createColumn("name", "name", createStringType()));
+    return columnDefinitions;
   }
 
   @Override
@@ -61,26 +63,11 @@ public class MockTable extends DASJiraTable {
 
   public Row toRow(MockObject mockObject) {
     Row.Builder builder = Row.newBuilder();
-    addToRow("id", builder, mockObject.getId());
-    addToRow("name", builder, mockObject.getName());
+    addToRow("id", builder, mockObject.id(), List.of());
+    addToRow("name", builder, mockObject.name(), List.of());
     return builder.build();
   }
 
-  public static class MockObject {
-    private String id;
-    private String name;
-
-    public MockObject(String id, String name) {
-      this.id = id;
-      this.name = name;
-    }
-
-    public String getId() {
-      return id;
-    }
-
-    public String getName() {
-      return name;
-    }
+  public record MockObject(String id, String name) {
   }
 }
