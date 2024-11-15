@@ -75,9 +75,9 @@ public class DASJiraProjectTable extends DASJiraTable {
 
       ProjectIdentifiers projectIdentifiers = projectsApi.createProject(createProjectDetails);
       Row.Builder rowBuilder = Row.newBuilder();
-      addToRow("id", rowBuilder, projectIdentifiers.getId());
-      addToRow("key", rowBuilder, projectIdentifiers.getKey());
-      addToRow("self", rowBuilder, projectIdentifiers.getSelf());
+      addToRow("id", rowBuilder, projectIdentifiers.getId(), List.of());
+      addToRow("key", rowBuilder, projectIdentifiers.getKey(), List.of());
+      addToRow("self", rowBuilder, projectIdentifiers.getSelf(), List.of());
       return rowBuilder.build();
     } catch (ApiException e) {
       throw new RuntimeException(e);
@@ -112,7 +112,7 @@ public class DASJiraProjectTable extends DASJiraTable {
       Project result =
           projectsApi.updateProject(
               (String) extractValueFactory.extractValue(rowId), updateProjectDetails, expand);
-      return toRow(result);
+      return toRow(result, List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -140,7 +140,7 @@ public class DASJiraProjectTable extends DASJiraTable {
       @Override
       public Row next() {
         Project project = this.getNext();
-        return toRow(project);
+        return toRow(project, columns);
       }
 
       @Override
@@ -169,69 +169,66 @@ public class DASJiraProjectTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Project project) {
+  private Row toRow(Project project, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
+    this.addToRow("id", rowBuilder, project.getId(), columns);
+    this.addToRow("name", rowBuilder, project.getName(), columns);
+    this.addToRow("key", rowBuilder, project.getKey(), columns);
 
-    this.addToRow("id", rowBuilder, project.getId());
-    this.addToRow("name", rowBuilder, project.getName());
-    this.addToRow("key", rowBuilder, project.getKey());
-    Optional.ofNullable(project.getSelf())
-        .ifPresent(self -> this.addToRow("self", rowBuilder, self.toString()));
-    this.addToRow("description", rowBuilder, project.getDescription());
-    this.addToRow("email", rowBuilder, project.getEmail());
-    Optional.ofNullable(project.getLead())
-        .ifPresent(
-            lead -> {
-              this.addToRow("lead_display_name", rowBuilder, lead.getDisplayName());
-              this.addToRow("lead_account_id", rowBuilder, lead.getAccountId());
-            });
-    Optional.ofNullable(project.getProjectTypeKey())
-        .ifPresent(
-            projectTypeKey ->
-                this.addToRow("project_type_key", rowBuilder, projectTypeKey));
-    Optional.ofNullable(project.getUrl()).ifPresent(url -> this.addToRow("url", rowBuilder, url));
+    var self = Optional.ofNullable(project.getSelf()).map(Object::toString).orElse(null);
+    this.addToRow("self", rowBuilder, self, columns);
 
-    Optional.ofNullable(project.getComponents())
-        .ifPresent(
-            components -> {
-              List<String> componentIds = components.stream().map(ProjectComponent::getId).toList();
-              this.addToRow("component_ids", rowBuilder, componentIds);
-            });
+    this.addToRow("description", rowBuilder, project.getDescription(), columns);
+    this.addToRow("email", rowBuilder, project.getEmail(), columns);
 
-    Optional.ofNullable(project.getProperties())
-        .ifPresent(
-            properties -> {
-              try {
-                addToRow("properties", rowBuilder, objectMapper.writeValueAsString(properties));
-              } catch (JsonProcessingException e) {
-                throw new DASSdkException(e.getMessage(), e);
-              }
-            });
+    var lead = Optional.ofNullable(project.getLead());
+    this.addToRow(
+        "lead_account_id", rowBuilder, lead.map(User::getAccountId).orElse(null), columns);
+    this.addToRow(
+        "lead_display_name", rowBuilder, lead.map(User::getDisplayName).orElse(null), columns);
 
-    Optional.ofNullable(project.getIssueTypes())
-        .ifPresent(
-            issueTypes -> {
-              try {
-                objectMapper.writeValueAsString(issueTypes);
-              } catch (JsonProcessingException e) {
-                throw new DASSdkException(e.getMessage());
-              }
-            });
+    var projectTypeKey = Optional.ofNullable(project.getProjectTypeKey());
+    this.addToRow("project_type_key", rowBuilder, projectTypeKey.orElse(null), columns);
 
-    Optional.ofNullable(project.getProjectCategory())
-        .ifPresent(
-            projectCategory ->
-                this.addToRow("project_category", rowBuilder, projectCategory.toJson()));
+    var url = Optional.ofNullable(project.getUrl());
+    this.addToRow("url", rowBuilder, url.orElse(null), columns);
 
-    this.addToRow("title", rowBuilder, project.getName());
+    var componentIds =
+        Optional.ofNullable(project.getComponents())
+            .map(components -> components.stream().map(ProjectComponent::getId).toList());
+    this.addToRow("component_ids", rowBuilder, componentIds.orElse(null), columns);
 
+    var properties =
+        Optional.ofNullable(project.getProperties())
+            .map(
+                p -> {
+                  try {
+                    return objectMapper.writeValueAsString(p);
+                  } catch (JsonProcessingException e) {
+                    throw new DASSdkException(e.getMessage(), e);
+                  }
+                })
+            .orElse(null);
+
+    this.addToRow("properties", rowBuilder, properties, columns);
+
+    var issueTypes =
+        Optional.ofNullable(project.getIssueTypes())
+            .map(l -> l.stream().map(IssueTypeDetails::toJson).toList())
+            .orElse(null);
+
+    this.addToRow("issue_types", rowBuilder, issueTypes, columns);
+
+    var projectCategory =
+        Optional.ofNullable(project.getProjectCategory()).map(ProjectCategory::toJson);
+    this.addToRow("project_category", rowBuilder, projectCategory.orElse(null), columns);
+    this.addToRow("title", rowBuilder, project.getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the project.", createStringType()));
     columns.put("name", createColumn("name", "The name of the project.", createStringType()));
     columns.put("key", createColumn("key", "The key of the project.", createStringType()));

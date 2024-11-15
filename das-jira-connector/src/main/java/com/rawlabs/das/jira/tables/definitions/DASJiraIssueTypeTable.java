@@ -66,7 +66,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       issueTypeCreateBean.setDescription(description);
       issueTypeCreateBean.setName(name);
       issueTypeCreateBean.setHierarchyLevel(hierarchyLevel);
-      return toRow(issueTypesApi.createIssueType(issueTypeCreateBean));
+      return toRow(issueTypesApi.createIssueType(issueTypeCreateBean), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -78,7 +78,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       String id = (String) extractValueFactory.extractValue(rowId);
       IssueTypeUpdateBean issueTypeUpdateBean = new IssueTypeUpdateBean();
       var result = issueTypesApi.updateIssueType(id, issueTypeUpdateBean);
-      return toRow(result);
+      return toRow(result, List.of());
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
@@ -101,34 +101,36 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       @Nullable List<SortKey> sortKeys,
       @Nullable Long limit) {
     try {
-      return fromRowIterator(issueTypesApi.getIssueAllTypes().stream().map(this::toRow).iterator());
+      return fromRowIterator(
+          issueTypesApi.getIssueAllTypes().stream().map(i -> toRow(i, columns)).iterator());
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Row toRow(IssueTypeDetails issueTypeDetails) {
+  private Row toRow(IssueTypeDetails issueTypeDetails, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, issueTypeDetails.getId());
-    addToRow("name", rowBuilder, issueTypeDetails.getName());
-    addToRow("self", rowBuilder, issueTypeDetails.getSelf());
-    addToRow("description", rowBuilder, issueTypeDetails.getDescription());
-    addToRow("avatar_id", rowBuilder, issueTypeDetails.getAvatarId());
-    Optional.ofNullable(issueTypeDetails.getEntityId())
-        .ifPresent(entityId -> addToRow("entity_id", rowBuilder, entityId.toString()));
-    addToRow("hierarchy_level", rowBuilder, issueTypeDetails.getHierarchyLevel());
-    addToRow("icon_url", rowBuilder, issueTypeDetails.getIconUrl());
-    addToRow("subtask", rowBuilder, issueTypeDetails.getSubtask());
-    Optional.ofNullable(issueTypeDetails.getScope())
-        .ifPresent(scope -> addToRow("scope", rowBuilder, scope.toJson()));
-    addToRow("title", rowBuilder, issueTypeDetails.getName());
+    addToRow("id", rowBuilder, issueTypeDetails.getId(), columns);
+    addToRow("name", rowBuilder, issueTypeDetails.getName(), columns);
+    addToRow("self", rowBuilder, issueTypeDetails.getSelf(), columns);
+    addToRow("description", rowBuilder, issueTypeDetails.getDescription(), columns);
+    addToRow("avatar_id", rowBuilder, issueTypeDetails.getAvatarId(), columns);
+    var entityId =
+        Optional.ofNullable(issueTypeDetails.getEntityId()).map(Object::toString).orElse(null);
+    addToRow("entity_id", rowBuilder, entityId, columns);
+    addToRow("hierarchy_level", rowBuilder, issueTypeDetails.getHierarchyLevel(), columns);
+    addToRow("icon_url", rowBuilder, issueTypeDetails.getIconUrl(), columns);
+    addToRow("subtask", rowBuilder, issueTypeDetails.getSubtask(), columns);
+
+    var scope = Optional.ofNullable(issueTypeDetails.getScope()).map(Scope::toJson).orElse(null);
+    addToRow("scope", rowBuilder, scope, columns);
+    addToRow("title", rowBuilder, issueTypeDetails.getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the issue type.", createStringType()));
     columns.put("name", createColumn("name", "The name of the issue type.", createStringType()));
     columns.put(

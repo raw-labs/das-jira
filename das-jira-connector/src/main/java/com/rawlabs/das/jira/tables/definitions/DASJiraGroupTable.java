@@ -67,7 +67,7 @@ public class DASJiraGroupTable extends DASJiraTable {
       GroupDetails groupDetails = new GroupDetails();
       groupDetails.setName(group.getName());
       groupDetails.setGroupId(group.getGroupId());
-      return toRow(groupDetails, Collections.emptyList(), Collections.emptyList());
+      return toRow(groupDetails, List.of(), List.of(), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -135,7 +135,7 @@ public class DASJiraGroupTable extends DASJiraTable {
             }
           }
         }
-        return toRow(groupDetails, memberIds, memberNames);
+        return toRow(groupDetails, memberIds, memberNames, columns);
       }
 
       @Override
@@ -151,19 +151,22 @@ public class DASJiraGroupTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(GroupDetails groupDetails, List<String> memberIds, List<String> memberNames) {
+  private Row toRow(
+      GroupDetails groupDetails,
+      List<String> memberIds,
+      List<String> memberNames,
+      List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("name", rowBuilder, groupDetails.getName());
-    addToRow("id", rowBuilder, groupDetails.getGroupId());
-    addToRow("member_ids", rowBuilder, memberIds);
-    addToRow("member_names", rowBuilder, memberNames);
+    addToRow("name", rowBuilder, groupDetails.getName(), columns);
+    addToRow("id", rowBuilder, groupDetails.getGroupId(), columns);
+    addToRow("member_ids", rowBuilder, memberIds, columns);
+    addToRow("member_names", rowBuilder, memberNames, columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("name", createColumn("name", "The name of the group.", createStringType()));
     columns.put("id", createColumn("id", "The ID of the group.", createStringType()));
     columns.put(

@@ -14,100 +14,146 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
   }
 
   protected void processFields(
-      Map<String, Object> fields, Map<String, String> names, Row.Builder rowBuilder) {
-    Optional.ofNullable(fields.get(names.get("Project")))
-        .ifPresent(
-            p -> {
-              addToRow("project_key", rowBuilder, ((Map<String, Object>) p).get("key"));
-              addToRow("project_id", rowBuilder, ((Map<String, Object>) p).get("id"));
-            });
+      Map<String, Object> fields,
+      Map<String, String> names,
+      Row.Builder rowBuilder,
+      List<String> columns) {
 
-    Optional.ofNullable(fields.get(names.getOrDefault("Status", "Status")))
-        .ifPresent(
-            s -> {
-              Map<String, Object> status = (Map<String, Object>) s;
-              addToRow("status", rowBuilder, status.get("name"));
+    var maybeFields = Optional.ofNullable(fields);
 
-              Map<String, Object> statusCategory =
-                  (Map<String, Object>) status.get("statusCategory");
-              if (statusCategory != null) {
-                addToRow("status_category", rowBuilder, statusCategory.get("name"));
-              }
-            });
+    var project =
+        maybeFields.map(f -> f.get(names.get("Project"))).map(p -> (Map<String, Object>) p);
 
-    Optional.ofNullable(fields.get(names.get("Assignee")))
-        .ifPresent(
-            a -> {
-              addToRow(
-                  "assignee_account_id", rowBuilder, ((Map<String, Object>) a).get("accountId"));
-              addToRow(
-                  "assignee_display_name",
-                  rowBuilder,
-                  ((Map<String, Object>) a).get("displayName"));
-            });
+    addToRow("project_key", rowBuilder, project.map(p -> p.get("key")).orElse(null), columns);
+    addToRow("project_id", rowBuilder, project.map(p -> p.get("id")).orElse(null), columns);
 
-    addToRow("created", rowBuilder, fields.get(names.get("Created")));
+    var status = maybeFields.map(f -> f.get(names.get("Status"))).map(p -> (Map<String, Object>) p);
 
-    Optional.ofNullable(fields.get(names.get("Creator")))
-        .ifPresent(
-            c -> {
-              addToRow(
-                  "creator_account_id", rowBuilder, ((Map<String, Object>) c).get("accountId"));
-              addToRow(
-                  "creator_display_name", rowBuilder, ((Map<String, Object>) c).get("displayName"));
-            });
+    addToRow("status", rowBuilder, status.map(s -> s.get("name")).orElse(null), columns);
 
-    addToRow("description", rowBuilder, fields.get("Description"));
-    addToRow("due_date", rowBuilder, fields.get(names.get("Due date")));
+    var assignee =
+        maybeFields.map(f -> f.get(names.get("Assignee"))).map(p -> (Map<String, Object>) p);
 
-    Optional.ofNullable(fields.get(names.get("Priority")))
-        .ifPresent(p -> addToRow("priority", rowBuilder, ((Map<String, Object>) p).get("name")));
+    addToRow(
+        "assignee_account_id",
+        rowBuilder,
+        assignee.map(a -> a.get("accountId")).orElse(null),
+        columns);
 
-    Optional.ofNullable(fields.get(names.get("Reporter")))
-        .ifPresent(
-            r -> {
-              addToRow(
-                  "reporter_account_id", rowBuilder, ((Map<String, Object>) r).get("accountId"));
-              addToRow(
-                  "reporter_display_name",
-                  rowBuilder,
-                  ((Map<String, Object>) r).get("displayName"));
-            });
+    addToRow(
+        "assignee_display_name",
+        rowBuilder,
+        assignee.map(a -> a.get("displayName")).orElse(null),
+        columns);
 
-    addToRow("summary", rowBuilder, fields.get("Summary"));
+    addToRow(
+        "created",
+        rowBuilder,
+        maybeFields.map(f -> f.get(names.get("Created"))).orElse(null),
+        columns);
 
-    Optional.ofNullable(fields.get(names.get("Issue Type")))
-        .ifPresent(t -> addToRow("type", rowBuilder, ((Map<String, Object>) t).get("name")));
+    var creator =
+        maybeFields.map(f -> f.get(names.get("Creator"))).map(p -> (Map<String, Object>) p);
 
-    addToRow("updated", rowBuilder, fields.get(names.get("Updated")));
+    addToRow(
+        "creator_account_id",
+        rowBuilder,
+        creator.map(c -> c.get("accountId")).orElse(null),
+        columns);
 
-    ArrayList<Object> components = (ArrayList<Object>) fields.get(names.get("Components"));
-    Optional.ofNullable(components)
-        .ifPresent(
-            _ -> {
-              List<String> componentIds = new ArrayList<>();
-              components.forEach(
-                  comp -> componentIds.add(((Map<String, Object>) comp).get("id").toString()));
-              addToRow("components", rowBuilder, componentIds);
-            });
+    addToRow(
+        "creator_display_name",
+        rowBuilder,
+        creator.map(c -> c.get("displayName")).orElse(null),
+        columns);
+
+    addToRow(
+        "description",
+        rowBuilder,
+        maybeFields.map(f -> f.get("Description")).orElse(null),
+        columns);
+
+    addToRow(
+        "due_date",
+        rowBuilder,
+        maybeFields.map(f -> f.get(names.get("Due date"))).orElse(null),
+        columns);
+
+    var priority =
+        maybeFields.map(f -> f.get(names.get("Priority"))).map(p -> (Map<String, Object>) p);
+
+    addToRow("priority", rowBuilder, priority.map(p -> p.get("name")).orElse(null), columns);
+
+    var reporter =
+        maybeFields.map(f -> f.get(names.get("Reporter"))).map(p -> (Map<String, Object>) p);
+
+    addToRow(
+        "reporter_account_id",
+        rowBuilder,
+        reporter.map(r -> r.get("accountId")).orElse(null),
+        columns);
+    addToRow(
+        "reporter_display_name",
+        rowBuilder,
+        reporter.map(r -> r.get("displayName")).orElse(null),
+        columns);
+
+    addToRow("summary", rowBuilder, maybeFields.map(f -> f.get("Summary")).orElse(null), columns);
+
+    var type =
+        maybeFields
+            .map(f -> (Map<String, Object>) f.get(names.get("Issue Type")))
+            .map(i -> i.get("name"))
+            .orElse(null);
+
+    addToRow("type", rowBuilder, type, columns);
+
+    addToRow(
+        "updated",
+        rowBuilder,
+        maybeFields.map(f -> f.get(names.get("Updated"))).orElse(null),
+        columns);
+
+    var componentIds =
+        maybeFields
+            .map(f -> ((ArrayList<Object>) f.get("Components")))
+            .map(
+                c -> {
+                  List<String> cmpIds = new ArrayList<>();
+                  c.forEach(comp -> cmpIds.add(((Map<String, Object>) comp).get("id").toString()));
+                  return cmpIds;
+                })
+            .orElse(null);
+
+    addToRow("components", rowBuilder, componentIds, columns);
+
     try {
-      addToRow("fields", rowBuilder, objectMapper.writeValueAsString(fields));
+      addToRow("fields", rowBuilder, objectMapper.writeValueAsString(fields), columns);
     } catch (JsonProcessingException e) {
       throw new DASSdkApiException(e.getMessage());
     }
 
-    addToRow("labels", rowBuilder, fields.get(names.get("Labels")));
-    Optional.ofNullable(fields.get(names.get("Labels")))
-        .ifPresent(
-            l -> {
-              List<String> labels = (List<String>) l;
-              Map<String, Boolean> tags = new HashMap<>();
-              labels.forEach(label -> tags.put(label, true));
-              try {
-                addToRow("tags", rowBuilder, objectMapper.writeValueAsString(tags));
-              } catch (JsonProcessingException e) {
-                throw new DASSdkApiException(e.getMessage());
-              }
-            });
+    addToRow(
+        "labels",
+        rowBuilder,
+        maybeFields.map(f -> f.get(names.get("Labels"))).orElse(null),
+        columns);
+
+    Map<String, Boolean> tags =
+        maybeFields
+            .map(f -> (List<String>) f.get(names.get("Labels")))
+            .map(
+                l -> {
+                  Map<String, Boolean> tagsMap = new HashMap<>();
+                  l.forEach(label -> tagsMap.put(label, true));
+                  return tagsMap;
+                })
+            .orElse(null);
+
+    try {
+      addToRow("tags", rowBuilder, objectMapper.writeValueAsString(tags), columns);
+    } catch (JsonProcessingException e) {
+      throw new DASSdkApiException(e.getMessage());
+    }
   }
 }

@@ -6,16 +6,14 @@ import com.rawlabs.das.jira.rest.software.model.Epic;
 import com.rawlabs.das.jira.rest.software.model.EpicSearchResult;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
 import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,29 +52,28 @@ public class DASJiraEpicTable extends DASJiraTable {
       @Nullable Long limit) {
     try {
       EpicSearchResult result = epicApi.searchPaginatedEpics(0, withMaxResultOrLimit(limit));
-      return fromRowIterator(result.getValues().stream().map(this::toRow).iterator());
+      return fromRowIterator(result.getValues().stream().map(v -> toRow(v, columns)).iterator());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
   }
 
-  private Row toRow(Epic epic) {
+  private Row toRow(Epic epic, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, epic.getId());
-    addToRow("name", rowBuilder, epic.getName());
-    addToRow("key", rowBuilder, epic.getKey());
-    addToRow("done", rowBuilder, epic.getDone());
-    addToRow("self", rowBuilder, epic.getSelf().toString());
-    addToRow("summary", rowBuilder, epic.getSummary());
-    addToRow("color", rowBuilder, epic.getColor().getKey());
-    addToRow("title", rowBuilder, epic.getName());
+    addToRow("id", rowBuilder, epic.getId(), columns);
+    addToRow("name", rowBuilder, epic.getName(), columns);
+    addToRow("key", rowBuilder, epic.getKey(), columns);
+    addToRow("done", rowBuilder, epic.getDone(), columns);
+    addToRow("self", rowBuilder, epic.getSelf().toString(), columns);
+    addToRow("summary", rowBuilder, epic.getSummary(), columns);
+    addToRow("color", rowBuilder, epic.getColor().getKey(), columns);
+    addToRow("title", rowBuilder, epic.getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The id of the epic.", createIntType()));
     columns.put("name", createColumn("name", "The name of the epic.", createStringType()));
     columns.put("key", createColumn("key", "The key of the epic.", createStringType()));

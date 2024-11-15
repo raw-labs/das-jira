@@ -23,7 +23,6 @@ import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
   public static final String TABLE_NAME = "jira_issue";
-
   private IssueSearchApi issueSearchApi = new IssueSearchApi();
   private IssuesApi issuesApi = new IssuesApi();
 
@@ -54,9 +53,9 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       IssueUpdateDetails issueUpdateDetails = new IssueUpdateDetails();
       var result = this.issuesApi.createIssue(issueUpdateDetails, null);
       Row.Builder builder = Row.newBuilder();
-      addToRow("id", builder, result.getId());
-      addToRow("key", builder, result.getKey());
-      addToRow("self", builder, result.getSelf());
+      addToRow("id", builder, result.getId(), List.of());
+      addToRow("key", builder, result.getKey(), List.of());
+      addToRow("self", builder, result.getSelf(), List.of());
       return builder.build();
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
@@ -83,7 +82,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
       @Override
       public Row next() {
-        return toRow(this.getNext(), names());
+        return toRow(this.getNext(), names(), columns);
       }
 
       @Override
@@ -112,64 +111,67 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   }
 
   @SuppressWarnings("unchecked")
-  private Row toRow(IssueBean issueBean, Map<String, String> names) {
+  private Row toRow(IssueBean issueBean, Map<String, String> names, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, issueBean.getId());
-    addToRow("key", rowBuilder, issueBean.getKey());
-    Optional.ofNullable(issueBean.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
-    Optional.ofNullable(issueBean.getFields())
-        .ifPresent(
-            fields -> {
-              processFields(fields, names, rowBuilder);
+    addToRow("id", rowBuilder, issueBean.getId(), columns);
+    addToRow("key", rowBuilder, issueBean.getKey(), columns);
+    var self = Optional.ofNullable(issueBean.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
 
-              Optional.ofNullable(fields.get(names.get("Parent")))
-                  .ifPresent(
-                      p ->
-                          Optional.ofNullable(((Map<String, Object>) p).get("fields"))
-                              .flatMap(
-                                  parentFields ->
-                                      Optional.ofNullable(
-                                              ((Map<String, Object>) parentFields)
-                                                  .get(names.get("Issue Type")))
-                                          .flatMap(
-                                              issueType ->
-                                                  Optional.ofNullable(
-                                                      ((Map<String, Object>) issueType)
-                                                          .get("name"))))
-                              .ifPresent(
-                                  name -> {
-                                    if (name.equals("Epic")) {
-                                      addToRow(
-                                          "epic_key",
-                                          rowBuilder,
-                                          ((Map<String, Object>) p).get("key"));
-                                    }
-                                  }));
-              Optional.ofNullable(fields.get(names.get("Sprint")))
-                  .ifPresent(
-                      sprints -> {
-                        List<Map<String, Object>> sprintList = (List<Map<String, Object>>) sprints;
-                        addToRow(
-                            "sprint_ids",
-                            rowBuilder,
-                            sprintList.stream().map(s -> s.get("id").toString()).toList());
-                        addToRow(
-                            "sprint_names",
-                            rowBuilder,
-                            sprintList.stream().map(s -> s.get("name")).toList());
-                      });
-            });
+    var maybeFields = Optional.ofNullable(issueBean.getFields());
+    processFields(maybeFields.orElse(null), names, rowBuilder, columns);
 
-    addToRow("title", rowBuilder, issueBean.getKey());
+    var status = maybeFields.map(f -> f.get(names.get("Status"))).map(p -> (Map<String, Object>) p);
+
+    var statusCategory = status.map(s -> s.get("statusCategory")).map(p -> (Map<String, Object>) p);
+    addToRow(
+        "status_category",
+        rowBuilder,
+        statusCategory.map(s -> s.get("name")).orElse(null),
+        columns);
+
+    var epic =
+        maybeFields
+            .map(f -> f.get(names.get("Parent")))
+            .map(p -> (Map<String, Object>) p)
+            .map(p -> p.get("fields"))
+            .map(f -> (Map<String, Object>) f)
+            .map(f -> f.get(names.get("Issue Type")))
+            .map(i -> (Map<String, Object>) i)
+            .map(i -> i.get("name"))
+            .map(
+                name -> {
+                  if (name.equals("Epic")) {
+                    return maybeFields.get().get("key");
+                  }
+                  return null;
+                });
+
+    addToRow("epic_key", rowBuilder, epic.orElse(null), columns);
+
+    var sprints =
+        maybeFields.map(f -> f.get(names.get("Sprint"))).map(s -> (List<Map<String, Object>>) s);
+    addToRow(
+        "sprint_ids",
+        rowBuilder,
+        sprints
+            .map(sprintList -> sprintList.stream().map(s -> s.get("id").toString()).toList())
+            .orElse(null),
+        columns);
+    addToRow(
+        "sprint_names",
+        rowBuilder,
+        sprints.map(s -> s.stream().map(sprint -> sprint.get("name")).toList()).orElse(null),
+        columns);
+
+    addToRow("title", rowBuilder, issueBean.getKey(), columns);
 
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the issue", createStringType()));
     columns.put("key", createColumn("key", "The key of the issue", createStringType()));
     columns.put("self", createColumn("self", "The URL of the issue details", createStringType()));

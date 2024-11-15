@@ -12,7 +12,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
@@ -33,7 +32,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_issue_worklog";
 
-  private DASTable parentTable;
+  private DASJiraTable parentTable;
 
   private IssueWorklogsApi issueWorklogsApi = new IssueWorklogsApi();
 
@@ -88,7 +87,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
       Worklog resultWorklog =
           issueWorklogsApi.addWorklog(
               worklog.getIssueId(), worklog, null, null, null, null, null, null);
-      return toRow(resultWorklog);
+      return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -108,7 +107,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               null,
               null,
               null);
-      return toRow(resultWorklog);
+      return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -129,7 +128,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
 
           @Override
           public Row next() {
-            return toRow(getNext());
+            return toRow(getNext(), columns);
           }
 
           @Override
@@ -150,45 +149,56 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Worklog worklog) {
+  private Row toRow(Worklog worklog, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, worklog.getId());
-    addToRow("issue_id", rowBuilder, worklog.getIssueId());
-    Optional.ofNullable(worklog.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
-    Optional.ofNullable(worklog.getComment())
-        .ifPresent(
-            comment -> {
-              addToRow("comment", rowBuilder, comment.toString());
-            });
-    Optional.ofNullable(worklog.getStarted())
-        .ifPresent(started -> addToRow("started", rowBuilder, started));
-    Optional.ofNullable(worklog.getCreated())
-        .ifPresent(created -> addToRow("created", rowBuilder, created));
-    Optional.ofNullable(worklog.getUpdated())
-        .ifPresent(updated -> addToRow("updated", rowBuilder, updated));
-    addToRow("time_spent", rowBuilder, worklog.getTimeSpent());
-    Optional.ofNullable(worklog.getTimeSpentSeconds())
-        .ifPresent(
-            timeSpentSeconds ->
-                addToRow("time_spent_seconds", rowBuilder, timeSpentSeconds.toString()));
+    addToRow("id", rowBuilder, worklog.getId(), columns);
+    addToRow("issue_id", rowBuilder, worklog.getIssueId(), columns);
+    var self = Optional.ofNullable(worklog.getSelf()).map(URI::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
+
+    var comment = Optional.ofNullable(worklog.getComment()).map(Object::toString).orElse(null);
+    addToRow("comment", rowBuilder, comment, columns);
+
+    var started = Optional.ofNullable(worklog.getStarted()).map(Object::toString).orElse(null);
+    addToRow("started", rowBuilder, started, columns);
+
+    var created = Optional.ofNullable(worklog.getCreated()).map(Object::toString).orElse(null);
+    addToRow("created", rowBuilder, created, columns);
+
+    var updated = Optional.ofNullable(worklog.getUpdated()).map(Object::toString).orElse(null);
+    addToRow("updated", rowBuilder, updated, columns);
+
+    var timeSpent = Optional.ofNullable(worklog.getTimeSpent()).map(Object::toString).orElse(null);
+    addToRow("time_spent", rowBuilder, timeSpent, columns);
+
+    var timeSpentSeconds =
+        Optional.ofNullable(worklog.getTimeSpentSeconds()).map(Object::toString).orElse(null);
+    addToRow("time_spent_seconds", rowBuilder, timeSpentSeconds, columns);
+
     try {
-      addToRow("properties", rowBuilder, objectMapper.writeValueAsString(worklog.getProperties()));
+      addToRow(
+          "properties",
+          rowBuilder,
+          objectMapper.writeValueAsString(worklog.getProperties()),
+          columns);
     } catch (JsonProcessingException e) {
       throw new DASSdkApiException(e.getMessage());
     }
-    Optional.ofNullable(worklog.getUpdateAuthor())
-        .ifPresent(updateAuthor -> addToRow("update_author", rowBuilder, updateAuthor.toJson()));
-    Optional.ofNullable(worklog.getAuthor())
-        .ifPresent(author -> addToRow("author", rowBuilder, author.toJson()));
-    addToRow("title", rowBuilder, worklog.getId());
+
+    var updateAuthor =
+        Optional.ofNullable(worklog.getUpdateAuthor()).map(UserDetails::toJson).orElse(null);
+    addToRow("update_author", rowBuilder, updateAuthor, columns);
+
+    var author = Optional.ofNullable(worklog.getAuthor()).map(UserDetails::toJson).orElse(null);
+    addToRow("author", rowBuilder, author, columns);
+
+    addToRow("title", rowBuilder, worklog.getId(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put(
         "id", createColumn("id", "A unique identifier for the worklog entry.", createStringType()));
     columns.put("issue_id", createColumn("issue_id", "The ID of the issue.", createStringType()));

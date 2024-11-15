@@ -6,9 +6,8 @@ import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ModelConfiguration;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.RowsEstimation;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
 import com.rawlabs.protocol.das.Row;
@@ -55,41 +54,50 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
       @Nullable Long limit) {
     try {
       ModelConfiguration config = jiraSettingsApi.getConfiguration();
-      Iterator<Row> iterator = List.of(toRow(config)).iterator();
+      Iterator<Row> iterator = List.of(toRow(config, columns)).iterator();
       return fromRowIterator(iterator);
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Row toRow(ModelConfiguration configuration) {
+  private Row toRow(ModelConfiguration configuration, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("voting_enabled", rowBuilder, configuration.getVotingEnabled());
-    addToRow("watching_enabled", rowBuilder, configuration.getWatchingEnabled());
-    addToRow("unassigned_issues_allowed", rowBuilder, configuration.getUnassignedIssuesAllowed());
-    addToRow("sub_tasks_enabled", rowBuilder, configuration.getSubTasksEnabled());
-    addToRow("issue_linking_enabled", rowBuilder, configuration.getIssueLinkingEnabled());
-    addToRow("time_tracking_enabled", rowBuilder, configuration.getTimeTrackingEnabled());
-    addToRow("attachments_enabled", rowBuilder, configuration.getAttachmentsEnabled());
-    Optional.ofNullable(configuration.getTimeTrackingConfiguration())
-        .ifPresent(
-            timeTrackingConfiguration -> {
-              try {
-                addToRow(
-                    "time_tracking_configuration",
-                    rowBuilder,
-                    objectMapper.writeValueAsString(timeTrackingConfiguration));
-              } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-              }
-            });
+    addToRow("voting_enabled", rowBuilder, configuration.getVotingEnabled(), columns);
+    addToRow("watching_enabled", rowBuilder, configuration.getWatchingEnabled(), columns);
+    addToRow(
+        "unassigned_issues_allowed",
+        rowBuilder,
+        configuration.getUnassignedIssuesAllowed(),
+        columns);
+    addToRow("sub_tasks_enabled", rowBuilder, configuration.getSubTasksEnabled(), columns);
+    addToRow("issue_linking_enabled", rowBuilder, configuration.getIssueLinkingEnabled(), columns);
+    addToRow("time_tracking_enabled", rowBuilder, configuration.getTimeTrackingEnabled(), columns);
+    addToRow("attachments_enabled", rowBuilder, configuration.getAttachmentsEnabled(), columns);
+    var maybeTimeTrackingConfiguration =
+        Optional.ofNullable(configuration.getTimeTrackingConfiguration());
+
+    addToRow(
+        "time_tracking_configuration",
+        rowBuilder,
+        maybeTimeTrackingConfiguration
+            .map(
+                c -> {
+                  try {
+                    return objectMapper.writeValueAsString(c);
+                  } catch (JsonProcessingException e) {
+                    throw new DASSdkApiException(e.getMessage(), e);
+                  }
+                })
+            .orElse(null),
+        columns);
+
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put(
         "voting_enabled",
         createColumn(
