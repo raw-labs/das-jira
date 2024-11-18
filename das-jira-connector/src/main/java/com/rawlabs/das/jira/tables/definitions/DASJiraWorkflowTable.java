@@ -9,7 +9,6 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
@@ -81,7 +80,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
     return new DASJiraPaginatedResult<Workflow>(limit) {
       @Override
       public Row next() {
-        return toRow(getNext());
+        return toRow(getNext(), columns);
       }
 
       @Override
@@ -104,13 +103,12 @@ public class DASJiraWorkflowTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Workflow workflow) {
+  private Row toRow(Workflow workflow, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("name", rowBuilder, workflow.getId().getName());
-    addToRow("entity_id", rowBuilder, workflow.getId().getEntityId());
-    addToRow("description", rowBuilder, workflow.getDescription());
-    addToRow("is_default", rowBuilder, workflow.getIsDefault());
+    addToRow("name", rowBuilder, workflow.getId().getName(), columns);
+    addToRow("entity_id", rowBuilder, workflow.getId().getEntityId(), columns);
+    addToRow("description", rowBuilder, workflow.getDescription(), columns);
+    addToRow("is_default", rowBuilder, workflow.getIsDefault(), columns);
     try {
       StringBuilder sb = new StringBuilder();
       StringJoiner joiner = new StringJoiner(",");
@@ -119,18 +117,19 @@ public class DASJiraWorkflowTable extends DASJiraTable {
           .ifPresent(t -> t.forEach(transition -> joiner.add(transition.toJson())));
       sb.append(joiner.toString());
       sb.append("]");
-      addToRow("transitions", rowBuilder, sb.toString());
-      addToRow("statuses", rowBuilder, objectMapper.writeValueAsString(workflow.getStatuses()));
+      addToRow("transitions", rowBuilder, sb.toString(), columns);
+      addToRow(
+          "statuses", rowBuilder, objectMapper.writeValueAsString(workflow.getStatuses()), columns);
     } catch (JsonProcessingException e) {
       throw new DASSdkApiException(e.getMessage());
     }
-    addToRow("title", rowBuilder, workflow.getId().getName());
+    addToRow("title", rowBuilder, workflow.getId().getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("name", createColumn("name", "The name of the workflow.", createStringType()));
     columns.put(
         "entity_id",

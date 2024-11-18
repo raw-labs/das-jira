@@ -10,7 +10,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
@@ -27,7 +26,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private static final String TABLE_NAME = "jira_backlog_issue";
 
-  private DASTable parentTable;
+  private DASJiraTable parentTable;
 
   private BoardApi boardApi = new BoardApi();
 
@@ -97,7 +96,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
             Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
             String boardName = (String) extractValueFactory.extractValue(parentRow, "name");
 
-            return toRow(boardId, boardName, this.getNext(), this.names());
+            return toRow(boardId, boardName, this.getNext(), this.names(), columns);
           }
 
           @Override
@@ -122,38 +121,40 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   @SuppressWarnings("unchecked")
   private Row toRow(
-      Long boardId, String boardName, IssueBean issueBean, Map<String, String> names) {
+      Long boardId,
+      String boardName,
+      IssueBean issueBean,
+      Map<String, String> names,
+      List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
 
-    addToRow("id", rowBuilder, issueBean.getId());
-    addToRow("key", rowBuilder, issueBean.getKey());
+    addToRow("id", rowBuilder, issueBean.getId(), columns);
+    addToRow("key", rowBuilder, issueBean.getKey(), columns);
 
-    Optional.ofNullable(issueBean.getSelf())
-        .ifPresent(s -> addToRow("self", rowBuilder, s.toString()));
+    var self = Optional.ofNullable(issueBean.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
 
-    addToRow("board_name", rowBuilder, boardName);
-    addToRow("board_id", rowBuilder, boardId);
+    addToRow("board_name", rowBuilder, boardName, columns);
+    addToRow("board_id", rowBuilder, boardId, columns);
 
-    Optional.ofNullable(issueBean.getFields())
-        .ifPresent(
-            fields -> {
-              processFields(issueBean.getFields(), names, rowBuilder);
-              Optional.ofNullable(fields.get("epic"))
-                  .ifPresent(
-                      e -> {
-                        Map<String, Object> epic = (Map<String, Object>) e;
-                        addToRow("key", rowBuilder, epic.getOrDefault("key", null));
-                      });
-            });
+    var maybeFields = Optional.ofNullable(issueBean.getFields());
+    processFields(maybeFields.orElse(null), names, rowBuilder, columns);
 
-    addToRow("title", rowBuilder, issueBean.getKey());
+    var epic =
+        maybeFields
+            .map(f -> f.get("epic"))
+            .map(e -> (Map<String, Object>) e)
+            .map(e -> e.get("key"))
+            .orElse(null);
+    addToRow("epic_key", rowBuilder, epic, columns);
+
+    addToRow("title", rowBuilder, issueBean.getKey(), columns);
 
     return rowBuilder.build();
   }
 
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columnDefinitions = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columnDefinitions = new LinkedHashMap<>();
     columnDefinitions.put("id", createColumn("id", "The ID of the issue.", createStringType()));
     columnDefinitions.put(
         "board_name",

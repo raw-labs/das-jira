@@ -11,7 +11,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
 import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
 import com.rawlabs.protocol.das.ColumnDefinition;
 import com.rawlabs.protocol.das.Qual;
@@ -20,10 +19,7 @@ import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -32,7 +28,7 @@ public class DASJiraSprintTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_sprint";
 
-  private DASTable parentTable;
+  private DASJiraTable parentTable;
 
   private BoardApi boardApi = new BoardApi();
   private SprintApi sprintApi = new SprintApi();
@@ -69,7 +65,7 @@ public class DASJiraSprintTable extends DASJiraTable {
           (Long) extractValueFactory.extractValue(row, "board_id"));
       createSprintRequest.setGoal((String) extractValueFactory.extractValue(row, "goal"));
       Sprint sprint = sprintApi.createSprint(createSprintRequest);
-      return toRow(sprint, sprint.getOriginBoardId());
+      return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -90,7 +86,7 @@ public class DASJiraSprintTable extends DASJiraTable {
       Sprint sprint =
           sprintApi.updateSprint(
               (Long) extractValueFactory.extractValue(rowId), updateSprintRequest);
-      return toRow(sprint, sprint.getOriginBoardId());
+      return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -119,7 +115,7 @@ public class DASJiraSprintTable extends DASJiraTable {
 
           @Override
           public Row next() {
-            return toRow(getNext(), boardId);
+            return toRow(getNext(), boardId, columns);
           }
 
           @Override
@@ -137,28 +133,33 @@ public class DASJiraSprintTable extends DASJiraTable {
     };
   }
 
-  private Row toRow(Sprint sprint, Long boardId) {
+  private Row toRow(Sprint sprint, Long boardId, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, sprint.getId());
-    addToRow("name", rowBuilder, sprint.getName());
-    addToRow("board_id", rowBuilder, boardId);
-    Optional.ofNullable(sprint.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
-    addToRow("state", rowBuilder, sprint.getState());
-    Optional.ofNullable(sprint.getStartDate())
-        .ifPresent(startDate -> addToRow("start_date", rowBuilder, startDate.toString()));
-    Optional.ofNullable(sprint.getEndDate())
-        .ifPresent(endDate -> addToRow("end_date", rowBuilder, endDate.toString()));
-    Optional.ofNullable(sprint.getCompleteDate())
-        .ifPresent(completeDate -> addToRow("complete_date", rowBuilder, completeDate.toString()));
-    addToRow("title", rowBuilder, sprint.getName());
+    addToRow("id", rowBuilder, sprint.getId(), columns);
+    addToRow("name", rowBuilder, sprint.getName(), columns);
+    addToRow("board_id", rowBuilder, boardId, columns);
+
+    var self = Optional.ofNullable(sprint.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
+    addToRow("state", rowBuilder, sprint.getState(), columns);
+
+    var startDate = Optional.ofNullable(sprint.getStartDate()).map(Object::toString).orElse(null);
+    addToRow("start_date", rowBuilder, startDate, columns);
+
+    var endDate = Optional.ofNullable(sprint.getEndDate()).map(Object::toString).orElse(null);
+    addToRow("end_date", rowBuilder, endDate, columns);
+
+    var completeDate =
+        Optional.ofNullable(sprint.getCompleteDate()).map(Object::toString).orElse(null);
+    addToRow("complete_date", rowBuilder, completeDate, columns);
+
+    addToRow("title", rowBuilder, sprint.getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the sprint.", createIntType()));
     columns.put("name", createColumn("name", "The name of the sprint.", createStringType()));
     columns.put(

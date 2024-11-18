@@ -3,10 +3,7 @@ package com.rawlabs.das.jira.tables.definitions;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectComponentsApi;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
-import com.rawlabs.das.jira.rest.platform.model.ComponentIssuesCount;
-import com.rawlabs.das.jira.rest.platform.model.ComponentWithIssueCount;
-import com.rawlabs.das.jira.rest.platform.model.PageBeanComponentWithIssueCount;
-import com.rawlabs.das.jira.rest.platform.model.ProjectComponent;
+import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
@@ -96,7 +93,7 @@ public class DASJiraComponentTable extends DASJiraTable {
     try {
       ProjectComponent inserted =
           this.projectComponentsApi.createComponent(createProjectComponent(row));
-      return toRow(toComponentWithCount(inserted));
+      return toRow(toComponentWithCount(inserted), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -141,7 +138,7 @@ public class DASJiraComponentTable extends DASJiraTable {
         return new DASJiraPaginatedResult<ComponentWithIssueCount>(limit) {
           @Override
           public Row next() {
-            return toRow(this.getNext());
+            return toRow(this.getNext(), columns);
           }
 
           @Override
@@ -167,55 +164,88 @@ public class DASJiraComponentTable extends DASJiraTable {
     };
   }
 
-  public Row toRow(ComponentWithIssueCount componentWithIssueCount) {
+  public Row toRow(ComponentWithIssueCount componentWithIssueCount, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, componentWithIssueCount.getId());
-    addToRow("name", rowBuilder, componentWithIssueCount.getName());
-    addToRow("description", rowBuilder, componentWithIssueCount.getDescription());
 
-    Optional.ofNullable(componentWithIssueCount.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
+    addToRow("id", rowBuilder, componentWithIssueCount.getId(), columns);
+    addToRow("name", rowBuilder, componentWithIssueCount.getName(), columns);
+    addToRow("description", rowBuilder, componentWithIssueCount.getDescription(), columns);
 
-    addToRow("project", rowBuilder, componentWithIssueCount.getProject());
+    var self =
+        Optional.ofNullable(componentWithIssueCount.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
 
-    Optional.ofNullable(componentWithIssueCount.getAssignee())
-        .ifPresent(
-            assignee -> {
-              addToRow("assignee_account_id", rowBuilder, assignee.getAccountId());
-              addToRow("assignee_display_name", rowBuilder, assignee.getDisplayName());
-              Optional.ofNullable(assignee.getAccountType())
-                  .ifPresent(
-                      accountType -> addToRow("assignee_type", rowBuilder, accountType.getValue()));
-            });
+    addToRow("project", rowBuilder, componentWithIssueCount.getProject(), columns);
+
+    var maybeAssignee = Optional.ofNullable(componentWithIssueCount.getAssignee());
 
     addToRow(
-        "is_assignee_type_valid", rowBuilder, componentWithIssueCount.getIsAssigneeTypeValid());
+        "assignee_account_id",
+        rowBuilder,
+        maybeAssignee.map(User::getAccountId).orElse(null),
+        columns);
 
-    Optional.ofNullable(componentWithIssueCount.getIssueCount())
-        .ifPresent(issueCount -> addToRow("issue_count", rowBuilder, Math.toIntExact(issueCount)));
+    addToRow(
+        "assignee_display_name",
+        rowBuilder,
+        maybeAssignee.map(User::getDisplayName).orElse(null),
+        columns);
 
-    Optional.ofNullable(componentWithIssueCount.getLead())
-        .ifPresent(
-            lead -> {
-              addToRow("lead_account_id", rowBuilder, lead.getAccountId());
-              addToRow("lead_display_name", rowBuilder, lead.getDisplayName());
-            });
+    addToRow(
+        "assignee_type",
+        rowBuilder,
+        maybeAssignee.map(User::getAccountType).map(User.AccountTypeEnum::getValue).orElse(null),
+        columns);
 
-    Optional.ofNullable(componentWithIssueCount.getProjectId())
-        .ifPresent(projectId -> addToRow("project_id", rowBuilder, Math.toIntExact(projectId)));
+    addToRow(
+        "is_assignee_type_valid",
+        rowBuilder,
+        componentWithIssueCount.getIsAssigneeTypeValid(),
+        columns);
 
-    Optional.ofNullable(componentWithIssueCount.getRealAssignee())
-        .ifPresent(
-            realAssignee -> {
-              addToRow("real_assignee_account_id", rowBuilder, realAssignee.getAccountId());
-              addToRow("real_assignee_display_name", rowBuilder, realAssignee.getDisplayName());
-              Optional.ofNullable(realAssignee.getAccountType())
-                  .ifPresent(
-                      accountType ->
-                          addToRow("real_assignee_type", rowBuilder, accountType.getValue()));
-            });
-    addToRow("title", rowBuilder, componentWithIssueCount.getName());
+    var issueCount =
+        Optional.ofNullable(componentWithIssueCount.getIssueCount())
+            .map(Math::toIntExact)
+            .orElse(null);
+    addToRow("issue_count", rowBuilder, issueCount, columns);
+
+    var maybeLead = Optional.ofNullable(componentWithIssueCount.getLead());
+    addToRow(
+        "lead_account_id", rowBuilder, maybeLead.map(User::getAccountId).orElse(null), columns);
+
+    addToRow(
+        "lead_display_name", rowBuilder, maybeLead.map(User::getDisplayName).orElse(null), columns);
+
+    var projectId =
+        Optional.ofNullable(componentWithIssueCount.getProjectId())
+            .map(Math::toIntExact)
+            .orElse(null);
+
+    addToRow("project_id", rowBuilder, projectId, columns);
+
+    var maybeRealAssignee = Optional.ofNullable(componentWithIssueCount.getRealAssignee());
+    addToRow(
+        "real_assignee_account_id",
+        rowBuilder,
+        maybeRealAssignee.map(User::getAccountId).orElse(null),
+        columns);
+
+    addToRow(
+        "real_assignee_display_name",
+        rowBuilder,
+        maybeRealAssignee.map(User::getDisplayName).orElse(null),
+        columns);
+
+    addToRow(
+        "real_assignee_type",
+        rowBuilder,
+        maybeRealAssignee
+            .map(User::getAccountType)
+            .map(User.AccountTypeEnum::getValue)
+            .orElse(null),
+        columns);
+
+    addToRow("title", rowBuilder, componentWithIssueCount.getName(), columns);
     return rowBuilder.build();
   }
 
@@ -256,8 +286,8 @@ public class DASJiraComponentTable extends DASJiraTable {
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put(
         "id", createColumn("id", "The unique identifier for the component.", createStringType()));
     columns.put("name", createColumn("name", "The name for the component.", createStringType()));

@@ -15,6 +15,8 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
 
   private final DASExecuteResult parentResult;
   private DASExecuteResult childResult;
+  private final Long limit;
+  private long currentCount = 0;
 
   public DASJiraWithParentTableResult(
       DASTable parentTable,
@@ -22,7 +24,8 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
       List<String> columns,
       List<SortKey> sortKeys,
       Long limit) {
-    try (DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, limit)) {
+    this.limit = limit;
+    try (DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, null)) {
       this.parentResult = parentResult;
     } catch (IOException e) {
       throw new DASSdkException("Failed to execute parent table", e);
@@ -36,6 +39,9 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
 
   @Override
   public boolean hasNext() {
+    if (limitReached()) {
+      return false;
+    }
     if (childResult != null && childResult.hasNext()) {
       return true;
     }
@@ -54,6 +60,14 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
 
   @Override
   public Row next() {
+    currentCount++;
     return childResult.next();
+  }
+
+  protected boolean limitReached() {
+    if (limit == null) {
+      return false;
+    }
+    return currentCount >= limit;
   }
 }
