@@ -1,8 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
 import com.rawlabs.das.jira.rest.platform.ApiException;
-import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
-import com.rawlabs.das.jira.rest.platform.api.GroupsApi;
 import com.rawlabs.das.jira.rest.platform.api.ProjectRolesApi;
 import com.rawlabs.das.jira.rest.platform.model.CreateUpdateRoleRequestBean;
 import com.rawlabs.das.jira.rest.platform.model.ProjectRole;
@@ -18,10 +16,7 @@ import com.rawlabs.protocol.das.SortKey;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
@@ -71,7 +66,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
   @Override
   public Row insertRow(Row row) {
     try {
-      return toRow(projectRolesApi.createProjectRole(createUpdateRoleRequestBean(row)));
+      return toRow(projectRolesApi.createProjectRole(createUpdateRoleRequestBean(row)), List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -83,7 +78,8 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
       return toRow(
           projectRolesApi.fullyUpdateProjectRole(
               (Long) extractValueFactory.extractValue(rowId),
-              createUpdateRoleRequestBean(newValues)));
+              createUpdateRoleRequestBean(newValues)),
+          List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
@@ -106,33 +102,40 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
       @Nullable Long limit) {
     try {
       List<ProjectRole> result = projectRolesApi.getAllProjectRoles();
-      return fromRowIterator(result.stream().map(this::toRow).iterator());
+      return fromRowIterator(result.stream().map(r -> toRow(r, columns)).iterator());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage());
     }
   }
 
-  private Row toRow(ProjectRole projectRoles) {
+  private Row toRow(ProjectRole projectRoles, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, projectRoles.getId());
-    addToRow("name", rowBuilder, projectRoles.getName());
-    Optional.ofNullable(projectRoles.getSelf())
-        .ifPresent(self -> addToRow("self", rowBuilder, self.toString()));
-    addToRow("description", rowBuilder, projectRoles.getDescription());
-    Optional.ofNullable(projectRoles.getActors())
-        .ifPresent(
-            actors -> {
-              addToRow("actor_names", rowBuilder, actors.stream().map(RoleActor::getName).toList());
-              addToRow(
-                  "actor_account_ids", rowBuilder, actors.stream().map(RoleActor::getId).toList());
-            });
+    addToRow("id", rowBuilder, projectRoles.getId(), columns);
+    addToRow("name", rowBuilder, projectRoles.getName(), columns);
+
+    var self = Optional.ofNullable(projectRoles.getSelf()).map(Object::toString).orElse(null);
+    addToRow("self", rowBuilder, self, columns);
+
+    addToRow("description", rowBuilder, projectRoles.getDescription(), columns);
+
+    var actors = Optional.ofNullable(projectRoles.getActors());
+    addToRow(
+        "actor_account_ids",
+        rowBuilder,
+        actors.map(a -> a.stream().map(RoleActor::getId).toList()).orElse(null),
+        columns);
+
+    addToRow(
+        "actor_names",
+        rowBuilder,
+        actors.map(a -> a.stream().map(RoleActor::getName).toList()).orElse(null),
+        columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    Map<String, ColumnDefinition> columns = new HashMap<>();
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
     columns.put("id", createColumn("id", "The ID of the project role.", createLongType()));
     columns.put("name", createColumn("name", "The name of the project role.", createStringType()));
     columns.put(

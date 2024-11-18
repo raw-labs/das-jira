@@ -55,7 +55,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     try {
       ApplicationProperty applicationProperty =
           jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
-      return toRow(applicationProperty);
+      return toRow(applicationProperty, List.of());
     } catch (ApiException e) {
       throw new DASSdkApiException(e.getMessage(), e);
     }
@@ -95,7 +95,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
         @Override
         public Row next() {
-          return toRow(iterator.next());
+          return toRow(iterator.next(), columns);
         }
       };
     } catch (ApiException e) {
@@ -104,37 +104,43 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     }
   }
 
-  private Row toRow(ApplicationProperty applicationProperty) {
+  private Row toRow(ApplicationProperty applicationProperty, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    this.addToRow("id", rowBuilder, applicationProperty.getId());
-    this.addToRow("name", rowBuilder, applicationProperty.getName());
-    this.addToRow("description", rowBuilder, applicationProperty.getDesc());
-    this.addToRow("key", rowBuilder, applicationProperty.getKey());
-    this.addToRow("type", rowBuilder, applicationProperty.getType());
-    this.addToRow("value", rowBuilder, applicationProperty.getValue());
-    this.addToRow("allowed_values", rowBuilder, applicationProperty.getAllowedValues());
-    this.addToRow("title", rowBuilder, applicationProperty.getName());
+    addToRow("id", rowBuilder, applicationProperty.getId(), columns);
+    addToRow("name", rowBuilder, applicationProperty.getName(), columns);
+    addToRow("description", rowBuilder, applicationProperty.getDesc(), columns);
+    addToRow("key", rowBuilder, applicationProperty.getKey(), columns);
+    addToRow("type", rowBuilder, applicationProperty.getType(), columns);
+    addToRow("value", rowBuilder, applicationProperty.getValue(), columns);
+    addToRow("allowed_values", rowBuilder, applicationProperty.getAllowedValues(), columns);
+    addToRow("title", rowBuilder, applicationProperty.getName(), columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    return Map.of(
-        "id", createColumn("id", "The unique identifier of the property.", createStringType()),
-        "name", createColumn("name", "The name of the application property.", createStringType()),
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
+    columns.put(
+        "id", createColumn("id", "The unique identifier of the property.", createStringType()));
+    columns.put(
+        "name", createColumn("name", "The name of the application property.", createStringType()));
+    columns.put(
         "description",
-            createColumn(
-                "description", "The description of the application property.", createStringType()),
-        "key", createColumn("key", "The key of the application property.", createStringType()),
+        createColumn(
+            "description", "The description of the application property.", createStringType()));
+    columns.put(
+        "key", createColumn("key", "The key of the application property.", createStringType()));
+    columns.put(
         "type",
-            createColumn("type", "The data type of the application property.", createStringType()),
-        "value", createColumn("value", "The new value.", createStringType()),
+        createColumn("type", "The data type of the application property.", createStringType()));
+    columns.put("value", createColumn("value", "The new value.", createStringType()));
+    columns.put(
         "allowed_values",
-            createColumn(
-                "allowed_values",
-                "The allowed values, if applicable.",
-                createListType(createStringType())),
-        "title", createColumn("title", TITLE_DESC, createStringType()));
+        createColumn(
+            "allowed_values",
+            "The allowed values, if applicable.",
+            createListType(createStringType())));
+    columns.put("title", createColumn("title", TITLE_DESC, createStringType()));
+    return columns;
   }
 }

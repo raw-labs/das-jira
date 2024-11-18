@@ -160,14 +160,14 @@ public class DASJiraBoardTable extends DASJiraTable {
       GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner, List<String> columns)
       throws ApiException {
     try {
-      Row row = getBoardsRow(getAllBoards200ResponseValuesInner);
+      Row row = getBoardsRow(getAllBoards200ResponseValuesInner, columns);
       if (columns == null
           || columns.isEmpty()
           || columns.contains("filter_id")
           || columns.contains("sub_query")) {
         GetConfiguration200Response config =
             boardApi.getConfiguration(getAllBoards200ResponseValuesInner.getId());
-        row = addConfigToRow(row, config);
+        row = addConfigToRow(row, config, columns);
       }
       return row;
     } catch (ApiException e) {
@@ -175,59 +175,58 @@ public class DASJiraBoardTable extends DASJiraTable {
     }
   }
 
-  private Row getBoardsRow(GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner) {
+  private Row getBoardsRow(
+      GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner, List<String> columns) {
     Row.Builder rowBuilder = Row.newBuilder();
-    initRow(rowBuilder);
-    addToRow("id", rowBuilder, getAllBoards200ResponseValuesInner.getId());
-    addToRow("name", rowBuilder, getAllBoards200ResponseValuesInner.getName());
+    addToRow("id", rowBuilder, getAllBoards200ResponseValuesInner.getId(), columns);
+    addToRow("name", rowBuilder, getAllBoards200ResponseValuesInner.getName(), columns);
     String self =
         Optional.ofNullable(getAllBoards200ResponseValuesInner.getSelf())
             .map(Object::toString)
             .orElse(null);
-    addToRow("self", rowBuilder, self);
-    addToRow("type", rowBuilder, getAllBoards200ResponseValuesInner.getType());
-    addToRow("title", rowBuilder, getAllBoards200ResponseValuesInner.getName());
+    addToRow("self", rowBuilder, self, columns);
+    addToRow("type", rowBuilder, getAllBoards200ResponseValuesInner.getType(), columns);
+    addToRow("title", rowBuilder, getAllBoards200ResponseValuesInner.getName(), columns);
     return rowBuilder.build();
   }
 
-  private Row addConfigToRow(Row row, GetConfiguration200Response config) {
+  private Row addConfigToRow(Row row, GetConfiguration200Response config, List<String> columns) {
     Row.Builder rowBuilder = row.toBuilder();
     Long filterId =
         Optional.ofNullable(config.getFilter())
             .map(GetConfiguration200ResponseColumnConfigColumnsInnerStatusesInner::getId)
             .map(id -> id.isEmpty() ? null : Long.parseLong(id))
             .orElse(null);
-    addToRow("filter_id", rowBuilder, filterId);
+    addToRow("filter_id", rowBuilder, filterId, columns);
     String subQuery =
         Optional.ofNullable(config.getSubQuery())
             .map(GetConfiguration200ResponseSubQuery::getQuery)
             .orElse(null);
-    addToRow("sub_query", rowBuilder, subQuery);
+    addToRow("sub_query", rowBuilder, subQuery, columns);
     return rowBuilder.build();
   }
 
   @Override
-  protected Map<String, ColumnDefinition> buildColumnDefinitions() {
-    return Map.of(
-        "id",
-        createColumn("id", "The ID of the board.", createLongType()),
-        "name",
-        createColumn("name", "The name of the board.", createStringType()),
-        "self",
-        createColumn("self", "The URL of the board details.", createStringType()),
+  protected LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions() {
+    LinkedHashMap<String, ColumnDefinition> columns = new LinkedHashMap<>();
+    columns.put("id", createColumn("id", "The ID of the board.", createLongType()));
+    columns.put("name", createColumn("name", "The name of the board.", createStringType()));
+    columns.put("self", createColumn("self", "The URL of the board details.", createStringType()));
+    columns.put(
         "type",
         createColumn(
             "type",
             "The board type of the board. Valid values are simple, scrum and kanban.",
-            createStringType()),
-        "filter_id",
-        createColumn("filter_id", "Filter id of the board.", createLongType()),
+            createStringType()));
+    columns.put(
+        "filter_id", createColumn("filter_id", "Filter id of the board.", createLongType()));
+    columns.put(
         "sub_query",
         createColumn(
             "sub_query",
             "JQL subquery used by the given board - (Kanban only).",
-            createStringType()),
-        "title",
-        createColumn("title", TITLE_DESC, createStringType()));
+            createStringType()));
+    columns.put("title", createColumn("title", TITLE_DESC, createStringType()));
+    return columns;
   }
 }
