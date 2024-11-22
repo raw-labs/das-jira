@@ -58,7 +58,7 @@ public class DASJiraJqlQueryBuilder {
               String column = getIssueJqlKey(q.getFieldName());
               String operator = mapOperator(q.getSimpleQual().getOperator());
               String value = mapValue(q.getSimpleQual().getValue());
-              joiner.add(column + " " + operator + " " + value);
+              joiner.add(column + " " + operator + " " + '"' + value + '"');
             });
     jqlQuery.append(joiner);
     return jqlQuery.toString();
