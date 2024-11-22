@@ -30,18 +30,19 @@ public class DASJiraJqlQueryBuilder {
   }
 
   static String mapValue(Value value) {
-    return switch (value) {
+    String s = switch (value) {
       case Value v when v.hasString() -> v.getString().getV();
       case Value v when v.hasTime() -> {
         OffsetTime time = (OffsetTime) extractValueFactory.extractValue(value);
-        yield "\"" + time.format(formatter) + "\"";
+        yield time.format(formatter);
       }
       case Value v when (v.hasTimestamp() || v.hasDate()) -> {
         OffsetDateTime time = (OffsetDateTime) extractValueFactory.extractValue(value);
-        yield "\"" + time.format(formatter) + "\"";
+        yield time.format(formatter);
       }
       default -> throw new IllegalArgumentException("Unexpected value: " + value);
     };
+    return "\"" + s + "\"";
   }
 
   private static String getIssueJqlKey(String columnName) {
@@ -58,7 +59,7 @@ public class DASJiraJqlQueryBuilder {
               String column = getIssueJqlKey(q.getFieldName());
               String operator = mapOperator(q.getSimpleQual().getOperator());
               String value = mapValue(q.getSimpleQual().getValue());
-              joiner.add(column + " " + operator + " " + '"' + value + '"');
+              joiner.add(column + " " + operator + " " + value);
             });
     jqlQuery.append(joiner);
     return jqlQuery.toString();
