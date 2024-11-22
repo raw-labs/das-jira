@@ -34,7 +34,7 @@ public class DASJiraJqlQueryBuilderTest {
             valueFactory.createValue(
                 new ValueTypeTuple("2021-01-01T00:00:00Z", createTimestampType())));
 
-    assertEquals("DAS", string);
+    assertEquals("\"DAS\"", string);
     assertEquals("\"2021-01-01 00:00\"", timestamp);
     assertThrows(
         IllegalArgumentException.class,
@@ -80,6 +80,6 @@ public class DASJiraJqlQueryBuilderTest {
                     "due_date")));
 
     assertEquals(
-        "summary = DAS AND created >= \"2021-01-01 00:00\" AND due <= \"2021-01-01 00:00\"", result);
+        "summary = \"DAS\" AND created >= \"2021-01-01 00:00\" AND due <= \"2021-01-01 00:00\"", result);
   }
 }
