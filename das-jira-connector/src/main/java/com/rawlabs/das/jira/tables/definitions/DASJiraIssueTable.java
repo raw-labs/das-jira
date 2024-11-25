@@ -88,9 +88,10 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       @Override
       public DASJiraPage<IssueBean> fetchPage(long offset) {
         try {
+          String jql = DASJiraJqlQueryBuilder.buildJqlQuery(quals);
           var result =
               issueSearchApi.searchForIssuesUsingJql(
-                  DASJiraJqlQueryBuilder.buildJqlQuery(quals),
+                  jql,
                   Math.toIntExact(offset),
                   withMaxResultOrLimit(limit),
                   null,
@@ -214,25 +215,37 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
         "assignee_account_id",
         createColumn(
             "assignee_account_id",
-            "Account Id the user/application that the issue is assigned to work",
+            "The account ID of the user or application to whom the issue is assigned",
+            createStringType()));
+    columns.put(
+        "assignee_email_address",
+        createColumn(
+            "assignee_email_address",
+            "The e-mail address of the user or application to whom the issue is assigned",
             createStringType()));
     columns.put(
         "assignee_display_name",
         createColumn(
             "assignee_display_name",
-            "Display name the user/application that the issue is assigned to work",
+            "The display name of the user or application to whom the issue is assigned",
             createStringType()));
     columns.put(
         "creator_account_id",
         createColumn(
             "creator_account_id",
-            "Account Id of the user/application that created the issue",
+            "The account ID of the user/application that created the issue",
+            createStringType()));
+    columns.put(
+        "creator_email_address",
+        createColumn(
+            "creator_email_address",
+            "The e-mail address of the user/application that created the issue",
             createStringType()));
     columns.put(
         "creator_display_name",
         createColumn(
             "creator_display_name",
-            "Display name of the user/application that created the issue",
+            "The display name of the user/application that created the issue",
             createStringType()));
     columns.put(
         "created",
