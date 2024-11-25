@@ -185,6 +185,12 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
             "Account Id the user/application that the issue is assigned to work.",
             createStringType()));
     columnDefinitions.put(
+        "assignee_email_address",
+        createColumn(
+            "assignee_email_address",
+            "The e-mail address of the user or application to whom the issue is assigned",
+            createStringType()));
+    columnDefinitions.put(
         "assignee_display_name",
         createColumn(
             "assignee_display_name",
@@ -198,6 +204,12 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
         createColumn(
             "creator_account_id",
             "Account Id of the user/application that created the issue.",
+            createStringType()));
+    columnDefinitions.put(
+        "creator_email_address",
+        createColumn(
+            "creator_email_address",
+            "The e-mail address of the user/application that created the issue",
             createStringType()));
     columnDefinitions.put(
         "creator_display_name",

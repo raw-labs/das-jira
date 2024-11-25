@@ -41,6 +41,12 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         columns);
 
     addToRow(
+        "assignee_email_address",
+        rowBuilder,
+        assignee.map(a -> a.get("emailAddress")).orElse(null),
+        columns);
+
+    addToRow(
         "assignee_display_name",
         rowBuilder,
         assignee.map(a -> a.get("displayName")).orElse(null),
@@ -59,6 +65,12 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         "creator_account_id",
         rowBuilder,
         creator.map(c -> c.get("accountId")).orElse(null),
+        columns);
+
+    addToRow(
+        "creator_email_address",
+        rowBuilder,
+        creator.map(c -> c.get("emailAddress")).orElse(null),
         columns);
 
     addToRow(
