@@ -1,6 +1,7 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.model.SearchResults;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,6 +61,14 @@ public class DASJiraIssueTableTest extends BaseMockTest {
       assertEquals("33060", extractValueFactory.extractValue(row, "id"));
       assertEquals("SP-1", extractValueFactory.extractValue(row, "key"));
       assertEquals("Task", extractValueFactory.extractValue(row, "type"));
+      assertEquals("test issue", extractValueFactory.extractValue(row, "summary"));
+      ObjectNode description = (ObjectNode) extractValueFactory.extractValue(row, "description");
+      // Fetch the first text of the content ("do this")
+      assertEquals(
+          "do this", description.get("content").get(0).get("content").get(0).get("text").asText());
+      ArrayList<String> components =
+          (ArrayList<String>) extractValueFactory.extractValue(row, "components");
+      assertEquals("10151", components.get(0));
       assertFalse(result.hasNext());
     }
   }

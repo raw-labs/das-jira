@@ -115,9 +115,9 @@
             "name": "To Do"
           }
         },
-        "components": [],
+        "components": [{"self":"https://raw-labs.atlassian.net/rest/api/3/component/10151", "id":"10151", "name":"aComponent"}],
         "timeoriginalestimate": null,
-        "description": null,
+        "description": {"type":"doc","version":1.0,"content":[{"type":"paragraph","content":[{"type":"text","text":"do this"}]}]},
         "customfield_10653": null,
         "customfield_10600": null,
         "security": null,
