@@ -218,8 +218,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
             "Display name of the user/application that created the issue.",
             createStringType()));
     columnDefinitions.put(
-        "description",
-        createColumn("description", "Description of the issue.", createStringType()));
+        "description", createColumn("description", "Description of the issue.", createAnyType()));
     columnDefinitions.put(
         "due_date",
         createColumn(
