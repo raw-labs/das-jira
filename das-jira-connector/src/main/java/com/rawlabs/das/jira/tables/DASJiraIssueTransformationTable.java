@@ -79,11 +79,13 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         creator.map(c -> c.get("displayName")).orElse(null),
         columns);
 
-    addToRow(
-        "description",
-        rowBuilder,
-        maybeFields.map(f -> f.get("Description")).orElse(null),
-        columns);
+    var description = maybeFields.map(f -> f.get(names.get("Description"))).orElse(null);
+    try {
+      // 'description' is an object, so we need to serialize it. It's then sent as 'any'.
+      addToRow("description", rowBuilder, objectMapper.writeValueAsString(description), columns);
+    } catch (JsonProcessingException e) {
+      throw new DASSdkApiException("error processing 'description'", e);
+    }
 
     addToRow(
         "due_date",
@@ -110,7 +112,11 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         reporter.map(r -> r.get("displayName")).orElse(null),
         columns);
 
-    addToRow("summary", rowBuilder, maybeFields.map(f -> f.get("Summary")).orElse(null), columns);
+    addToRow(
+        "summary",
+        rowBuilder,
+        maybeFields.map(f -> f.get(names.get("Summary"))).orElse(null),
+        columns);
 
     var type =
         maybeFields
@@ -128,7 +134,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
 
     var componentIds =
         maybeFields
-            .map(f -> ((ArrayList<Object>) f.get("Components")))
+            .map(f -> ((ArrayList<Object>) f.get(names.get("Components"))))
             .map(
                 c -> {
                   List<String> cmpIds = new ArrayList<>();
@@ -151,6 +157,9 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         maybeFields.map(f -> f.get(names.get("Labels"))).orElse(null),
         columns);
 
+    // 'tags' is a map of labels, all mapped to boolean true. It is in the steampipe schema. We
+    // advertise a
+    // similar field in the DAS schema.
     Map<String, Boolean> tags =
         maybeFields
             .map(f -> (List<String>) f.get(names.get("Labels")))

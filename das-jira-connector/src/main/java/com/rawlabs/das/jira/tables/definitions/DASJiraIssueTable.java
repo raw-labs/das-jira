@@ -257,7 +257,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
             "Time by which the issue is expected to be completed",
             createTimestampType()));
     columns.put(
-        "description", createColumn("description", "Description of the issue", createStringType()));
+        "description", createColumn("description", "Description of the issue", createAnyType()));
     columns.put("type", createColumn("type", "The name of the issue type", createStringType()));
     columns.put(
         "labels",
