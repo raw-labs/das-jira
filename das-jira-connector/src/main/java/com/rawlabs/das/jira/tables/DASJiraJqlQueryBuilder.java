@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class DASJiraJqlQueryBuilder {
@@ -45,9 +46,23 @@ public class DASJiraJqlQueryBuilder {
     return "\"" + s + "\"";
   }
 
+  // The exposed column name needs to be mapped to the corresponding inner JQL key.
+  // JIRA represents several fields as JSON objects, and we often expose multiple
+  // nested fields from these objects as separate columns in the table output.
+  // These columns are named using the pattern: original key + "_" + nested key.
+  // From this naming convention, the JQL key can typically be inferred by taking
+  // the first part of the column name.
   private static String getIssueJqlKey(String columnName) {
+    // However, there are exceptions, such as 'status_category', which should not
+    // be mapped to the JQL 'status' field, but to `statusCategory`. Exceptions are
+    // found in jqlKeyMap.
+    if (jqlKeyMap.containsKey(columnName)) {
+      return jqlKeyMap.get(columnName);
+    }
     return columnName.split("_")[0].toLowerCase();
   }
+
+  private static final Map<String, String> jqlKeyMap = Map.of("status_category", "statusCategory");
 
   public static String buildJqlQuery(List<Qual> quals) {
     StringBuilder jqlQuery = new StringBuilder();
