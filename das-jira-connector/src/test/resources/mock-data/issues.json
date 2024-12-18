@@ -10,6 +10,43 @@
       "self": "https://raw-labs.atlassian.net/rest/api/3/issue/33060",
       "key": "SP-1",
       "fields": {
+        "parent": {
+          "id": "33109",
+          "key": "RD-15048",
+          "self": "https://raw-labs.atlassian.net/rest/api/2/issue/33109",
+          "fields": {
+            "summary": "New onboarding - (UI, Repose, GitHub repos, Monitoring) ",
+            "status": {
+              "self": "https://raw-labs.atlassian.net/rest/api/2/status/3",
+              "description": "This issue is being actively worked on at the moment by the assignee.",
+              "iconUrl": "https://raw-labs.atlassian.net/images/icons/statuses/inprogress.png",
+              "name": "In Progress",
+              "id": "3",
+              "statusCategory": {
+                "self": "https://raw-labs.atlassian.net/rest/api/2/statuscategory/4",
+                "id": 4,
+                "key": "indeterminate",
+                "colorName": "yellow",
+                "name": "In Progress"
+              }
+            },
+            "priority": {
+              "self": "https://raw-labs.atlassian.net/rest/api/2/priority/3",
+              "iconUrl": "https://raw-labs.atlassian.net/images/icons/priorities/medium.svg",
+              "name": "Medium",
+              "id": "3"
+            },
+            "issuetype": {
+              "self": "https://raw-labs.atlassian.net/rest/api/2/issuetype/10000",
+              "id": "10000",
+              "description": "A big user story that needs to be broken down. Created by JIRA Software - do not edit or delete.",
+              "iconUrl": "https://raw-labs.atlassian.net/images/icons/issuetypes/epic.svg",
+              "name": "Epic",
+              "subtask": false,
+              "hierarchyLevel": 1
+            }
+          }
+        },
         "statuscategorychangedate": "2024-10-18T13:53:06.820+0200",
         "issuetype": {
           "self": "https://raw-labs.atlassian.net/rest/api/3/issuetype/10117",
@@ -115,9 +152,29 @@
             "name": "To Do"
           }
         },
-        "components": [{"self":"https://raw-labs.atlassian.net/rest/api/3/component/10151", "id":"10151", "name":"aComponent"}],
+        "components": [
+          {
+            "self": "https://raw-labs.atlassian.net/rest/api/3/component/10151",
+            "id": "10151",
+            "name": "aComponent"
+          }
+        ],
         "timeoriginalestimate": null,
-        "description": {"type":"doc","version":1.0,"content":[{"type":"paragraph","content":[{"type":"text","text":"do this"}]}]},
+        "description": {
+          "type": "doc",
+          "version": 1.0,
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "do this"
+                }
+              ]
+            }
+          ]
+        },
         "customfield_10653": null,
         "customfield_10600": null,
         "security": null,
@@ -214,6 +271,7 @@
     }
   ],
   "names": {
+    "parent": "Parent",
     "statuscategorychangedate": "Status Category Changed",
     "issuetype": "Issue Type",
     "timespent": "Time Spent",

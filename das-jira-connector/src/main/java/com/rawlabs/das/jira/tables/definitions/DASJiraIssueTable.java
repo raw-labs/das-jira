@@ -128,21 +128,24 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
         statusCategory.map(s -> s.get("name")).orElse(null),
         columns);
 
+    // Epic key is (possibly) found as parent->key, but we'd report it
+    // as epic_key only if the parent issue type is "Epic". Which is found
+    // in parent->fields->name = "Epic"
     var epic =
         maybeFields
-            .map(f -> f.get(names.get("Parent")))
-            .map(p -> (Map<String, Object>) p)
-            .map(p -> p.get("fields"))
-            .map(f -> (Map<String, Object>) f)
-            .map(f -> f.get(names.get("Issue Type")))
-            .map(i -> (Map<String, Object>) i)
-            .map(i -> i.get("name"))
-            .map(
-                name -> {
-                  if (name.equals("Epic")) {
-                    return maybeFields.get().get("key");
-                  }
-                  return null;
+            .map(fields -> (Map<String, Object>) fields.get(names.get("Parent")))
+            .flatMap(
+                parent -> {
+                  return Optional.of((Map<String, Object>) parent.get("fields"))
+                      .map(f -> (Map<String, Object>) f.get(names.get("Issue Type")))
+                      .map(i -> i.get("name"))
+                      .map(
+                          name -> {
+                            if (name.equals("Epic")) {
+                              return (String) parent.get("key");
+                            }
+                            return null;
+                          });
                 });
 
     addToRow("epic_key", rowBuilder, epic.orElse(null), columns);
