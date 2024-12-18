@@ -15,6 +15,7 @@ import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.ZoneId;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -25,13 +26,17 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   public static final String TABLE_NAME = "jira_issue";
   private final IssueSearchApi issueSearchApi;
   private final IssuesApi issuesApi;
+  private final ZoneId localZoneId;
+  private final ZoneId jiraZoneId;
 
   public DASJiraIssueTable(
-      Map<String, String> options, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
+          Map<String, String> options, ZoneId jiraZoneId, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
     super(
-        options, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
+        options, jiraZoneId, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
     this.issueSearchApi = issueSearchApi;
     this.issuesApi = issueApi;
+    this.localZoneId = ZoneId.of(options.get("timezone"));
+    this.jiraZoneId = jiraZoneId;
   }
 
   @Override
@@ -85,7 +90,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       @Override
       public DASJiraPage<IssueBean> fetchPage(long offset) {
         try {
-          String jql = DASJiraJqlQueryBuilder.buildJqlQuery(quals);
+          String jql = new DASJiraJqlQueryBuilder(localZoneId, jiraZoneId).buildJqlQuery(quals);
           var result =
               issueSearchApi.searchForIssuesUsingJql(
                   jql,
@@ -255,7 +260,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
         createColumn(
             "due_date",
             "Time by which the issue is expected to be completed",
-            createTimestampType()));
+            createDateType()));
     columns.put(
         "description", createColumn("description", "Description of the issue", createAnyType()));
     columns.put("type", createColumn("type", "The name of the issue type", createStringType()));

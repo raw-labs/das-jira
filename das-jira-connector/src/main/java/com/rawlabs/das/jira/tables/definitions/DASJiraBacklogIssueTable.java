@@ -17,6 +17,7 @@ import com.rawlabs.protocol.das.*;
 import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.ZoneId;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -30,9 +31,10 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private final BoardApi boardApi;
 
-  public DASJiraBacklogIssueTable(Map<String, String> options, BoardApi boardApi) {
+  public DASJiraBacklogIssueTable(Map<String, String> options, ZoneId jiraZoneId, BoardApi boardApi) {
     super(
         options,
+        jiraZoneId,
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.");
     this.boardApi = boardApi;

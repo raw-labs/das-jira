@@ -15,7 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,7 +28,7 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
 
   @Mock static BoardApi boardApi;
 
-  @InjectMocks DASJiraBacklogIssueTable dasJiraBacklogIssueTable;
+  private static DASJiraBacklogIssueTable dasJiraBacklogIssueTable;
 
   private static SearchResults searchResults;
 
@@ -41,6 +43,11 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     DASJiraBoardTableTest.configBeforeEach(boardApi);
+    dasJiraBacklogIssueTable =
+        new DASJiraBacklogIssueTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The jiraZoneId
+            boardApi);
     when(boardApi.getIssuesForBacklog(any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(searchResults);
   }
