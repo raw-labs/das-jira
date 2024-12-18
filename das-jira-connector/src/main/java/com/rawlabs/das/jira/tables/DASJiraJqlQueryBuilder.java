@@ -62,7 +62,8 @@ public class DASJiraJqlQueryBuilder {
     return columnName.split("_")[0].toLowerCase();
   }
 
-  private static final Map<String, String> jqlKeyMap = Map.of("status_category", "statusCategory");
+  private static final Map<String, String> jqlKeyMap =
+      Map.of("status_category", "statusCategory", "epic_key", "parentEpic");
 
   public static String buildJqlQuery(List<Qual> quals) {
     StringBuilder jqlQuery = new StringBuilder();
