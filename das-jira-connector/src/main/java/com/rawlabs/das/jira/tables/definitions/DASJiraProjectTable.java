@@ -28,16 +28,12 @@ public class DASJiraProjectTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_project";
 
-  private ProjectsApi projectsApi = new ProjectsApi();
+  private final ProjectsApi projectsApi;
 
   private final String expand = "description,lead,issueTypes,url,projectKeys,permissions,insight";
 
-  public DASJiraProjectTable(Map<String, String> options) {
-    super(options, TABLE_NAME, "Project is a collection of issues (stories, bugs, tasks, etc).");
-  }
-
   public DASJiraProjectTable(Map<String, String> options, ProjectsApi projectsApi) {
-    this(options);
+    super(options, TABLE_NAME, "Project is a collection of issues (stories, bugs, tasks, etc).");
     this.projectsApi = projectsApi;
   }
 

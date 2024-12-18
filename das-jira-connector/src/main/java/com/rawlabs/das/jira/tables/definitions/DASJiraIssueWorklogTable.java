@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
+import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
 import com.rawlabs.das.jira.rest.platform.model.JsonNode;
 import com.rawlabs.das.jira.rest.platform.model.UserDetails;
 import com.rawlabs.das.jira.rest.platform.model.Worklog;
@@ -32,30 +33,21 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_issue_worklog";
 
-  private DASJiraTable parentTable;
+  private final DASJiraTable parentTable;
 
-  private IssueWorklogsApi issueWorklogsApi = new IssueWorklogsApi();
-
-  public DASJiraIssueWorklogTable(Map<String, String> options) {
-    super(
-        options,
-        TABLE_NAME,
-        "Jira worklog is a feature within the Jira software that allows users to record the amount of time they have spent working on various tasks or issues.");
-    parentTable = new DASJiraIssueTable(options);
-  }
-
-  /** Constructor for mocks */
-  DASJiraIssueWorklogTable(Map<String, String> options, IssueWorklogsApi issueWorklogsApi) {
-    this(options);
-    this.issueWorklogsApi = issueWorklogsApi;
-  }
+  private final IssueWorklogsApi issueWorklogsApi;
 
   public DASJiraIssueWorklogTable(
       Map<String, String> options,
       IssueWorklogsApi issueWorklogsApi,
-      IssueSearchApi issueSearchApi) {
-    this(options, issueWorklogsApi);
-    this.parentTable = new DASJiraIssueTable(options, issueSearchApi);
+      IssueSearchApi issueSearchApi,
+      IssuesApi issuesApi) {
+    super(
+        options,
+        TABLE_NAME,
+        "Jira worklog is a feature within the Jira software that allows users to record the amount of time they have spent working on various tasks or issues.");
+    this.issueWorklogsApi = issueWorklogsApi;
+    parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
   }
 
   @Override

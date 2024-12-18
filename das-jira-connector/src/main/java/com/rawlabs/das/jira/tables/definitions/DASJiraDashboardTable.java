@@ -28,16 +28,11 @@ public class DASJiraDashboardTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_dashboard";
 
-  private DashboardsApi dashboardsApi = new DashboardsApi();
+  private final DashboardsApi dashboardsApi;
 
-  public DASJiraDashboardTable(Map<String, String> options) {
+  public DASJiraDashboardTable(Map<String, String> options, DashboardsApi dashboardsApi) {
     super(
-        options, TABLE_NAME, "Your dashboard is the main display you see when you log in to Jira.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraDashboardTable(Map<String, String> options, DashboardsApi dashboardsApi) {
-    this(options);
+            options, TABLE_NAME, "Your dashboard is the main display you see when you log in to Jira.");
     this.dashboardsApi = dashboardsApi;
   }
 

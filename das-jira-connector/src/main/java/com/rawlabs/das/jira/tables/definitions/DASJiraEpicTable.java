@@ -24,18 +24,13 @@ public class DASJiraEpicTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_epic";
 
-  private EpicApi epicApi = new EpicApi();
+  private final EpicApi epicApi;
 
-  public DASJiraEpicTable(Map<String, String> options) {
+  public DASJiraEpicTable(Map<String, String> options, EpicApi epicApi) {
     super(
-        options,
-        TABLE_NAME,
-        "An epic is essentially a large user story that can be broken down into a number of smaller stories. An epic can span more than one project.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraEpicTable(Map<String, String> options, EpicApi epicApi) {
-    this(options);
+            options,
+            TABLE_NAME,
+            "An epic is essentially a large user story that can be broken down into a number of smaller stories. An epic can span more than one project.");
     this.epicApi = epicApi;
   }
 

@@ -27,27 +27,18 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_issue_comment";
 
-  private DASJiraTable parentTable;
+  private final DASJiraTable parentTable;
 
-  private IssueCommentsApi issueCommentsApi = new IssueCommentsApi();
-
-  public DASJiraIssueCommentTable(Map<String, String> options) {
-    super(options, TABLE_NAME, "Comments that provided in issue.");
-    parentTable = new DASJiraIssueTable(options);
-  }
-
-  /** Constructor for mocks */
-  DASJiraIssueCommentTable(Map<String, String> options, IssueCommentsApi issueCommentsApi) {
-    this(options);
-    this.issueCommentsApi = issueCommentsApi;
-  }
+  private final IssueCommentsApi issueCommentsApi;
 
   public DASJiraIssueCommentTable(
       Map<String, String> options,
       IssueCommentsApi issueCommentsApi,
-      IssueSearchApi issueSearchApi) {
-    this(options, issueCommentsApi);
-    this.parentTable = new DASJiraIssueTable(options, issueSearchApi);
+      IssueSearchApi issueSearchApi,
+      IssuesApi issuesApi) {
+    super(options, TABLE_NAME, "Comments that provided in issue.");
+    this.issueCommentsApi = issueCommentsApi;
+    this.parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
   }
 
   @Override

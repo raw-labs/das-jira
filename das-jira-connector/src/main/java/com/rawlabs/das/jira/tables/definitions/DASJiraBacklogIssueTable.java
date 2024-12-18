@@ -26,21 +26,15 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private static final String TABLE_NAME = "jira_backlog_issue";
 
-  private DASJiraTable parentTable;
+  private final DASJiraTable parentTable;
 
-  private BoardApi boardApi = new BoardApi();
+  private final BoardApi boardApi;
 
-  public DASJiraBacklogIssueTable(Map<String, String> options) {
+  public DASJiraBacklogIssueTable(Map<String, String> options, BoardApi boardApi) {
     super(
         options,
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.");
-    parentTable = new DASJiraBoardTable(options);
-  }
-
-  /** Constructor for mocks */
-  DASJiraBacklogIssueTable(Map<String, String> options, BoardApi boardApi) {
-    this(options);
     this.boardApi = boardApi;
     parentTable = new DASJiraBoardTable(options, boardApi);
   }

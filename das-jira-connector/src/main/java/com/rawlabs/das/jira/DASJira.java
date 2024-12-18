@@ -17,8 +17,9 @@ public class DASJira implements DASSdk {
   private final DASJiraTableManager tableManager;
 
   protected DASJira(Map<String, String> options) {
-    DASJiraInitializer.initialize(options);
-    tableManager = new DASJiraTableManager(options);
+    var apiClientPlatform = DASJiraInitializer.initializePlatform(options);
+    var apiClientSoftware = DASJiraInitializer.initializeSoftware(options);
+    tableManager = new DASJiraTableManager(options, apiClientPlatform, apiClientSoftware);
     this.options = options;
   }
 

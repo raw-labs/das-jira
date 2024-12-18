@@ -28,29 +28,19 @@ public class DASJiraComponentTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_component";
 
-  private DASJiraTable parentTable;
+  private final DASJiraTable parentTable;
 
-  private ProjectComponentsApi projectComponentsApi = new ProjectComponentsApi();
-
-  public DASJiraComponentTable(Map<String, String> options) {
-    super(
-        options,
-        TABLE_NAME,
-        "This resource represents project components. Use it to get, create, update, and delete project components. Also get components for project and get a count of issues by component.");
-    this.parentTable = new DASJiraProjectTable(options);
-  }
-
-  public DASJiraComponentTable(
-      Map<String, String> options, ProjectComponentsApi projectComponentsApi) {
-    this(options);
-    this.projectComponentsApi = projectComponentsApi;
-  }
+  private final ProjectComponentsApi projectComponentsApi;
 
   public DASJiraComponentTable(
       Map<String, String> options,
       ProjectComponentsApi projectComponentsApi,
       ProjectsApi projectsApi) {
-    this(options, projectComponentsApi);
+    super(
+            options,
+            TABLE_NAME,
+            "This resource represents project components. Use it to get, create, update, and delete project components. Also get components for project and get a count of issues by component.");
+    this.projectComponentsApi = projectComponentsApi;
     this.parentTable = new DASJiraProjectTable(options, projectsApi);
   }
 

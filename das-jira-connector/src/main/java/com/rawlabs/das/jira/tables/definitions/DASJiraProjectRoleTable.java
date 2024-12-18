@@ -25,18 +25,13 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_project_role";
 
-  private ProjectRolesApi projectRolesApi = new ProjectRolesApi();
+  private final ProjectRolesApi projectRolesApi;
 
-  public DASJiraProjectRoleTable(Map<String, String> options) {
+  public DASJiraProjectRoleTable(Map<String, String> options, ProjectRolesApi projectRolesApi) {
     super(
         options,
         TABLE_NAME,
         "Project Roles are a flexible way to associate users and/or groups with particular projects.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraProjectRoleTable(Map<String, String> options, ProjectRolesApi projectRolesApi) {
-    this(options);
     this.projectRolesApi = projectRolesApi;
   }
 

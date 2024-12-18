@@ -24,15 +24,15 @@ public class DASJiraInitializerTest {
   public void testJiraInitializer() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> DASJiraInitializer.initialize(Map.of("base_url", "http://localhost:8080")));
+        () -> DASJiraInitializer.initializeSoftware(Map.of("base_url", "http://localhost:8080")));
   }
 
   @Test
   @DisplayName("Initialization succeeds when basic auth is provided")
   public void testJiraInitializerWithBasicAuth() {
-    DASJiraInitializer.initialize(
-        Map.of("base_url", "http://localhost:8080", "username", "admin", "token", "password"));
-    ApiClient platformApiClient = Configuration.getDefaultApiClient();
+    ApiClient platformApiClient =
+        DASJiraInitializer.initializePlatform(
+            Map.of("base_url", "http://localhost:8080", "username", "admin", "token", "password"));
     assertEquals("http://localhost:8080", platformApiClient.getBasePath());
     Authentication auth = platformApiClient.getAuthentication(DasJiraBasicAuthStrategy.NAME);
     assertInstanceOf(HttpBasicAuth.class, auth);
@@ -41,7 +41,8 @@ public class DASJiraInitializerTest {
     assertEquals("password", platformBasicAuth.getPassword());
 
     com.rawlabs.das.jira.rest.software.ApiClient softwareApiClient =
-        com.rawlabs.das.jira.rest.software.Configuration.getDefaultApiClient();
+        DASJiraInitializer.initializeSoftware(
+            Map.of("base_url", "http://localhost:8080", "username", "admin", "token", "password"));
     assertEquals("http://localhost:8080", softwareApiClient.getBasePath());
     com.rawlabs.das.jira.rest.software.auth.Authentication softwareAuth =
         softwareApiClient.getAuthentication(DasJiraBasicAuthStrategy.NAME);
@@ -56,9 +57,9 @@ public class DASJiraInitializerTest {
   @Test
   @DisplayName("Initialization succeeds when token auth is provided")
   public void testJiraInitializerWithBearer() {
-    DASJiraInitializer.initialize(
-        Map.of("base_url", "http://localhost:8080", "personal_access_token", "pat"));
-    ApiClient apiClient = Configuration.getDefaultApiClient();
+    ApiClient apiClient =
+        DASJiraInitializer.initializePlatform(
+            Map.of("base_url", "http://localhost:8080", "personal_access_token", "pat"));
     assertEquals("http://localhost:8080", apiClient.getBasePath());
     Authentication auth = apiClient.getAuthentication(DASJiraOAuth2AuthStrategy.NAME);
     assertInstanceOf(OAuth.class, auth);
@@ -66,7 +67,8 @@ public class DASJiraInitializerTest {
     assertEquals("pat", ((OAuth) auth).getAccessToken());
 
     com.rawlabs.das.jira.rest.software.ApiClient softwareApiClient =
-        com.rawlabs.das.jira.rest.software.Configuration.getDefaultApiClient();
+        DASJiraInitializer.initializeSoftware(
+            Map.of("base_url", "http://localhost:8080", "personal_access_token", "pat"));
     assertEquals("http://localhost:8080", softwareApiClient.getBasePath());
     com.rawlabs.das.jira.rest.software.auth.Authentication softwareAuth =
         softwareApiClient.getAuthentication(DASJiraOAuth2AuthStrategy.NAME);

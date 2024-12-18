@@ -1,5 +1,6 @@
 package com.rawlabs.das.jira.tables;
 
+import com.rawlabs.das.jira.initializer.DASJiraInitializer;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DisplayName("DAS Jira Table Manager Test")
 public class DASJiraTableManagerTest {
 
-  public static final DASJiraTableManager dasJiraTableManager = new DASJiraTableManager(Map.of());
+  public static final DASJiraTableManager dasJiraTableManager = new DASJiraTableManager(Map.of(), null, null);
 
   @Test
   @DisplayName("Table manager initialization test")
