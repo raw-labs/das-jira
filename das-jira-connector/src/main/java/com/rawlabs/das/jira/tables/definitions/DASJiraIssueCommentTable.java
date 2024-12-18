@@ -20,6 +20,7 @@ import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,12 +34,13 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
   public DASJiraIssueCommentTable(
       Map<String, String> options,
+      ZoneId zoneId,
       IssueCommentsApi issueCommentsApi,
       IssueSearchApi issueSearchApi,
       IssuesApi issuesApi) {
     super(options, TABLE_NAME, "Comments that provided in issue.");
     this.issueCommentsApi = issueCommentsApi;
-    this.parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
+    this.parentTable = new DASJiraIssueTable(options, zoneId, issueSearchApi, issuesApi);
   }
 
   public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {

@@ -26,6 +26,7 @@ import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneId;
 import java.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +40,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
 
   public DASJiraIssueWorklogTable(
       Map<String, String> options,
+      ZoneId zoneId,
       IssueWorklogsApi issueWorklogsApi,
       IssueSearchApi issueSearchApi,
       IssuesApi issuesApi) {
@@ -47,7 +49,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
         TABLE_NAME,
         "Jira worklog is a feature within the Jira software that allows users to record the amount of time they have spent working on various tasks or issues.");
     this.issueWorklogsApi = issueWorklogsApi;
-    parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
+    parentTable = new DASJiraIssueTable(options, zoneId, issueSearchApi, issuesApi);
   }
 
   public String uniqueColumn() {

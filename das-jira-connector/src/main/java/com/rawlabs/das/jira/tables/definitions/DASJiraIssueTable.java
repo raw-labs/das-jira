@@ -19,21 +19,26 @@ import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
-import java.util.*;
 import org.jetbrains.annotations.Nullable;
+import java.time.ZoneId;
+import java.util.*;
 
 public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
   public static final String TABLE_NAME = "jira_issue";
   private final IssueSearchApi issueSearchApi;
   private final IssuesApi issuesApi;
+  private final ZoneId localZoneId;
+  private final ZoneId jiraZoneId;
 
   public DASJiraIssueTable(
-      Map<String, String> options, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
+          Map<String, String> options, ZoneId jiraZoneId, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
     super(
-        options, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
+        options, jiraZoneId, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
     this.issueSearchApi = issueSearchApi;
     this.issuesApi = issueApi;
+    this.localZoneId = ZoneId.of(options.get("timezone"));
+    this.jiraZoneId = jiraZoneId;
   }
 
   public String uniqueColumn() {
@@ -69,7 +74,8 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   @Override
   public List<String> explain(
       List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
-    return List.of(DASJiraJqlQueryBuilder.buildJqlQuery(quals));
+    DASJiraJqlQueryBuilder queryBuilder = new DASJiraJqlQueryBuilder(localZoneId, jiraZoneId);
+    return List.of(queryBuilder.buildJqlQuery(quals));
   }
 
   public DASExecuteResult execute(
@@ -84,7 +90,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       @Override
       public DASJiraPage<IssueBean> fetchPage(long offset) {
         try {
-          String jql = DASJiraJqlQueryBuilder.buildJqlQuery(quals);
+          String jql = new DASJiraJqlQueryBuilder(localZoneId, jiraZoneId).buildJqlQuery(quals);
           var result =
               issueSearchApi.searchForIssuesUsingJql(
                   jql,
@@ -254,7 +260,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
         createColumn(
             "due_date",
             "Time by which the issue is expected to be completed",
-            createTimestampType()));
+            createDateType()));
     columns.put(
         "description", createColumn("description", "Description of the issue", createAnyType()));
     columns.put("type", createColumn("type", "The name of the issue type", createStringType()));

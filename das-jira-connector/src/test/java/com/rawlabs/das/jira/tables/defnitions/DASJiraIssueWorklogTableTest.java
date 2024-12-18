@@ -18,8 +18,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import java.time.ZoneId;
+import java.util.Map;
 
 @DisplayName("DAS Jira Issue Worklog Table Test")
 public class DASJiraIssueWorklogTableTest extends BaseMockTest {
@@ -27,7 +28,7 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
   @Mock static IssueWorklogsApi issueWorklogsApi;
   @Mock static IssueSearchApi issueSearchApi;
 
-  @InjectMocks DASJiraIssueWorklogTable dasJiraIssueWorklogTable;
+  DASJiraIssueWorklogTable dasJiraIssueWorklogTable;
 
   private static PageOfWorklogs pageOfWorklogs;
 
@@ -41,6 +42,14 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     DASJiraIssueTableTest.configBeforeEach(issueSearchApi);
+    dasJiraIssueWorklogTable =
+        new DASJiraIssueWorklogTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The jiraZoneId
+            issueWorklogsApi,
+            issueSearchApi,
+            null // issuesApi
+            );
     when(issueWorklogsApi.getIssueWorklog(any(), any(), any(), any(), any(), any()))
         .thenReturn(pageOfWorklogs);
   }

@@ -1,5 +1,6 @@
 package com.rawlabs.das.jira.tables;
 
+import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.*;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.api.EpicApi;
@@ -7,7 +8,9 @@ import com.rawlabs.das.jira.rest.software.api.SprintApi;
 import com.rawlabs.das.jira.tables.definitions.*;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import com.rawlabs.protocol.das.v1.tables.TableDefinition;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,10 +23,21 @@ public class DASJiraTableManager {
       Map<String, String> options,
       com.rawlabs.das.jira.rest.platform.ApiClient apiClientPlatform,
       com.rawlabs.das.jira.rest.software.ApiClient apiClientSoftware) {
+    MyselfApi myselfApi = new MyselfApi(apiClientPlatform);
+    final ZoneId jiraZoneId;
+    try {
+      String jiraTimeZone = myselfApi.getCurrentUser("").getTimeZone();
+      if (jiraTimeZone == null) {
+        throw new DASSdkInvalidArgumentException("Couldn't determine JIRA timezone");
+      }
+      jiraZoneId = ZoneId.of(jiraTimeZone);
+    } catch (ApiException e) {
+      throw new DASSdkInvalidArgumentException("Error getting user timezone", e);
+    }
     tables =
         List.of(
             new DASJiraAdvancedSettingsTable(options, new JiraSettingsApi(apiClientPlatform)),
-            new DASJiraBacklogIssueTable(options, new BoardApi(apiClientSoftware)),
+            new DASJiraBacklogIssueTable(options, jiraZoneId, new BoardApi(apiClientSoftware)),
             new DASJiraBoardTable(options, new BoardApi(apiClientSoftware)),
             new DASJiraComponentTable(
                 options,
@@ -35,14 +49,19 @@ public class DASJiraTableManager {
             new DASJiraGroupTable(options, new GroupsApi(apiClientPlatform)),
             new DASJiraIssueCommentTable(
                 options,
+                jiraZoneId,
                 new IssueCommentsApi(apiClientPlatform),
                 new IssueSearchApi(apiClientPlatform),
                 new IssuesApi(apiClientPlatform)),
             new DASJiraIssueTable(
-                options, new IssueSearchApi(apiClientPlatform), new IssuesApi(apiClientPlatform)),
+                options,
+                jiraZoneId,
+                new IssueSearchApi(apiClientPlatform),
+                new IssuesApi(apiClientPlatform)),
             new DASJiraIssueTypeTable(options, new IssueTypesApi(apiClientPlatform)),
             new DASJiraIssueWorklogTable(
                 options,
+                jiraZoneId,
                 new IssueWorklogsApi(apiClientPlatform),
                 new IssueSearchApi(apiClientPlatform),
                 new IssuesApi(apiClientPlatform)),

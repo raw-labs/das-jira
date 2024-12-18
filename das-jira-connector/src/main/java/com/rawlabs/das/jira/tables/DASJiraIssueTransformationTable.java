@@ -3,13 +3,23 @@ package com.rawlabs.das.jira.tables;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.protocol.das.v1.tables.Row;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
 public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
+
+  private final ZoneId localZoneId;
+  private final ZoneId remoteZoneId;
+  DateTimeFormatter offsetTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
   protected DASJiraIssueTransformationTable(
-      Map<String, String> options, String table, String description) {
+      Map<String, String> options, ZoneId remoteZoneId, String table, String description) {
     super(options, table, description);
+    localZoneId = ZoneId.of(options.get("timezone"));
+    this.remoteZoneId = remoteZoneId;
   }
 
   protected void processFields(
@@ -51,11 +61,12 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         assignee.map(a -> a.get("displayName")).orElse(null),
         columns);
 
-    addToRow(
-        "created",
-        rowBuilder,
-        maybeFields.map(f -> f.get(names.get("Created"))).orElse(null),
-        columns);
+    String created =
+        maybeFields
+            .map(f -> f.get(names.get("Created")))
+            .map(c -> toLocal(c.toString()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            .orElse(null);
+    addToRow("created", rowBuilder, created, columns);
 
     var creator =
         maybeFields.map(f -> f.get(names.get("Creator"))).map(p -> (Map<String, Object>) p);
@@ -86,11 +97,13 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
       throw new DASJiraUnexpectedError(e);
     }
 
-    addToRow(
-        "due_date",
-        rowBuilder,
-        maybeFields.map(f -> f.get(names.get("Due date"))).orElse(null),
-        columns);
+    String due_date =
+        maybeFields
+            .flatMap(f -> Optional.ofNullable(f.get(names.get("Due date"))))
+            .map(Object::toString)
+            .orElse(null);
+
+    addToRow("due_date", rowBuilder, due_date, columns);
 
     var priority =
         maybeFields.map(f -> f.get(names.get("Priority"))).map(p -> (Map<String, Object>) p);
@@ -105,11 +118,19 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
         rowBuilder,
         reporter.map(r -> r.get("accountId")).orElse(null),
         columns);
+
     addToRow(
         "reporter_display_name",
         rowBuilder,
         reporter.map(r -> r.get("displayName")).orElse(null),
         columns);
+
+    String resolved =
+        maybeFields
+            .flatMap(f -> Optional.ofNullable(f.get(names.get("Resolved"))))
+            .map(c -> toLocal(c.toString()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            .orElse(null);
+    addToRow("resolution_date", rowBuilder, resolved, columns);
 
     addToRow(
         "summary",
@@ -128,7 +149,10 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
     addToRow(
         "updated",
         rowBuilder,
-        maybeFields.map(f -> f.get(names.get("Updated"))).orElse(null),
+        maybeFields
+            .map(f -> f.get(names.get("Updated")))
+            .map(c -> toLocal(c.toString()).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            .orElse(null),
         columns);
 
     var componentIds =
@@ -175,5 +199,11 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
     } catch (JsonProcessingException e) {
       throw new DASJiraUnexpectedError(e);
     }
+  }
+
+  private OffsetDateTime toLocal(String remoteTime) {
+    return OffsetDateTime.parse(remoteTime, offsetTimeFormatter)
+        .atZoneSameInstant(localZoneId)
+        .toOffsetDateTime();
   }
 }

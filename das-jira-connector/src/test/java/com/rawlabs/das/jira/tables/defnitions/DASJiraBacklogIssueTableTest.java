@@ -17,15 +17,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.ZoneId;
+import java.util.Map;
 @DisplayName("DAS Jira Backlog Issue Table Test")
 public class DASJiraBacklogIssueTableTest extends BaseMockTest {
 
   @Mock static BoardApi boardApi;
 
-  @InjectMocks DASJiraBacklogIssueTable dasJiraBacklogIssueTable;
+  private static DASJiraBacklogIssueTable dasJiraBacklogIssueTable;
 
   private static SearchResults searchResults;
 
@@ -40,6 +41,11 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     DASJiraBoardTableTest.configBeforeEach(boardApi);
+    dasJiraBacklogIssueTable =
+        new DASJiraBacklogIssueTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The jiraZoneId
+            boardApi);
     when(boardApi.getIssuesForBacklog(any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(searchResults);
   }
