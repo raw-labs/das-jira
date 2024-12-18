@@ -27,18 +27,13 @@ public class DASJiraWorkflowTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_workflow";
 
-  private WorkflowsApi workflowsApi = new WorkflowsApi();
+  private final WorkflowsApi workflowsApi;
 
-  public DASJiraWorkflowTable(Map<String, String> options) {
+  public DASJiraWorkflowTable(Map<String, String> options, WorkflowsApi workflowsApi) {
     super(
-        options,
-        TABLE_NAME,
-        "A Jira workflow is a set of statuses and transitions that an issue moves through during its lifecycle, and typically represents a process within your organization.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraWorkflowTable(Map<String, String> options, WorkflowsApi workflowsApi) {
-    this(options);
+            options,
+            TABLE_NAME,
+            "A Jira workflow is a set of statuses and transitions that an issue moves through during its lifecycle, and typically represents a process within your organization.");
     this.workflowsApi = workflowsApi;
   }
 

@@ -21,18 +21,13 @@ import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_advanced_setting";
-  private JiraSettingsApi jiraSettingsApi = new JiraSettingsApi();
+  private final JiraSettingsApi jiraSettingsApi;
 
-  public DASJiraAdvancedSettingsTable(Map<String, String> options) {
+  public DASJiraAdvancedSettingsTable(Map<String, String> options, JiraSettingsApi api) {
     super(
         options,
         TABLE_NAME,
         "The application properties that are accessible on the Advanced Settings page.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraAdvancedSettingsTable(Map<String, String> options, JiraSettingsApi api) {
-    this(options);
     this.jiraSettingsApi = api;
   }
 

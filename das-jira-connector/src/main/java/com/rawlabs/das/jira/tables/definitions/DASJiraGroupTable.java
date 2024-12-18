@@ -28,18 +28,13 @@ public class DASJiraGroupTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_group";
 
-  private GroupsApi groupsApi = new GroupsApi();
+  private final GroupsApi groupsApi;
 
-  public DASJiraGroupTable(Map<String, String> options) {
+  public DASJiraGroupTable(Map<String, String> options, GroupsApi groupsApi) {
     super(
-        options,
-        TABLE_NAME,
-        "Group is a collection of users. Administrators create groups so that the administrator can assign permissions to a number of people at once.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraGroupTable(Map<String, String> options, GroupsApi groupsApi) {
-    this(options);
+            options,
+            TABLE_NAME,
+            "Group is a collection of users. Administrators create groups so that the administrator can assign permissions to a number of people at once.");
     this.groupsApi = groupsApi;
   }
 

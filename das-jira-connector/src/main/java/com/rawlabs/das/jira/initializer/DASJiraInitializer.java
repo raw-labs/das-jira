@@ -3,32 +3,33 @@ package com.rawlabs.das.jira.initializer;
 import com.rawlabs.das.jira.initializer.auth.DASJiraAuthStrategy;
 import com.rawlabs.das.jira.initializer.auth.DASJiraAuthStrategyFactory;
 import com.rawlabs.das.jira.rest.platform.ApiClient;
-import com.rawlabs.das.jira.rest.platform.Configuration;
 
 import java.util.Map;
 
 public class DASJiraInitializer {
 
-  public static void initialize(Map<String, String> options) {
+  public static com.rawlabs.das.jira.rest.platform.ApiClient initializePlatform(Map<String, String> options) {
     if (options.get("base_url") == null) {
       throw new IllegalArgumentException("base_url is required");
     }
-    setupPlatformApi(options);
-    setupSoftwareApi(options);
-  }
-
-  private static void setupPlatformApi(Map<String, String> options) {
-    ApiClient apiClient = Configuration.getDefaultApiClient();
+    com.rawlabs.das.jira.rest.platform.ApiClient apiClient =
+        new com.rawlabs.das.jira.rest.platform.ApiClient();
     apiClient.setBasePath(options.get("base_url"));
     DASJiraAuthStrategy auth = DASJiraAuthStrategyFactory.createAuthStrategy(options);
-    auth.setupAuthentication(options);
+    auth.setupPlatformAuthentication(apiClient, options);
+    return apiClient;
   }
 
-  private static void setupSoftwareApi(Map<String, String> options) {
+  public static com.rawlabs.das.jira.rest.software.ApiClient initializeSoftware(Map<String, String> options) {
+    if (options.get("base_url") == null) {
+      throw new IllegalArgumentException("base_url is required");
+    }
     com.rawlabs.das.jira.rest.software.ApiClient apiClient =
-        com.rawlabs.das.jira.rest.software.Configuration.getDefaultApiClient();
+            new com.rawlabs.das.jira.rest.software.ApiClient();
     apiClient.setBasePath(options.get("base_url"));
     DASJiraAuthStrategy auth = DASJiraAuthStrategyFactory.createAuthStrategy(options);
-    auth.setupAuthentication(options);
+    auth.setupSoftwareAuthentication(apiClient, options);
+    return apiClient;
   }
+
 }

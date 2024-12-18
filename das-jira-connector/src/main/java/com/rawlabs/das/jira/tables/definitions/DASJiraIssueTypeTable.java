@@ -23,18 +23,13 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_issue_type";
 
-  private IssueTypesApi issueTypesApi = new IssueTypesApi();
+  private final IssueTypesApi issueTypesApi;
 
-  public DASJiraIssueTypeTable(Map<String, String> options) {
+  public DASJiraIssueTypeTable(Map<String, String> options, IssueTypesApi issueTypesApi) {
     super(
-        options,
-        TABLE_NAME,
-        "Issue types distinguish different types of work in unique ways, and help you identify, categorize, and report on your team’s work across your Jira site.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraIssueTypeTable(Map<String, String> options, IssueTypesApi issueTypesApi) {
-    this(options);
+            options,
+            TABLE_NAME,
+            "Issue types distinguish different types of work in unique ways, and help you identify, categorize, and report on your team’s work across your Jira site.");
     this.issueTypesApi = issueTypesApi;
   }
 
