@@ -62,6 +62,7 @@ public class DASJiraIssueTableTest extends BaseMockTest {
       assertEquals("SP-1", extractValueFactory.extractValue(row, "key"));
       assertEquals("Task", extractValueFactory.extractValue(row, "type"));
       assertEquals("test issue", extractValueFactory.extractValue(row, "summary"));
+      assertEquals("RD-15048", extractValueFactory.extractValue(row, "epic_key"));
       ObjectNode description = (ObjectNode) extractValueFactory.extractValue(row, "description");
       // Fetch the first text of the content ("do this")
       assertEquals(
