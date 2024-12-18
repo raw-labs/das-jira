@@ -26,17 +26,13 @@ public class DASJiraBoardTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_board";
 
-  private BoardApi boardApi = new BoardApi();
-
-  public DASJiraBoardTable(Map<String, String> options) {
-    super(
-        options,
-        TABLE_NAME,
-        "A board displays issues from one or more projects, giving you a flexible way of viewing, managing, and reporting on work in progress.");
-  }
+  private final BoardApi boardApi;
 
   public DASJiraBoardTable(Map<String, String> options, BoardApi boardApi) {
-    this(options);
+    super(
+            options,
+            TABLE_NAME,
+            "A board displays issues from one or more projects, giving you a flexible way of viewing, managing, and reporting on work in progress.");
     this.boardApi = boardApi;
   }
 

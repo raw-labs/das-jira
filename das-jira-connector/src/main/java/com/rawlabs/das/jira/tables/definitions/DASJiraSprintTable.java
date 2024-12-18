@@ -28,24 +28,19 @@ public class DASJiraSprintTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_sprint";
 
-  private DASJiraTable parentTable;
+  private final DASJiraTable parentTable;
 
-  private BoardApi boardApi = new BoardApi();
-  private SprintApi sprintApi = new SprintApi();
+  private final BoardApi boardApi;
+  private final SprintApi sprintApi;
 
-  public DASJiraSprintTable(Map<String, String> options) {
+  public DASJiraSprintTable(Map<String, String> options, SprintApi sprintApi, BoardApi boardApi) {
     super(
         options,
         TABLE_NAME,
         "Sprint is a short period in which the development team implements and delivers a discrete and potentially shippable application increment.");
-    parentTable = new DASJiraBoardTable(options);
-  }
-
-  /** Constructor for mocks */
-  DASJiraSprintTable(Map<String, String> options, BoardApi boardApi) {
-    this(options);
+    this.sprintApi = sprintApi;
     this.boardApi = boardApi;
-    parentTable = new DASJiraBoardTable(options, boardApi);
+    this.parentTable = new DASJiraBoardTable(options, boardApi);
   }
 
   @Override

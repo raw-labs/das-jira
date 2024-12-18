@@ -22,15 +22,10 @@ public class DASJiraUserTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_user";
 
-  private UsersApi usersApi = new UsersApi();
+  private final UsersApi usersApi;
 
-  public DASJiraUserTable(Map<String, String> options) {
+  public DASJiraUserTable(Map<String, String> options, UsersApi usersApi) {
     super(options, TABLE_NAME, "User in the Jira cloud.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraUserTable(Map<String, String> options, UsersApi usersApi) {
-    this(options);
     this.usersApi = usersApi;
   }
 

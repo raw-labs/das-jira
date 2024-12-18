@@ -23,18 +23,15 @@ import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
   public static final String TABLE_NAME = "jira_issue";
-  private IssueSearchApi issueSearchApi = new IssueSearchApi();
-  private IssuesApi issuesApi = new IssuesApi();
+  private final IssueSearchApi issueSearchApi;
+  private final IssuesApi issuesApi;
 
-  public DASJiraIssueTable(Map<String, String> options) {
+  public DASJiraIssueTable(
+      Map<String, String> options, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
     super(
         options, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraIssueTable(Map<String, String> options, IssueSearchApi issueSearchApi) {
-    this(options);
     this.issueSearchApi = issueSearchApi;
+    this.issuesApi = issueApi;
   }
 
   @Override
