@@ -23,15 +23,10 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
 
   public static final String TABLE_NAME = "jira_global_setting";
 
-  private JiraSettingsApi jiraSettingsApi = new JiraSettingsApi();
+  private final JiraSettingsApi jiraSettingsApi;
 
-  public DASJiraGlobalSettingTable(Map<String, String> options) {
+  public DASJiraGlobalSettingTable(Map<String, String> options, JiraSettingsApi jiraSettingsApi) {
     super(options, TABLE_NAME, "Returns the global settings in Jira.");
-  }
-
-  /** Constructor for mocks */
-  DASJiraGlobalSettingTable(Map<String, String> options, JiraSettingsApi jiraSettingsApi) {
-    this(options);
     this.jiraSettingsApi = jiraSettingsApi;
   }
 
