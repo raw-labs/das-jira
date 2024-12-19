@@ -203,7 +203,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
             "popularity",
             "The number of users who have this dashboard as a favorite.",
             createStringType()));
-    columns.put("rank", createColumn("rank", "The rank of this dashboard.", createStringType()));
+    columns.put("rank", createColumn("rank", "The rank of this dashboard.", createIntType()));
     columns.put("view", createColumn("view", "The URL of the dashboard.", createStringType()));
     columns.put(
         "edit_permissions",
