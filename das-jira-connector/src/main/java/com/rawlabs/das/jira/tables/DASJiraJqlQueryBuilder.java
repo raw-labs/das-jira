@@ -73,9 +73,21 @@ public class DASJiraJqlQueryBuilder {
         .forEach(
             q -> {
               String column = getIssueJqlKey(q.getFieldName());
-              String operator = mapOperator(q.getSimpleQual().getOperator());
-              String value = mapValue(q.getSimpleQual().getValue());
-              joiner.add(column + " " + operator + " " + value);
+              var rawOperator = q.getSimpleQual().getOperator();
+              var rawValue = q.getSimpleQual().getValue();
+              if (rawValue.hasNull()) {
+                if (rawOperator.hasEquals()) {
+                  joiner.add(column + " IS EMPTY");
+                } else if (rawOperator.hasNotEquals()) {
+                  joiner.add(column + " IS NOT EMPTY");
+                } else {
+                  throw new IllegalArgumentException("Unexpected operator: " + rawOperator);
+                }
+              } else {
+                String value = mapValue(rawValue);
+                String operator = mapOperator(rawOperator);
+                joiner.add(column + " " + operator + " " + value);
+              }
             });
     jqlQuery.append(joiner);
     return jqlQuery.toString();
