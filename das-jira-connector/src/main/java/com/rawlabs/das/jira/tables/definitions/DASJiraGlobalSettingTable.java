@@ -1,23 +1,21 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ModelConfiguration;
 import com.rawlabs.das.jira.tables.DASJiraTable;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.RowsEstimation;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraGlobalSettingTable extends DASJiraTable {
 
@@ -31,22 +29,16 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
   }
 
   // the result is always one, arbitrary putting the first column
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "voting_enabled";
   }
 
-  @Override
-  public RowsEstimation getRelSize(List<Qual> quals, List<String> columns) {
-    return new RowsEstimation(1, 50);
+  public TableEstimate getTableEstimate(List<Qual> quals, List<String> columns) {
+    return new TableEstimate(1, 50);
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
     try {
       ModelConfiguration config = jiraSettingsApi.getConfiguration();
       Iterator<Row> iterator = List.of(toRow(config, columns)).iterator();
@@ -81,7 +73,7 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
                   try {
                     return objectMapper.writeValueAsString(c);
                   } catch (JsonProcessingException e) {
-                    throw new DASSdkApiException(e.getMessage(), e);
+                    throw new DASSdkException(e.getMessage(), e);
                   }
                 })
             .orElse(null),

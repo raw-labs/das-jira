@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
@@ -12,22 +15,18 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraIssueWorklogTable extends DASJiraTable {
 
@@ -50,8 +49,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
     parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
@@ -68,12 +66,11 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
           UserDetails.fromJson(updateAuthor.toJson()),
           extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException | URISyntaxException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
-  @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       Worklog worklog = extractWorklog(row);
       Worklog resultWorklog =
@@ -81,12 +78,11 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               worklog.getIssueId(), worklog, null, null, null, null, null, null);
       return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       Worklog worklog = extractWorklog(newValues);
       Worklog resultWorklog =
@@ -101,20 +97,16 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               null);
       return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
-    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
+      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, null) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<Worklog>(limit) {
+        return new DASJiraPaginatedResult<Worklog>(null) {
 
           final String issueId = extractValueFactory.extractValue(parentRow, "id").toString();
 
@@ -174,7 +166,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
           objectMapper.writeValueAsString(worklog.getProperties()),
           columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
 
     var updateAuthor =
