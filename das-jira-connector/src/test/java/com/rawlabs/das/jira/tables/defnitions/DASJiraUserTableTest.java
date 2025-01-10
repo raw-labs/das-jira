@@ -1,26 +1,24 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.UsersApi;
-import com.rawlabs.das.jira.rest.platform.model.ProjectRole;
 import com.rawlabs.das.jira.rest.platform.model.User;
 import com.rawlabs.das.jira.tables.definitions.DASJiraUserTable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira User Table Test")
 public class DASJiraUserTableTest extends BaseMockTest {
@@ -48,7 +46,7 @@ public class DASJiraUserTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get users")
   void testGetUsers() throws IOException {
-    try (var result = dasJiraUserTable.execute(List.of(), List.of(), null, null)) {
+    try (var result = dasJiraUserTable.execute(List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

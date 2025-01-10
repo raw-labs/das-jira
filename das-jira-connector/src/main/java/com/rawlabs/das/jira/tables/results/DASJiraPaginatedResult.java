@@ -1,20 +1,18 @@
 package com.rawlabs.das.jira.tables.results;
 
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-
-import javax.annotation.Nullable;
+import com.rawlabs.das.sdk.DASExecuteResult;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
 
   /**
    * These are the names returned by "expand" query params. They are a map from the field to its
    * name. The inverse of it allows to get the field name from the name. (E.g. "assignee" ->
-   * "fields.customfield_10000")
-   * It is a multimap because the same name can be used for different fields.
-   * We use always the first one.
+   * "fields.customfield_10000") It is a multimap because the same name can be used for different
+   * fields. We use always the first one.
    */
   private Map<String, String> names;
 
