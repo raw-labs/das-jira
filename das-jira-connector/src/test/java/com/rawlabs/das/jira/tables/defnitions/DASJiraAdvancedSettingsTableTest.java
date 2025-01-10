@@ -1,30 +1,31 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
-import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.jira.rest.platform.ApiException;
+import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
+import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
-import com.rawlabs.protocol.das.Row;
+import com.rawlabs.protocol.das.v1.tables.Column;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Advanced Settings Table Test")
 public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
@@ -63,11 +64,11 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
   @DisplayName("Get all advanced settings")
   public void testGetAllAdvancedSettings() {
     try (DASExecuteResult result =
-        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null, null)) {
+        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null)) {
       assertTrue(result.hasNext());
-      assertEquals(result.next().getDataMap().get("id").getString().getV(), "jira.home");
+      assertEquals(result.next().getColumns(0).getData().getString().getV(), "jira.home");
       assertTrue(result.hasNext());
-      assertEquals(result.next().getDataMap().get("id").getString().getV(), "jira.clone.prefix");
+      assertEquals(result.next().getColumns(0).getData().getString().getV(), "jira.clone.prefix");
     } catch (IOException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
     }
@@ -84,16 +85,15 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                     valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
                     "key")),
             List.of(),
-            null,
             null)) {
       assertTrue(result.hasNext());
       Row row = result.next();
-      assertEquals(row.getDataMap().get("id").getString().getV(), "jira.home");
-      assertEquals(row.getDataMap().get("key").getString().getV(), "jira.home");
-      assertEquals(row.getDataMap().get("title").getString().getV(), "jira.home");
-      assertEquals(row.getDataMap().get("description").getString().getV(), "Jira home directory");
-      assertEquals(row.getDataMap().get("type").getString().getV(), "string");
-      assertEquals(row.getDataMap().get("value").getString().getV(), "/var/jira/jira-home");
+      assertEquals(getByKey(row, "id").getString().getV(), "jira.home");
+      assertEquals(getByKey(row, "key").getString().getV(), "jira.home");
+      assertEquals(getByKey(row, "title").getString().getV(), "jira.home");
+      assertEquals(getByKey(row, "description").getString().getV(), "Jira home directory");
+      assertEquals(getByKey(row, "type").getString().getV(), "string");
+      assertEquals(getByKey(row, "value").getString().getV(), "/var/jira/jira-home");
       assertFalse(result.hasNext());
     } catch (IOException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
@@ -107,18 +107,17 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                         new ValueTypeTuple("jira.clone.prefix", createStringType())),
                     "key")),
             List.of(),
-            null,
             null)) {
       assertTrue(result.hasNext());
       Row row = result.next();
-      assertEquals(row.getDataMap().get("id").getString().getV(), "jira.clone.prefix");
-      assertEquals(row.getDataMap().get("key").getString().getV(), "jira.clone.prefix");
+      assertEquals(getByKey(row, "id").getString().getV(), "jira.clone.prefix");
+      assertEquals(getByKey(row, "key").getString().getV(), "jira.clone.prefix");
       assertEquals(
-          row.getDataMap().get("title").getString().getV(),
+          getByKey(row, "title").getString().getV(),
           "The prefix added to the Summary field of cloned issues");
-      assertEquals(row.getDataMap().get("type").getString().getV(), "string");
-      assertEquals(row.getDataMap().get("value").getString().getV(), "CLONE -");
-      assertTrue(row.getDataMap().get("description").hasNull());
+      assertEquals(getByKey(row, "type").getString().getV(), "string");
+      assertEquals(getByKey(row, "value").getString().getV(), "CLONE -");
+      assertTrue(getByKey(row, "description").hasNull());
 
       assertFalse(result.hasNext());
     } catch (IOException e) {
@@ -136,10 +135,9 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                     valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
                     "key")),
             List.of(),
-            null,
-            1L)) {
+            null)) {
       assertTrue(result.hasNext());
-      assertEquals(result.next().getDataMap().get("id").getString().getV(), "jira.home");
+      assertEquals(result.next().getColumns(0).getData().getString().getV(), "jira.home");
       assertFalse(result.hasNext());
     } catch (IOException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
@@ -151,7 +149,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
   public void testGetAllAdvancedSettingsWithWithError() {
     ValueFactory valueFactory = new DefaultValueFactory();
     assertThrows(
-        DASSdkApiException.class,
+        DASSdkException.class,
         () -> {
           try (DASExecuteResult result =
               dasJiraAdvancedSettingsTable.execute(
@@ -161,10 +159,17 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                               new ValueTypeTuple("throw error", createStringType())),
                           "key")),
                   List.of(),
-                  null,
-                  1L)) {
+                  null)) {
             fail("Exception expected");
           }
         });
+  }
+
+  private Value getByKey(Row row, String key) {
+    return row.getColumnsList().stream()
+        .filter(c -> c.getName().equals(key))
+        .map(Column::getData)
+        .findFirst()
+        .get();
   }
 }
