@@ -1,24 +1,23 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueTypesApi;
 import com.rawlabs.das.jira.rest.platform.model.IssueTypeDetails;
 import com.rawlabs.das.jira.tables.definitions.DASJiraIssueTypeTable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Issue Type Table Test")
 public class DASJiraIssueTypeTableTest extends BaseMockTest {
@@ -46,7 +45,7 @@ public class DASJiraIssueTypeTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get issue types")
   void testGetIssueTypes() throws IOException {
-    try (var result = dasJiraIssueTypeTable.execute(List.of(), List.of(), null, null)) {
+    try (var result = dasJiraIssueTypeTable.execute(List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

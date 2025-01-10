@@ -1,15 +1,15 @@
 package com.rawlabs.das.jira;
 
 import com.rawlabs.das.jira.initializer.DASJiraInitializer;
-import com.rawlabs.das.jira.tables.*;
-import com.rawlabs.das.sdk.java.DASFunction;
-import com.rawlabs.das.sdk.java.DASSdk;
-import com.rawlabs.das.sdk.java.DASTable;
-import com.rawlabs.protocol.das.FunctionDefinition;
-import com.rawlabs.protocol.das.TableDefinition;
-
+import com.rawlabs.das.jira.tables.DASJiraTableManager;
+import com.rawlabs.das.sdk.DASFunction;
+import com.rawlabs.das.sdk.DASSdk;
+import com.rawlabs.das.sdk.DASTable;
+import com.rawlabs.protocol.das.v1.functions.FunctionDefinition;
+import com.rawlabs.protocol.das.v1.tables.TableDefinition;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class DASJira implements DASSdk {
 
@@ -23,23 +23,19 @@ public class DASJira implements DASSdk {
     this.options = options;
   }
 
-  @Override
   public List<TableDefinition> getTableDefinitions() {
     return tableManager.getTableDefinitions();
   }
 
-  @Override
   public List<FunctionDefinition> getFunctionDefinitions() {
     return List.of();
   }
 
-  @Override
-  public DASTable getTable(String name) {
-    return tableManager.getTable(name);
+  public Optional<DASTable> getTable(String name) {
+    return tableManager.getTable(name).map(table -> (DASTable) table);
   }
 
-  @Override
-  public DASFunction getFunction(String name) {
-    return null;
+  public Optional<DASFunction> getFunction(String name) {
+    return Optional.empty();
   }
 }

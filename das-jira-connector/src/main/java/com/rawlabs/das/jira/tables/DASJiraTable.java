@@ -1,21 +1,24 @@
 package com.rawlabs.das.jira.tables;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
-import com.rawlabs.das.sdk.java.RowsEstimation;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.utils.factory.value.*;
-import com.rawlabs.protocol.das.*;
-
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
 import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
 import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
 import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
 import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createLongType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASTable;
+import com.rawlabs.das.sdk.java.utils.factory.value.*;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.Column;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.tables.TableDefinition;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public abstract class DASJiraTable implements DASTable {
 
@@ -32,7 +35,9 @@ public abstract class DASJiraTable implements DASTable {
   private final TableDefinition tableDefinition;
   private final Map<String, ColumnDefinition> columnDefinitions;
 
-  private final RowsEstimation rowsEstimation = new RowsEstimation(100, 100);
+  public TableEstimate getTableEstimate(List<Qual> quals, List<String> columns) {
+    return new TableEstimate(100, 100);
+  }
 
   protected DASJiraTable(Map<String, String> options, String table, String description) {
     this.options = options;
@@ -49,18 +54,15 @@ public abstract class DASJiraTable implements DASTable {
     return tableDefinition;
   }
 
-  @Override
-  public RowsEstimation getRelSize(List<Qual> quals, List<String> columns) {
-    return rowsEstimation;
-  }
-
   protected void addToRow(
       String columnName, Row.Builder rowBuilder, Object value, List<String> columns) {
     if (hasProjection(columns, columnName)) {
-      rowBuilder.putData(
-          columnName,
-          valueFactory.createValue(
-              new ValueTypeTuple(value, columnDefinitions.get(columnName).getType())));
+      rowBuilder.addColumns(
+          Column.newBuilder()
+              .setName(columnName)
+              .setData(
+                  valueFactory.createValue(
+                      new ValueTypeTuple(value, columnDefinitions.get(columnName).getType()))));
     }
   }
 
@@ -92,14 +94,14 @@ public abstract class DASJiraTable implements DASTable {
   }
 
   public String withOrderBy(List<SortKey> sortKeys) {
-    return Optional.ofNullable(sortKeys)
-        .map(
-            keys -> {
-              if (keys.size() > 1) throw new DASSdkApiException("Only one sort key is allowed.");
-              return keys.getFirst();
-            })
-        .map(key -> (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name"))
-        .orElse(null);
+    if (sortKeys.isEmpty()) {
+      return null;
+    }
+    if (sortKeys.size() > 1) {
+      throw new DASSdkException("Only one sort key is allowed.");
+    }
+    SortKey key = sortKeys.getFirst();
+    return (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name");
   }
 
   public List<Qual> withParentJoin(List<Qual> quals, String childColumn, String parentColumn) {

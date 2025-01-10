@@ -1,24 +1,23 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectComponentsApi;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
 import com.rawlabs.das.jira.rest.platform.model.PageBeanComponentWithIssueCount;
 import com.rawlabs.das.jira.tables.definitions.DASJiraComponentTable;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Component Table Test")
 public class DASJiraComponentTableTest extends BaseMockTest {
@@ -48,7 +47,7 @@ public class DASJiraComponentTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get project components")
   void testGetProjectComponents() {
-    try (var result = dasJiraComponentTable.execute(List.of(), List.of(), null, null)) {
+    try (var result = dasJiraComponentTable.execute(List.of(), List.of(), List.of())) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

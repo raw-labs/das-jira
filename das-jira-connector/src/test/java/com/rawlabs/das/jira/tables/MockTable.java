@@ -1,19 +1,18 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import org.jetbrains.annotations.Nullable;
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
 
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import org.jetbrains.annotations.Nullable;
 
 public class MockTable extends DASJiraTable {
 
@@ -31,12 +30,10 @@ public class MockTable extends DASJiraTable {
     return columnDefinitions;
   }
 
-  @Override
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      @Nullable List<SortKey> sortKeys) {
 
     return new DASExecuteResult() {
       private final Iterator<MockObject> mockObjects =

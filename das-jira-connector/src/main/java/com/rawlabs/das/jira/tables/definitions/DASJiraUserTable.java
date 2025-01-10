@@ -1,22 +1,21 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.UsersApi;
 import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraUserTable extends DASJiraTable {
 
@@ -29,23 +28,21 @@ public class DASJiraUserTable extends DASJiraTable {
     this.usersApi = usersApi;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "account_id";
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("account_id"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("account_id").build());
   }
 
   @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
   @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       NewUserDetails newUserDetails = new NewUserDetails();
       newUserDetails.setName((String) extractValueFactory.extractValue(row, "name"));
@@ -62,7 +59,7 @@ public class DASJiraUserTable extends DASJiraTable {
   }
 
   @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       usersApi.removeUser(extractValueFactory.extractValue(rowId).toString(), null, null);
     } catch (ApiException e) {
@@ -72,12 +69,9 @@ public class DASJiraUserTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
     try {
-      List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(limit));
+      List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(null));
       return fromRowIterator(users.stream().map(u -> toRow(u, columns)).iterator());
     } catch (ApiException e) {
       throw new RuntimeException(e);

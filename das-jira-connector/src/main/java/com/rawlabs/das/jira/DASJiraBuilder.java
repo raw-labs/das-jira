@@ -1,9 +1,8 @@
 package com.rawlabs.das.jira;
 
-import com.rawlabs.das.sdk.java.DASSdk;
-import com.rawlabs.das.sdk.java.DASSdkBuilder;
-import com.rawlabs.utils.core.RawSettings;
-
+import com.rawlabs.das.sdk.DASSdk;
+import com.rawlabs.das.sdk.DASSdkBuilder;
+import com.rawlabs.das.sdk.DASSettings;
 import java.util.Map;
 
 public class DASJiraBuilder implements DASSdkBuilder {
@@ -13,8 +12,7 @@ public class DASJiraBuilder implements DASSdkBuilder {
     return "jira";
   }
 
-  @Override
-  public DASSdk build(Map<String, String> options, RawSettings rawSettings) {
+  public DASSdk build(Map<String, String> options, DASSettings rawSettings) {
     return new DASJira(options);
   }
 }
