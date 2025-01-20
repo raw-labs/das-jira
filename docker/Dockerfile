@@ -69,13 +69,13 @@ LABEL vendor="RAW Labs SA" \
       org.opencontainers.image.source="https://github.com/raw-labs/das-jira"
 
 # Set the entry point to run the application
-CMD ["java", "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
-             "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
-             "--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED",
-             "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-             "--add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED",
-             "--add-opens=java.base/java.lang=ALL-UNNAMED",
-             "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
-             "--add-opens=java.base/java.io=ALL-UNNAMED",
-             "--add-opens=java.base/java.util=ALL-UNNAMED",
+CMD ["java", "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED", \
+             "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED", \
+             "--add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED", \
+             "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED", \
+             "--add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED", \
+             "--add-opens=java.base/java.lang=ALL-UNNAMED", \
+             "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED", \
+             "--add-opens=java.base/java.io=ALL-UNNAMED", \
+             "--add-opens=java.base/java.util=ALL-UNNAMED", \
              "-jar", "das-jira-connector.jar"]
