@@ -15,7 +15,16 @@ env:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker/build
+      - uses: s4u/setup-maven-action@v1.18.0
+        with:
+          java-version: 22
+          maven-version: 3.9.9
+      - name: set version from tag
+        run: |
+          DOCKER_TAG=$(echo '${{ github.head_ref }}' | sed 's/[^a-zA-Z0-9_.-]/-/g')
+          mvn -B versions:set -DnewVersion=${DOCKER_TAG} -DprocessAllModules
+      - name: build docker image
+        run: docker/build
