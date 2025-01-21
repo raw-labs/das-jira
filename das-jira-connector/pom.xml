@@ -46,6 +46,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.rawlabs.das.server.DASServer</mainClass>
                                 </transformer>
+                                <!-- Append the reference.conf files into one -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>reference.conf</resource>
                                 </transformer>
