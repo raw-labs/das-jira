@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.raw-labs</groupId>
             <artifactId>das-sdk-java</artifactId>
-            <version>${das-java-sdk-version}</version>
+            <version>${das-sdk-java-version}</version>
         </dependency>
         <dependency>
             <groupId>com.raw-labs</groupId>
@@ -126,8 +126,8 @@
         <maven-shade-plugin-version>3.4.1</maven-shade-plugin-version>
 
         <!-- RAW Labs Dependencies -->
-        <das-java-sdk-version>0.2.0-beta</das-java-sdk-version>
-        <das-server-scala-version>1.0.0-beta</das-server-scala-version>
+        <das-sdk-java-version>0.2.0-beta1</das-sdk-java-version>
+        <das-server-scala-version>0.2.0-beta</das-server-scala-version>
         <jira-rest-client-version>1.0-SNAPSHOT</jira-rest-client-version>
         <protocol-das.version>1.0.0-beta</protocol-das.version>
 
