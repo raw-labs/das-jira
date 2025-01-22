@@ -7,13 +7,12 @@ import com.rawlabs.das.sdk.java.utils.factory.value.DefaultExtractValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ExtractValueFactory;
 import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

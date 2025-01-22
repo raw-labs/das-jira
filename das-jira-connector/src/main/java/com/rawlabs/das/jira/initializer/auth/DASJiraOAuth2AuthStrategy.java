@@ -1,9 +1,6 @@
 package com.rawlabs.das.jira.initializer.auth;
 
-import com.rawlabs.das.jira.rest.platform.ApiClient;
-import com.rawlabs.das.jira.rest.platform.Configuration;
 import com.rawlabs.das.jira.rest.platform.auth.OAuth;
-
 import java.util.Map;
 
 public class DASJiraOAuth2AuthStrategy implements DASJiraAuthStrategy {

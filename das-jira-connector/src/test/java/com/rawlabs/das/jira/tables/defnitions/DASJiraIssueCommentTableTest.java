@@ -1,29 +1,26 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueCommentsApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
-import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
 import com.rawlabs.das.jira.rest.platform.model.PageOfComments;
-import com.rawlabs.das.jira.rest.platform.model.PageOfWorklogs;
 import com.rawlabs.das.jira.tables.definitions.DASJiraIssueCommentTable;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.protocol.das.Row;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Issue Comment Table Test")
 public class DASJiraIssueCommentTableTest extends BaseMockTest {
@@ -53,7 +50,7 @@ public class DASJiraIssueCommentTableTest extends BaseMockTest {
   @DisplayName("Get issue comments")
   void testGetIssuesForBacklog() {
     try (DASExecuteResult result =
-        dasJiraIssueCommentTable.execute(List.of(), List.of(), null, null)) {
+        dasJiraIssueCommentTable.execute(List.of(), List.of(), List.of())) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       Row row = result.next();
