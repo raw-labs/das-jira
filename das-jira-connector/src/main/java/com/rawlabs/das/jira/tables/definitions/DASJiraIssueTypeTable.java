@@ -84,7 +84,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       return fromRowIterator(
           issueTypesApi.getIssueAllTypes().stream().map(i -> toRow(i, columns)).iterator());

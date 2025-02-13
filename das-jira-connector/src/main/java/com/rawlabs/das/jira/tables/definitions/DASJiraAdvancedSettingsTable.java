@@ -17,6 +17,8 @@ import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
+
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
@@ -60,7 +62,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     }
   }
 
-  public DASExecuteResult execute(List<Qual> quals, List<String> columns, List<SortKey> sortKeys) {
+  public DASExecuteResult execute(List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       String key = (String) extractEqDistinct(quals, "key");
 

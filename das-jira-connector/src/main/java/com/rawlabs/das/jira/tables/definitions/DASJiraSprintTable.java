@@ -96,12 +96,12 @@ public class DASJiraSprintTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
-    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, null) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
+    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
         final Long boardId = (Long) extractValueFactory.extractValue(parentRow, "id");
-        return new DASJiraPaginatedResult<Sprint>(null) {
+        return new DASJiraPaginatedResult<Sprint>(limit) {
 
           @Override
           public Row next() {

@@ -102,11 +102,11 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
-    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, null) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
+    return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<Worklog>(null) {
+        return new DASJiraPaginatedResult<Worklog>(limit) {
 
           final String issueId = extractValueFactory.extractValue(parentRow, "id").toString();
 

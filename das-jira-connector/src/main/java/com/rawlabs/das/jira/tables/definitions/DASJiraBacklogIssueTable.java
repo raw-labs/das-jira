@@ -71,16 +71,17 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     return new DASJiraWithParentTableResult(
         this.parentTable,
         withParentJoin(quals, "board_id", "id"),
         List.of("id", "name"),
         sortKeys,
-        null) {
+        limit) {
 
+      @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<IssueBean>(null) {
+        return new DASJiraPaginatedResult<IssueBean>(limit) {
 
           @Override
           public Row next() {

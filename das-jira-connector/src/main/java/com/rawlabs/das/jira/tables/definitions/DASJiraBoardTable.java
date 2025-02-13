@@ -79,7 +79,7 @@ public class DASJiraBoardTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       Long id = (Long) extractEqDistinct(quals, "id");
 
@@ -89,7 +89,7 @@ public class DASJiraBoardTable extends DASJiraTable {
         return fromRowIterator(
             List.of(toRow(getAllBoards200ResponseValuesInner, columns)).iterator());
       } else {
-        int maxResults = withMaxResultOrLimit(null);
+        int maxResults = withMaxResultOrLimit(limit);
         String type = (String) extractEqDistinct(quals, "type");
         String name =
             Optional.ofNullable(extractEqDistinct(quals, "name"))
@@ -97,7 +97,7 @@ public class DASJiraBoardTable extends DASJiraTable {
                 .orElse((String) extractEqDistinct(quals, "title"));
         Long filterId = (Long) extractEqDistinct(quals, "filter_id");
 
-        return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>(null) {
+        return new DASJiraPaginatedResult<GetAllBoards200ResponseValuesInner>(limit) {
 
           @Override
           public DASJiraPage<GetAllBoards200ResponseValuesInner> fetchPage(long offset) {

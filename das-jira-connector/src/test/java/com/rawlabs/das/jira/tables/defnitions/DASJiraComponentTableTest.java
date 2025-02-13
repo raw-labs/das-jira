@@ -47,7 +47,7 @@ public class DASJiraComponentTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get project components")
   void testGetProjectComponents() {
-    try (var result = dasJiraComponentTable.execute(List.of(), List.of(), List.of())) {
+    try (var result = dasJiraComponentTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

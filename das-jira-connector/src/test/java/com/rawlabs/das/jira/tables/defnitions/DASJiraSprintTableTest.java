@@ -43,7 +43,7 @@ public class DASJiraSprintTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all sprints")
   void testGetAllSprints() throws IOException {
-    try (var result = dasJiraSprintTable.execute(List.of(), List.of(), List.of())) {
+    try (var result = dasJiraSprintTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

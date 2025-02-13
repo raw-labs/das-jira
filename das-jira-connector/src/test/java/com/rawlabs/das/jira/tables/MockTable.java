@@ -33,7 +33,8 @@ public class MockTable extends DASJiraTable {
   public DASExecuteResult execute(
       List<Qual> quals,
       List<String> columns,
-      @Nullable List<SortKey> sortKeys) {
+      List<SortKey> sortKeys,
+      @Nullable Long limit) {
 
     return new DASExecuteResult() {
       private final Iterator<MockObject> mockObjects =

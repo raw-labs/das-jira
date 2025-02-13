@@ -69,9 +69,9 @@ public class DASJiraUserTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
-      List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(null));
+      List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(limit));
       return fromRowIterator(users.stream().map(u -> toRow(u, columns)).iterator());
     } catch (ApiException e) {
       throw new RuntimeException(e);

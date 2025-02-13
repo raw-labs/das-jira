@@ -77,9 +77,9 @@ public class DASJiraGroupTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
-    return new DASJiraPaginatedResult<GroupDetails>(null) {
+    return new DASJiraPaginatedResult<GroupDetails>(limit) {
 
       @Override
       public Row next() {

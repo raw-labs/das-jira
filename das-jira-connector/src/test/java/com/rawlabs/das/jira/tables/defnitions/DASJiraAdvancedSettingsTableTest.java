@@ -64,7 +64,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
   @DisplayName("Get all advanced settings")
   public void testGetAllAdvancedSettings() {
     try (DASExecuteResult result =
-        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), null)) {
+        dasJiraAdvancedSettingsTable.execute(List.of(), List.of(), List.of(), null)) {
       assertTrue(result.hasNext());
       assertEquals(result.next().getColumns(0).getData().getString().getV(), "jira.home");
       assertTrue(result.hasNext());
@@ -84,6 +84,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                 createEq(
                     valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
                     "key")),
+            List.of(),
             List.of(),
             null)) {
       assertTrue(result.hasNext());
@@ -106,6 +107,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                     valueFactory.createValue(
                         new ValueTypeTuple("jira.clone.prefix", createStringType())),
                     "key")),
+            List.of(),
             List.of(),
             null)) {
       assertTrue(result.hasNext());
@@ -135,7 +137,8 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                     valueFactory.createValue(new ValueTypeTuple("jira.home", createStringType())),
                     "key")),
             List.of(),
-            null)) {
+            List.of(),
+            1L)) {
       assertTrue(result.hasNext());
       assertEquals(result.next().getColumns(0).getData().getString().getV(), "jira.home");
       assertFalse(result.hasNext());
@@ -158,6 +161,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
                           valueFactory.createValue(
                               new ValueTypeTuple("throw error", createStringType())),
                           "key")),
+                  List.of(),
                   List.of(),
                   null)) {
             fail("Exception expected");
