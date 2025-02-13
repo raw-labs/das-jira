@@ -46,7 +46,7 @@ public class DASJiraProjectRoleTableTest extends BaseMockTest {
   @DisplayName("Get project roles")
   @SuppressWarnings("unchecked")
   void testGetProjectRoles() throws IOException {
-    try (var result = dasJiraProjectRoleTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraProjectRoleTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

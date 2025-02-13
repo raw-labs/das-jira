@@ -48,7 +48,8 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get issue worklog")
   void testIssueWorklog() {
-    try (DASExecuteResult result = dasJiraIssueWorklogTable.execute(List.of(), List.of(), null)) {
+    try (DASExecuteResult result =
+        dasJiraIssueWorklogTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       Row row = result.next();

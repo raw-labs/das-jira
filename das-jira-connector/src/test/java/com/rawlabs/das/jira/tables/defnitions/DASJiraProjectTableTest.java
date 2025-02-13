@@ -58,7 +58,7 @@ public class DASJiraProjectTableTest extends BaseMockTest {
   @Test
   @DisplayName("Search projects")
   void testSearchProjects() {
-    try (DASExecuteResult result = dasJiraProjectTable.execute(List.of(), List.of(), List.of())) {
+    try (DASExecuteResult result = dasJiraProjectTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       Row row = result.next();

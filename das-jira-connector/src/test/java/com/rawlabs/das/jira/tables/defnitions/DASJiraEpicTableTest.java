@@ -41,7 +41,7 @@ public class DASJiraEpicTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all epics")
   void testGetAllEpics() throws IOException {
-    try (var result = dasJiraEpicTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraEpicTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

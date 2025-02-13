@@ -55,11 +55,11 @@ public class DASJiraWorkflowTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     final String name = (String) extractEqDistinct(quals, "name");
     final Set<String> setOfNames = name == null ? null : Set.of(name);
 
-    return new DASJiraPaginatedResult<Workflow>(null) {
+    return new DASJiraPaginatedResult<Workflow>(limit) {
       @Override
       public Row next() {
         return toRow(getNext(), columns);

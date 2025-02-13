@@ -20,7 +20,7 @@ public class DASJiraTableDefinitionTest {
   @DisplayName("Table execution")
   void testTableExecution() {
     MockTable mockTable = new MockTable(Map.of());
-    try (DASExecuteResult result = mockTable.execute(List.of(), List.of(), null)) {
+    try (DASExecuteResult result = mockTable.execute(List.of(), List.of(), List.of(), null)) {
       Row row = result.next();
       assertNotNull(row);
       assertEquals("1", getByKey(row, "id").getString().getV());

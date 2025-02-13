@@ -46,7 +46,7 @@ public class DASJiraUserTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get users")
   void testGetUsers() throws IOException {
-    try (var result = dasJiraUserTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraUserTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();
