@@ -66,6 +66,12 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
     }
   }
 
+  @Override
+  public List<String> explain(
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
+    return List.of(DASJiraJqlQueryBuilder.buildJqlQuery(quals));
+  }
+
   public DASExecuteResult execute(
       List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 

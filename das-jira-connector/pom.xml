@@ -129,7 +129,7 @@
         <das-sdk-java-version>0.2.0-beta3</das-sdk-java-version>
         <das-server-scala-version>1.0.0-beta2</das-server-scala-version>
         <jira-rest-client-version>1.0-SNAPSHOT</jira-rest-client-version>
-        <protocol-das.version>1.0.0-beta</protocol-das.version>
+        <protocol-das.version>1.0.0-beta3</protocol-das.version>
 
         <!-- Scala Version -->
         <scala-version>2.13</scala-version>
