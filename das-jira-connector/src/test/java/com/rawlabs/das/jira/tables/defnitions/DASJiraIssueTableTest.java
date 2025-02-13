@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
+import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
 import com.rawlabs.das.jira.rest.platform.model.SearchResults;
 import com.rawlabs.das.jira.tables.definitions.DASJiraIssueTable;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,8 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,9 +26,9 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Issue Table Test")
 public class DASJiraIssueTableTest extends BaseMockTest {
-  @Mock static IssueSearchApi issueSearchApi;
+  @Mock private IssueSearchApi issueSearchApi;
 
-  @InjectMocks DASJiraIssueTable dasJiraIssueTable;
+  private static DASJiraIssueTable dasJiraIssueTable;
 
   private static SearchResults searchResults;
 
@@ -48,6 +51,13 @@ public class DASJiraIssueTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     configBeforeEach(issueSearchApi);
+    dasJiraIssueTable =
+        new DASJiraIssueTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The jiraZoneId (whatever you need in test)
+            issueSearchApi,
+            null // issuesApi
+            );
   }
 
   @DisplayName("Get issues")

@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
-import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
 import com.rawlabs.das.jira.rest.platform.model.PageOfWorklogs;
-import com.rawlabs.das.jira.rest.platform.model.SearchResults;
 import com.rawlabs.das.jira.tables.definitions.DASJiraIssueWorklogTable;
 import com.rawlabs.das.sdk.java.DASExecuteResult;
 import com.rawlabs.protocol.das.Row;
@@ -14,11 +12,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +29,7 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
   @Mock static IssueWorklogsApi issueWorklogsApi;
   @Mock static IssueSearchApi issueSearchApi;
 
-  @InjectMocks DASJiraIssueWorklogTable dasJiraIssueWorklogTable;
+  DASJiraIssueWorklogTable dasJiraIssueWorklogTable;
 
   private static PageOfWorklogs pageOfWorklogs;
 
@@ -44,6 +43,14 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     DASJiraIssueTableTest.configBeforeEach(issueSearchApi);
+    dasJiraIssueWorklogTable =
+        new DASJiraIssueWorklogTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The jiraZoneId
+            issueWorklogsApi,
+            issueSearchApi,
+            null // issuesApi
+            );
     when(issueWorklogsApi.getIssueWorklog(any(), any(), any(), any(), any(), any()))
         .thenReturn(pageOfWorklogs);
   }
