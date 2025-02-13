@@ -18,6 +18,7 @@ import com.rawlabs.protocol.raw.Value;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.*;
 
 import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
@@ -33,12 +34,13 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
   public DASJiraIssueCommentTable(
       Map<String, String> options,
+      ZoneId zoneId,
       IssueCommentsApi issueCommentsApi,
       IssueSearchApi issueSearchApi,
       IssuesApi issuesApi) {
     super(options, TABLE_NAME, "Comments that provided in issue.");
     this.issueCommentsApi = issueCommentsApi;
-    this.parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
+    this.parentTable = new DASJiraIssueTable(options, zoneId, issueSearchApi, issuesApi);
   }
 
   @Override
