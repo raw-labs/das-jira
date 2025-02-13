@@ -42,7 +42,7 @@ public class DASJiraDashboardTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all dashboards")
   void testGetAllDashboards() throws IOException {
-    try (var result = dasJiraDashboardTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraDashboardTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

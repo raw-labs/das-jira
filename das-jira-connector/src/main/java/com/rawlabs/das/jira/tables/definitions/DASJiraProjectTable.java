@@ -109,7 +109,7 @@ public class DASJiraProjectTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     Set<Long> ids =
         Optional.ofNullable(extractEqDistinct(quals, "id"))
@@ -121,7 +121,7 @@ public class DASJiraProjectTable extends DASJiraTable {
             .map(i -> Set.of((String) i))
             .orElse(null);
 
-    return new DASJiraPaginatedResult<Project>(null) {
+    return new DASJiraPaginatedResult<Project>(limit) {
 
       @Override
       public Row next() {

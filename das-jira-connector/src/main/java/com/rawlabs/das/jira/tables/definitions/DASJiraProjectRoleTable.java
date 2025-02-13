@@ -83,7 +83,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       List<ProjectRole> result = projectRolesApi.getAllProjectRoles();
       return fromRowIterator(result.stream().map(r -> toRow(r, columns)).iterator());

@@ -40,7 +40,7 @@ public class DASJiraGlobalSettingTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get global settings")
   void testGetGlobalSettings() throws IOException {
-    try (var result = dasJiraGlobalSettingTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraGlobalSettingTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

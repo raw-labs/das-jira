@@ -50,7 +50,7 @@ public class DASJiraIssueCommentTableTest extends BaseMockTest {
   @DisplayName("Get issue comments")
   void testGetIssuesForBacklog() {
     try (DASExecuteResult result =
-        dasJiraIssueCommentTable.execute(List.of(), List.of(), List.of())) {
+        dasJiraIssueCommentTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       Row row = result.next();

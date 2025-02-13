@@ -38,7 +38,7 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       ModelConfiguration config = jiraSettingsApi.getConfiguration();
       Iterator<Row> iterator = List.of(toRow(config, columns)).iterator();

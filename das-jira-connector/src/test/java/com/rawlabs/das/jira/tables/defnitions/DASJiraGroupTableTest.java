@@ -49,7 +49,7 @@ public class DASJiraGroupTableTest extends BaseMockTest {
   @DisplayName("Get groups")
   @SuppressWarnings("unchecked")
   void testGetGroups() throws IOException {
-    try (var result = DASJiraGroupTable.execute(List.of(), List.of(), null)) {
+    try (var result = DASJiraGroupTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

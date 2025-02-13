@@ -45,7 +45,7 @@ public class DASJiraIssueTypeTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get issue types")
   void testGetIssueTypes() throws IOException {
-    try (var result = dasJiraIssueTypeTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraIssueTypeTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

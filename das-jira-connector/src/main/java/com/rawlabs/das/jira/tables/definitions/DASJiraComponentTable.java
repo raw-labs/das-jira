@@ -107,13 +107,13 @@ public class DASJiraComponentTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     return new DASJiraWithParentTableResult(
-        parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, null) {
+        parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
-        return new DASJiraPaginatedResult<ComponentWithIssueCount>(null) {
+        return new DASJiraPaginatedResult<ComponentWithIssueCount>(limit) {
           @Override
           public Row next() {
             return toRow(this.getNext(), columns);

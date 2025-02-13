@@ -23,7 +23,7 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
       List<SortKey> sortKeys,
       Long limit) {
     this.limit = limit;
-    try (DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys)) {
+    try (DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, null)) {
       this.parentResult = parentResult;
     } catch (IOException e) {
       throw new DASSdkException("Failed to execute parent table", e);

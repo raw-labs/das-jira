@@ -67,9 +67,9 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
-    return new DASJiraPaginatedResult<IssueBean>(null) {
+    return new DASJiraPaginatedResult<IssueBean>(limit) {
 
       public Row next() {
         return toRow(this.getNext(), names(), columns);

@@ -85,7 +85,8 @@ public class DASJiraBoardTableTest extends BaseMockTest {
             List.of(
                 createEq(
                     valueFactory.createValue(new ValueTypeTuple(84L, createLongType())), "id")),
-            null,
+            List.of(),
+            List.of(),
             null)) {
       assertTrue(result.hasNext());
       Row row = result.next();
@@ -107,7 +108,7 @@ public class DASJiraBoardTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all boards")
   void testGetBoards() {
-    try (DASExecuteResult result = dasJiraBoardTable.execute(List.of(), null, List.of())) {
+    try (DASExecuteResult result = dasJiraBoardTable.execute(List.of(), null, List.of(), null)) {
       assertTrue(result.hasNext());
       result.next();
       assertTrue(result.hasNext());
@@ -133,6 +134,7 @@ public class DASJiraBoardTableTest extends BaseMockTest {
                           valueFactory.createValue(new ValueTypeTuple(1L, createLongType())),
                           "id")),
                   null,
+                  List.of(),
                   null)) {
             fail("Exception expected");
           }

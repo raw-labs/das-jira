@@ -38,9 +38,9 @@ public class DASJiraEpicTable extends DASJiraTable {
   }
 
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
-      EpicSearchResult result = epicApi.searchPaginatedEpics(0, withMaxResultOrLimit(null));
+      EpicSearchResult result = epicApi.searchPaginatedEpics(0, withMaxResultOrLimit(limit));
       return fromRowIterator(result.getValues().stream().map(v -> toRow(v, columns)).iterator());
     } catch (ApiException e) {
       throw new DASSdkException(e.getMessage());

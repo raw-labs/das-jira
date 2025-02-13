@@ -48,7 +48,7 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
   @DisplayName("Get issues for backlog")
   void testGetIssuesForBacklog() {
     try (DASExecuteResult result =
-        dasJiraBacklogIssueTable.execute(List.of(), List.of(), List.of())) {
+        dasJiraBacklogIssueTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       Row row = result.next();

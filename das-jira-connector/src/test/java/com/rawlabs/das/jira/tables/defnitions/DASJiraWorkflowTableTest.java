@@ -41,7 +41,7 @@ public class DASJiraWorkflowTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get workflows")
   void testGetWorkflows() throws IOException {
-    try (var result = dasJiraWorkflowTable.execute(List.of(), List.of(), List.of())) {
+    try (var result = dasJiraWorkflowTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

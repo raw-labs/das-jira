@@ -52,7 +52,7 @@ public class DASJiraIssueTableTest extends BaseMockTest {
   @DisplayName("Get issues")
   @Test
   void testGetIssues() throws IOException {
-    try (var result = dasJiraIssueTable.execute(List.of(), List.of(), null)) {
+    try (var result = dasJiraIssueTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

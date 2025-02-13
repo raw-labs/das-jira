@@ -100,8 +100,8 @@ public class DASJiraDashboardTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals, List<String> columns, @Nullable List<SortKey> sortKeys) {
-    return new DASJiraPaginatedResult<Dashboard>(null) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
+    return new DASJiraPaginatedResult<Dashboard>(limit) {
 
       @Override
       public Row next() {
