@@ -3,15 +3,14 @@ package com.rawlabs.das.jira.tables;
 import com.rawlabs.das.jira.rest.platform.api.*;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.api.EpicApi;
-import com.rawlabs.das.jira.rest.software.api.IssueApi;
 import com.rawlabs.das.jira.rest.software.api.SprintApi;
 import com.rawlabs.das.jira.tables.definitions.*;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
-import com.rawlabs.protocol.das.TableDefinition;
-
+import com.rawlabs.protocol.das.v1.tables.TableDefinition;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class DASJiraTableManager {
   private final List<DASJiraTable> tables;
@@ -64,10 +63,7 @@ public class DASJiraTableManager {
     return tableDefinitions;
   }
 
-  public DASJiraTable getTable(String tableName) {
-    return tables.stream()
-        .filter(table -> table.getTableName().equals(tableName))
-        .findFirst()
-        .orElse(null);
+  public Optional<DASJiraTable> getTable(String tableName) {
+    return tables.stream().filter(table -> table.getTableName().equals(tableName)).findFirst();
   }
 }

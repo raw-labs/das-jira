@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.api.SprintApi;
@@ -10,19 +13,15 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraSprintTable extends DASJiraTable {
 
@@ -43,13 +42,12 @@ public class DASJiraSprintTable extends DASJiraTable {
     this.parentTable = new DASJiraBoardTable(options, boardApi);
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
   @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       CreateSprintRequest createSprintRequest = new CreateSprintRequest();
       createSprintRequest.setEndDate((String) extractValueFactory.extractValue(row, "end_date"));
@@ -62,12 +60,12 @@ public class DASJiraSprintTable extends DASJiraTable {
       Sprint sprint = sprintApi.createSprint(createSprintRequest);
       return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       UpdateSprintRequest updateSprintRequest = new UpdateSprintRequest();
       updateSprintRequest.setEndDate(
@@ -83,25 +81,22 @@ public class DASJiraSprintTable extends DASJiraTable {
               (Long) extractValueFactory.extractValue(rowId), updateSprintRequest);
       return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       sprintApi.deleteSprint((Long) extractValueFactory.extractValue(rowId));
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
@@ -120,7 +115,7 @@ public class DASJiraSprintTable extends DASJiraTable {
                   boardApi.getAllSprints(boardId, offset, withMaxResultOrLimit(limit), null);
               return new DASJiraPage<>(result.getValues(), result.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkApiException(e.getResponseBody());
+              throw new DASSdkException(e.getResponseBody());
             }
           }
         };

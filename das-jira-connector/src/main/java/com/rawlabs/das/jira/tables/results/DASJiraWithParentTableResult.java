@@ -1,13 +1,11 @@
 package com.rawlabs.das.jira.tables.results;
 
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.DASTable;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASTable;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.Row;
 import java.io.IOException;
 import java.util.List;
 
@@ -52,7 +50,7 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
         if (childResult.hasNext()) {
           return true;
         }
-      } catch (DASSdkApiException _) {
+      } catch (DASSdkException _) {
       }
     }
     return false;

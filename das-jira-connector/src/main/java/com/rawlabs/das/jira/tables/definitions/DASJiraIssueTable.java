@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssuesApi;
@@ -9,16 +12,15 @@ import com.rawlabs.das.jira.tables.DASJiraIssueTransformationTable;
 import com.rawlabs.das.jira.tables.DASJiraJqlQueryBuilder;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.*;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
 
@@ -34,18 +36,15 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
     this.issuesApi = issueApi;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
-  @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       IssueUpdateDetails issueUpdateDetails = new IssueUpdateDetails();
       var result = this.issuesApi.createIssue(issueUpdateDetails, null);
@@ -55,29 +54,29 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       addToRow("self", builder, result.getSelf(), List.of());
       return builder.build();
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
-  @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       issuesApi.deleteIssue(extractValueFactory.extractValue(rowId).toString(), null);
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
+  public List<String> explain(
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
+    return List.of(DASJiraJqlQueryBuilder.buildJqlQuery(quals));
+  }
+
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     return new DASJiraPaginatedResult<IssueBean>(limit) {
 
-      @Override
       public Row next() {
         return toRow(this.getNext(), names(), columns);
       }
@@ -102,7 +101,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
               Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)),
               result.getNames());
         } catch (ApiException e) {
-          throw new DASSdkApiException(e.getMessage());
+          throw new DASSdkException(e.getMessage());
         }
       }
     };

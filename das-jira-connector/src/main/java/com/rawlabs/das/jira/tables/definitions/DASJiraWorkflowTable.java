@@ -1,5 +1,9 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.WorkflowsApi;
@@ -8,20 +12,15 @@ import com.rawlabs.das.jira.rest.platform.model.Workflow;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraWorkflowTable extends DASJiraTable {
 
@@ -31,31 +30,23 @@ public class DASJiraWorkflowTable extends DASJiraTable {
 
   public DASJiraWorkflowTable(Map<String, String> options, WorkflowsApi workflowsApi) {
     super(
-            options,
-            TABLE_NAME,
-            "A Jira workflow is a set of statuses and transitions that an issue moves through during its lifecycle, and typically represents a process within your organization.");
+        options,
+        TABLE_NAME,
+        "A Jira workflow is a set of statuses and transitions that an issue moves through during its lifecycle, and typically represents a process within your organization.");
     this.workflowsApi = workflowsApi;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "entity_id";
   }
 
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
-  }
-
-  @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
+  public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {
     return sortKeys.stream()
         .filter(sortKey -> sortKey.getName().equals("name") || sortKey.getName().equals("title"))
         .toList();
   }
 
-  @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       workflowsApi.deleteInactiveWorkflow(rowId.toString());
     } catch (ApiException e) {
@@ -63,12 +54,8 @@ public class DASJiraWorkflowTable extends DASJiraTable {
     }
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     final String name = (String) extractEqDistinct(quals, "name");
     final Set<String> setOfNames = name == null ? null : Set.of(name);
 
@@ -116,7 +103,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
       addToRow(
           "statuses", rowBuilder, objectMapper.writeValueAsString(workflow.getStatuses()), columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
     addToRow("title", rowBuilder, workflow.getId().getName(), columns);
     return rowBuilder.build();

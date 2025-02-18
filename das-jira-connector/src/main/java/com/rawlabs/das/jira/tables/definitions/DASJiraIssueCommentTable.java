@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.*;
 import com.rawlabs.das.jira.rest.platform.model.Comment;
@@ -8,20 +11,16 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraIssueCommentTable extends DASJiraTable {
 
@@ -41,13 +40,11 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     this.parentTable = new DASJiraIssueTable(options, issueSearchApi, issuesApi);
   }
 
-  @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
+  public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {
     return sortKeys.stream().filter(sortKey -> sortKey.getName().equals("created")).toList();
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
@@ -64,23 +61,21 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
           UserDetails.fromJson(extractValueFactory.extractValue(row, "update_author").toString()),
           extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       String issueIdOrKey = extractValueFactory.extractValue(row, "issue_id").toString();
       Comment resultComment = issueCommentsApi.addComment(issueIdOrKey, extractComment(row), null);
       return toRow(resultComment, issueIdOrKey, List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       String issueIdOrKey = extractValueFactory.extractValue(newValues, "issue_id").toString();
       Comment comment =
@@ -97,12 +92,8 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
     }
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     return new DASJiraWithParentTableResult(parentTable, quals, columns, sortKeys, limit) {
       @Override
       public DASExecuteResult fetchChildResult(Row parentRow) {
@@ -123,7 +114,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
                       issueId, offset, withMaxResultOrLimit(limit), withOrderBy(sortKeys), null);
               return new DASJiraPage<>(result.getComments(), result.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkApiException(e.getResponseBody());
+              throw new DASSdkException(e.getResponseBody());
             }
           }
         };

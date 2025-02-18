@@ -1,20 +1,17 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
-import com.rawlabs.protocol.das.Equals;
-import com.rawlabs.protocol.das.GreaterThanOrEqual;
-import com.rawlabs.protocol.das.Operator;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.*;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.*;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.protocol.das.v1.query.Operator;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("Jira JQL Query Builder")
 public class DASJiraJqlQueryBuilderTest {
@@ -48,14 +45,9 @@ public class DASJiraJqlQueryBuilderTest {
   public void shouldMapOperators() {
 
     var geq =
-        DASJiraJqlQueryBuilder.mapOperator(
-            Operator.newBuilder()
-                .setGreaterThanOrEqual(GreaterThanOrEqual.newBuilder().build())
-                .build());
+        DASJiraJqlQueryBuilder.mapOperator(Operator.GREATER_THAN_OR_EQUAL);
 
-    var eq =
-        DASJiraJqlQueryBuilder.mapOperator(
-            Operator.newBuilder().setEquals(Equals.newBuilder().build()).build());
+    var eq = DASJiraJqlQueryBuilder.mapOperator(Operator.EQUALS);
 
     assertEquals(">=", geq);
     assertEquals("=", eq);

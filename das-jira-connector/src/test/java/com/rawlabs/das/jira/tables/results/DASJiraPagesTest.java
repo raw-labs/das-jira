@@ -1,22 +1,22 @@
 package com.rawlabs.das.jira.tables.results;
 
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
-import com.rawlabs.protocol.das.Row;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
+import static org.junit.jupiter.api.Assertions.*;
 
+import com.rawlabs.das.jira.utils.factory.value.*;
+import com.rawlabs.protocol.das.v1.tables.Column;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
 import java.util.List;
-
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("DAS Jira Pages Test")
 public class DASJiraPagesTest {
 
   ValueFactory valueFactory = new DefaultValueFactory();
+  private final ExtractValueFactory extractValueFactory = new DefaultExtractValueFactory();
 
   private DASJiraPage<String> getPage(Long offset) {
     List<String> page1 = List.of("result1", "result2");
@@ -41,9 +41,12 @@ public class DASJiraPagesTest {
           @Override
           public Row next() {
             Row.Builder rowBuilder = Row.newBuilder();
-            rowBuilder.putData(
-                "id",
-                valueFactory.createValue(new ValueTypeTuple(this.getNext(), createStringType())));
+            rowBuilder.addColumns(
+                Column.newBuilder()
+                    .setName("id")
+                    .setData(
+                        valueFactory.createValue(
+                            new ValueTypeTuple(this.getNext(), createStringType()))));
             return rowBuilder.build();
           }
 
@@ -54,24 +57,32 @@ public class DASJiraPagesTest {
         }) {
       Row row = pagedResult.next();
       assertNotNull(row);
-      assertEquals("result1", row.getDataMap().get("id").getString().getV());
+      assertEquals("result1", getByKey(row, "id").getString().getV());
       assertTrue(pagedResult.hasNext());
       row = pagedResult.next();
       assertNotNull(row);
-      assertEquals("result2", row.getDataMap().get("id").getString().getV());
+      assertEquals("result2", getByKey(row, "id").getString().getV());
       assertTrue(pagedResult.hasNext());
       row = pagedResult.next();
       assertNotNull(row);
-      assertEquals("result3", row.getDataMap().get("id").getString().getV());
+      assertEquals("result3", getByKey(row, "id").getString().getV());
       assertTrue(pagedResult.hasNext());
       row = pagedResult.next();
       assertNotNull(row);
-      assertEquals("result4", row.getDataMap().get("id").getString().getV());
+      assertEquals("result4", getByKey(row, "id").getString().getV());
       assertTrue(pagedResult.hasNext());
       row = pagedResult.next();
       assertNotNull(row);
-      assertEquals("result5", row.getDataMap().get("id").getString().getV());
+      assertEquals("result5", getByKey(row, "id").getString().getV());
       assertFalse(pagedResult.hasNext());
     }
+  }
+
+  private Value getByKey(Row row, String key) {
+    return row.getColumnsList().stream()
+        .filter(c -> c.getName().equals(key))
+        .map(Column::getData)
+        .findFirst()
+        .get();
   }
 }

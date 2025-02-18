@@ -1,20 +1,18 @@
 package com.rawlabs.das.jira.initializer;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.rawlabs.das.jira.initializer.auth.DASJiraOAuth2AuthStrategy;
 import com.rawlabs.das.jira.initializer.auth.DasJiraBasicAuthStrategy;
 import com.rawlabs.das.jira.rest.platform.ApiClient;
-import com.rawlabs.das.jira.rest.platform.Configuration;
 import com.rawlabs.das.jira.rest.platform.auth.Authentication;
 import com.rawlabs.das.jira.rest.platform.auth.HttpBasicAuth;
 import com.rawlabs.das.jira.rest.platform.auth.OAuth;
+import java.util.Map;
+import java.util.Objects;
 import okhttp3.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-import java.util.Objects;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("DAS Jira Initializer Test")
 public class DASJiraInitializerTest {
