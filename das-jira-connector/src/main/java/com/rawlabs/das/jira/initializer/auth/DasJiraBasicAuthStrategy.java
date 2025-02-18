@@ -1,9 +1,6 @@
 package com.rawlabs.das.jira.initializer.auth;
 
-import com.rawlabs.das.jira.rest.platform.ApiClient;
-import com.rawlabs.das.jira.rest.platform.Configuration;
 import com.rawlabs.das.jira.rest.platform.auth.HttpBasicAuth;
-
 import java.util.Base64;
 import java.util.Map;
 

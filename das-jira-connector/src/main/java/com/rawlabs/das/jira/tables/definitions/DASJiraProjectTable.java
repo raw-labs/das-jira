@@ -1,5 +1,9 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
@@ -7,22 +11,16 @@ import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraProjectTable extends DASJiraTable {
 
@@ -37,26 +35,24 @@ public class DASJiraProjectTable extends DASJiraTable {
     this.projectsApi = projectsApi;
   }
 
-  @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
+  public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {
     List<String> availableForSorting = List.of("name", "title", "key");
     return sortKeys.stream()
         .filter(sortKey -> availableForSorting.contains(sortKey.getName()))
         .toList();
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1), new KeyColumns(List.of("key"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(
+        PathKey.newBuilder().addKeyColumns("id").build(),
+        PathKey.newBuilder().addKeyColumns("key").build());
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       CreateProjectDetails createProjectDetails = new CreateProjectDetails();
       createProjectDetails.setName((String) extractValueFactory.extractValue(row, "name"));
@@ -80,22 +76,20 @@ public class DASJiraProjectTable extends DASJiraTable {
     }
   }
 
-  @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       projectsApi.deleteProject((String) extractValueFactory.extractValue(rowId), true);
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       UpdateProjectDetails updateProjectDetails = new UpdateProjectDetails();
       updateProjectDetails.setName((String) extractValueFactory.extractValue(newValues, "name"));
@@ -110,16 +104,12 @@ public class DASJiraProjectTable extends DASJiraTable {
               (String) extractValueFactory.extractValue(rowId), updateProjectDetails, expand);
       return toRow(result, List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     Set<Long> ids =
         Optional.ofNullable(extractEqDistinct(quals, "id"))
@@ -159,7 +149,7 @@ public class DASJiraProjectTable extends DASJiraTable {
                   null);
           return new DASJiraPage<>(searchResult.getValues(), searchResult.getTotal());
         } catch (ApiException e) {
-          throw new DASSdkApiException(e.getMessage(), e);
+          throw new DASSdkException(e.getMessage(), e);
         }
       }
     };

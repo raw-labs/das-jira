@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.IssueBean;
@@ -9,18 +12,17 @@ import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkUnsupportedException;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
-import com.rawlabs.protocol.das.*;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.Column;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
+import com.rawlabs.protocol.das.v1.types.ValueLong;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
@@ -39,19 +41,16 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
     parentTable = new DASJiraBoardTable(options, boardApi);
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
-    Long boardId = (Long) extractValueFactory.extractValue(newValues.getDataMap().get("board_id"));
+  public Row update(Value rowId, Row newValues) {
+    Long boardId = (Long) extractValueFactory.extractValue(newValues, "board_id");
     String issueId = (String) extractValueFactory.extractValue(rowId);
 
     if (boardId == null || issueId == null) {
-      throw new DASSdkUnsupportedException(
-          "The only update operation allowed is moving issues to backlog.");
+      throw new DASSdkException("The only update operation allowed is moving issues to backlog.");
     }
 
     MoveIssuesToBacklogForBoardRequest moveIssuesToBacklogForBoardRequest =
@@ -60,20 +59,19 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
     try {
       boardApi.moveIssuesToBoard(boardId, moveIssuesToBacklogForBoardRequest);
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
     return newValues.toBuilder()
-        .putData(
-            "board_id", valueFactory.createValue(new ValueTypeTuple(boardId, createLongType())))
+        .addColumns(
+            Column.newBuilder()
+                .setName("board_id")
+                .setData(Value.newBuilder().setLong(ValueLong.newBuilder().setV(boardId))))
         .build();
   }
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     return new DASJiraWithParentTableResult(
         this.parentTable,
         withParentJoin(quals, "board_id", "id"),
@@ -105,7 +103,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
                   Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)),
                   searchResults.getNames());
             } catch (ApiException e) {
-              throw new DASSdkApiException(e.getMessage(), e);
+              throw new DASSdkException(e.getMessage(), e);
             }
           }
         };

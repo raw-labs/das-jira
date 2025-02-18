@@ -1,22 +1,25 @@
 package com.rawlabs.das.jira.tables.definitions;
 
-import com.rawlabs.das.jira.tables.*;
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.jira.rest.platform.model.SimpleApplicationPropertyBean;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.*;
-import com.rawlabs.protocol.raw.*;
+import com.rawlabs.das.jira.tables.*;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 
 import javax.annotation.Nullable;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
 
 public class DASJiraAdvancedSettingsTable extends DASJiraTable {
 
@@ -31,54 +34,46 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
     this.jiraSettingsApi = api;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("key"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("key").build());
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     String id = rowId.getString().getV();
     SimpleApplicationPropertyBean applicationPropertyBean = new SimpleApplicationPropertyBean();
     applicationPropertyBean.setId(id);
-    applicationPropertyBean.setValue(newValues.getDataMap().get("value").getString().getV());
+    Value value =
+        newValues.getColumnsList().stream()
+            .filter(c -> c.getName().equals("value"))
+            .findFirst()
+            .get()
+            .getData();
+    applicationPropertyBean.setValue(value.getString().getV());
     try {
       ApplicationProperty applicationProperty =
           jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
       return toRow(applicationProperty, List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+  public DASExecuteResult execute(List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       String key = (String) extractEqDistinct(quals, "key");
 
-      List<ApplicationProperty> maybeLimited;
       List<ApplicationProperty> result;
       if (key != null) {
         result = jiraSettingsApi.getApplicationProperty(key, null, null);
       } else {
         result = jiraSettingsApi.getAdvancedSettings();
       }
-      maybeLimited =
-          limit == null
-              ? result
-              : result.subList(0, Math.min(Math.toIntExact(limit), result.size()));
-
       return new DASExecuteResult() {
-        private final Iterator<ApplicationProperty> iterator = maybeLimited.iterator();
+        private final Iterator<ApplicationProperty> iterator = result.iterator();
 
         @Override
         public void close() {}
@@ -94,7 +89,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
         }
       };
     } catch (ApiException e) {
-      throw new DASSdkApiException(
+      throw new DASSdkException(
           "Failed to fetch advanced settings: %s".formatted(e.getResponseBody()), e);
     }
   }

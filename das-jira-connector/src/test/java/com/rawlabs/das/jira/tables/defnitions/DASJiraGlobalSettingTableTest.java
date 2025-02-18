@@ -1,23 +1,22 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ModelConfiguration;
 import com.rawlabs.das.jira.tables.definitions.DASJiraGlobalSettingTable;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Global Setting Table Test")
 public class DASJiraGlobalSettingTableTest extends BaseMockTest {
@@ -41,7 +40,7 @@ public class DASJiraGlobalSettingTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get global settings")
   void testGetGlobalSettings() throws IOException {
-    try (var result = dasJiraGlobalSettingTable.execute(List.of(), List.of(), null, null)) {
+    try (var result = dasJiraGlobalSettingTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

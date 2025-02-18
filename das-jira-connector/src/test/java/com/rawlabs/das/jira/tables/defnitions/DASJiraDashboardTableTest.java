@@ -1,24 +1,23 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
 import com.rawlabs.das.jira.rest.platform.model.PageOfDashboards;
 import com.rawlabs.das.jira.tables.definitions.DASJiraDashboardTable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Dashboard Table Test")
 public class DASJiraDashboardTableTest extends BaseMockTest {
@@ -43,7 +42,7 @@ public class DASJiraDashboardTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all dashboards")
   void testGetAllDashboards() throws IOException {
-    try (var result = dasJiraDashboardTable.execute(List.of(), List.of(), null, null)) {
+    try (var result = dasJiraDashboardTable.execute(List.of(), List.of(), List.of(), null)) {
       assertNotNull(result);
       assertTrue(result.hasNext());
       var row = result.next();

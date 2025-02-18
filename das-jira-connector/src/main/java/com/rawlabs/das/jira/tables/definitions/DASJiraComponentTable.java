@@ -1,5 +1,9 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectComponentsApi;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
@@ -8,21 +12,16 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraComponentTable extends DASJiraTable {
 
@@ -37,25 +36,22 @@ public class DASJiraComponentTable extends DASJiraTable {
       ProjectComponentsApi projectComponentsApi,
       ProjectsApi projectsApi) {
     super(
-            options,
-            TABLE_NAME,
-            "This resource represents project components. Use it to get, create, update, and delete project components. Also get components for project and get a count of issues by component.");
+        options,
+        TABLE_NAME,
+        "This resource represents project components. Use it to get, create, update, and delete project components. Also get components for project and get a count of issues by component.");
     this.projectComponentsApi = projectComponentsApi;
     this.parentTable = new DASJiraProjectTable(options, projectsApi);
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("id").build());
   }
 
-  @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
+  public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {
     List<String> availableForSorting = List.of("name", "description", "title");
     return sortKeys.stream()
         .filter(sortKey -> availableForSorting.contains(sortKey.getName()))
@@ -78,35 +74,31 @@ public class DASJiraComponentTable extends DASJiraTable {
     return projectComponent;
   }
 
-  @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       ProjectComponent inserted =
           this.projectComponentsApi.createComponent(createProjectComponent(row));
       return toRow(toComponentWithCount(inserted), List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> insert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
-  @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       projectComponentsApi.updateComponent(
           (String) extractValueFactory.extractValue(rowId), createProjectComponent(newValues));
     } catch (ApiException e) {
       throw new RuntimeException(e);
     }
-    return super.updateRow(rowId, newValues);
+    return super.update(rowId, newValues);
   }
 
-  @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       projectComponentsApi.deleteComponent((String) extractValueFactory.extractValue(rowId), null);
     } catch (ApiException e) {
@@ -114,12 +106,8 @@ public class DASJiraComponentTable extends DASJiraTable {
     }
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     return new DASJiraWithParentTableResult(
         parentTable, withParentJoin(quals, "project_id", "id"), List.of("id"), sortKeys, limit) {
@@ -145,7 +133,7 @@ public class DASJiraComponentTable extends DASJiraTable {
                       null);
               return new DASJiraPage<>(components.getValues(), components.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkApiException(
+              throw new DASSdkException(
                   "Error fetching components: %s".formatted(e.getResponseBody()), e);
             }
           }
@@ -271,7 +259,7 @@ public class DASJiraComponentTable extends DASJiraTable {
           realAssigneeType,
           projectComponent.getSelf());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 

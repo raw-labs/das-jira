@@ -1,26 +1,25 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
 import com.rawlabs.das.jira.rest.software.model.*;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-
-import javax.annotation.Nullable;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import javax.annotation.Nullable;
 
 public class DASJiraBoardTable extends DASJiraTable {
 
@@ -30,34 +29,30 @@ public class DASJiraBoardTable extends DASJiraTable {
 
   public DASJiraBoardTable(Map<String, String> options, BoardApi boardApi) {
     super(
-            options,
-            TABLE_NAME,
-            "A board displays issues from one or more projects, giving you a flexible way of viewing, managing, and reporting on work in progress.");
+        options,
+        TABLE_NAME,
+        "A board displays issues from one or more projects, giving you a flexible way of viewing, managing, and reporting on work in progress.");
     this.boardApi = boardApi;
   }
 
-  @Override
-  public List<SortKey> canSort(List<SortKey> sortKeys) {
+  public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {
     return sortKeys.stream()
         .filter(sortKey -> sortKey.getName().equals("name") || sortKey.getName().equals("title"))
         .toList();
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("id").build());
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public Row insertRow(Row row) {
-    String name = (String) extractValueFactory.extractValue(row.getDataMap().get("name"));
-    String type = (String) extractValueFactory.extractValue(row.getDataMap().get("type"));
-    Long filter_id = (Long) extractValueFactory.extractValue(row.getDataMap().get("filter_id"));
+  public Row insert(Row row) {
+    String name = (String) extractValueFactory.extractValue(row, "name");
+    String type = (String) extractValueFactory.extractValue(row, "type");
+    Long filter_id = (Long) extractValueFactory.extractValue(row, "filter_id");
 
     CreateBoardRequest board = new CreateBoardRequest();
     board.setName(name);
@@ -67,30 +62,24 @@ public class DASJiraBoardTable extends DASJiraTable {
       GetAllBoards200ResponseValuesInner result = boardApi.createBoard(board);
       return toRow(result, null);
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       boardApi.deleteBoard((Long) extractValueFactory.extractValue(rowId));
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
-  @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     try {
       Long id = (Long) extractEqDistinct(quals, "id");
 
@@ -131,7 +120,7 @@ public class DASJiraBoardTable extends DASJiraTable {
               return new DASJiraPage<>(
                   getAllBoards200ResponsePage.getValues(), getAllBoards200ResponsePage.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkApiException(
+              throw new DASSdkException(
                   "Failed to fetch boards: %s".formatted(e.getResponseBody()));
             }
           }
@@ -142,13 +131,13 @@ public class DASJiraBoardTable extends DASJiraTable {
             try {
               return toRow(next, columns);
             } catch (ApiException e) {
-              throw new DASSdkApiException("Failed to fetch board configuration", e);
+              throw new DASSdkException("Failed to fetch board configuration", e);
             }
           }
         };
       }
     } catch (ApiException e) {
-      throw new DASSdkApiException("Failed to fetch advanced settings", e);
+      throw new DASSdkException("Failed to fetch advanced settings", e);
     }
   }
 
@@ -167,7 +156,7 @@ public class DASJiraBoardTable extends DASJiraTable {
       }
       return row;
     } catch (ApiException e) {
-      throw new DASSdkApiException("Failed to fetch board configuration", e);
+      throw new DASSdkException("Failed to fetch board configuration", e);
     }
   }
 

@@ -1,5 +1,11 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createLongType;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.rawlabs.das.jira.rest.software.ApiException;
 import com.rawlabs.das.jira.rest.software.api.BoardApi;
@@ -7,27 +13,22 @@ import com.rawlabs.das.jira.rest.software.model.GetAllBoards200Response;
 import com.rawlabs.das.jira.rest.software.model.GetAllBoards200ResponseValuesInner;
 import com.rawlabs.das.jira.rest.software.model.GetConfiguration200Response;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
-import com.rawlabs.protocol.das.Row;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.protocol.das.v1.tables.Column;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import java.io.IOException;
-import java.util.List;
-
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createLongType;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 
 @DisplayName("DAS Jira Board Table Test")
 public class DASJiraBoardTableTest extends BaseMockTest {
@@ -84,25 +85,19 @@ public class DASJiraBoardTableTest extends BaseMockTest {
             List.of(
                 createEq(
                     valueFactory.createValue(new ValueTypeTuple(84L, createLongType())), "id")),
-            null,
-            null,
+            List.of(),
+            List.of(),
             null)) {
       assertTrue(result.hasNext());
       Row row = result.next();
-      assertTrue(row.getDataMap().containsKey("id"));
-      assertEquals(84L, row.getDataMap().get("id").getLong().getV());
-      assertTrue(row.getDataMap().containsKey("name"));
-      assertEquals("scrum board", row.getDataMap().get("name").getString().getV());
-      assertTrue(row.getDataMap().containsKey("self"));
+      assertEquals(84L, getByKey(row, "id").getLong().getV());
+      assertEquals("scrum board", getByKey(row, "name").getString().getV());
       assertEquals(
           "https://your-domain.atlassian.net/rest/agile/1.0/board/84",
-          row.getDataMap().get("self").getString().getV());
-      assertTrue(row.getDataMap().containsKey("filter_id"));
-      assertEquals(1001L, row.getDataMap().get("filter_id").getLong().getV());
-      assertTrue(row.getDataMap().containsKey("type"));
-      assertEquals("scrum", row.getDataMap().get("type").getString().getV());
-      assertTrue(row.getDataMap().containsKey("sub_query"));
-      assertEquals("", row.getDataMap().get("sub_query").getString().getV());
+          getByKey(row, "self").getString().getV());
+      assertEquals(1001L, getByKey(row, "filter_id").getLong().getV());
+      assertEquals("scrum", getByKey(row, "type").getString().getV());
+      assertEquals("", getByKey(row, "sub_query").getString().getV());
       assertFalse(result.hasNext());
 
     } catch (IOException e) {
@@ -113,15 +108,13 @@ public class DASJiraBoardTableTest extends BaseMockTest {
   @Test
   @DisplayName("Get all boards")
   void testGetBoards() {
-    try (DASExecuteResult result = dasJiraBoardTable.execute(List.of(), null, null, null)) {
+    try (DASExecuteResult result = dasJiraBoardTable.execute(List.of(), null, List.of(), null)) {
       assertTrue(result.hasNext());
       result.next();
       assertTrue(result.hasNext());
       Row row = result.next();
-      assertTrue(row.getDataMap().containsKey("id"));
-      assertEquals(92L, row.getDataMap().get("id").getLong().getV());
-      assertTrue(row.getDataMap().containsKey("name"));
-      assertEquals("kanban board", row.getDataMap().get("name").getString().getV());
+      assertEquals(92L, getByKey(row, "id").getLong().getV());
+      assertEquals("kanban board", getByKey(row, "name").getString().getV());
       assertFalse(result.hasNext());
     } catch (IOException e) {
       fail("Exception not expected: %s".formatted(e.getMessage()));
@@ -132,7 +125,7 @@ public class DASJiraBoardTableTest extends BaseMockTest {
   @DisplayName("Get with error")
   void testGetWithError() {
     assertThrows(
-        DASSdkApiException.class,
+        DASSdkException.class,
         () -> {
           try (DASExecuteResult result =
               dasJiraBoardTable.execute(
@@ -141,10 +134,18 @@ public class DASJiraBoardTableTest extends BaseMockTest {
                           valueFactory.createValue(new ValueTypeTuple(1L, createLongType())),
                           "id")),
                   null,
-                  null,
+                  List.of(),
                   null)) {
             fail("Exception expected");
           }
         });
+  }
+
+  private Value getByKey(Row row, String key) {
+    return row.getColumnsList().stream()
+        .filter(c -> c.getName().equals(key))
+        .map(Column::getData)
+        .findFirst()
+        .get();
   }
 }

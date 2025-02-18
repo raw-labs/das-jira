@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.GroupsApi;
 import com.rawlabs.das.jira.rest.platform.model.AddGroupBean;
@@ -9,20 +12,16 @@ import com.rawlabs.das.jira.rest.platform.model.UserDetails;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-import org.jetbrains.annotations.Nullable;
-
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import org.jetbrains.annotations.Nullable;
 
 public class DASJiraGroupTable extends DASJiraTable {
 
@@ -32,29 +31,27 @@ public class DASJiraGroupTable extends DASJiraTable {
 
   public DASJiraGroupTable(Map<String, String> options, GroupsApi groupsApi) {
     super(
-            options,
-            TABLE_NAME,
-            "Group is a collection of users. Administrators create groups so that the administrator can assign permissions to a number of people at once.");
+        options,
+        TABLE_NAME,
+        "Group is a collection of users. Administrators create groups so that the administrator can assign permissions to a number of people at once.");
     this.groupsApi = groupsApi;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("id").build());
   }
 
   @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
   @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       AddGroupBean groupBean = new AddGroupBean();
       groupBean.setName((String) extractValueFactory.extractValue(row, "name"));
@@ -64,26 +61,23 @@ public class DASJiraGroupTable extends DASJiraTable {
       groupDetails.setGroupId(group.getGroupId());
       return toRow(groupDetails, List.of(), List.of(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       this.groupsApi.removeGroup(
           null, (String) extractValueFactory.extractValue(rowId), null, null);
     } catch (ApiException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
 
     return new DASJiraPaginatedResult<GroupDetails>(limit) {
 
@@ -118,7 +112,7 @@ public class DASJiraGroupTable extends DASJiraTable {
                             withMaxResultOrLimit(limit));
                     return new DASJiraPage<>(result.getValues(), result.getTotal());
                   } catch (ApiException e) {
-                    throw new DASSdkApiException(e.getMessage());
+                    throw new DASSdkException(e.getMessage());
                   }
                 }
               }) {
@@ -140,7 +134,7 @@ public class DASJiraGroupTable extends DASJiraTable {
               groupsApi.bulkGetGroups(offset, withMaxResultOrLimit(limit), null, null, null, null);
           return new DASJiraPage<>(result.getValues(), result.getTotal());
         } catch (ApiException e) {
-          throw new DASSdkApiException(e.getMessage());
+          throw new DASSdkException(e.getMessage());
         }
       }
     };

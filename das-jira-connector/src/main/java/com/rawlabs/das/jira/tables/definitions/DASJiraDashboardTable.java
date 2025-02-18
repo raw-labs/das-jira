@@ -1,5 +1,8 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.rawlabs.das.jira.rest.platform.ApiException;
@@ -8,21 +11,17 @@ import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
-import com.rawlabs.das.sdk.java.DASExecuteResult;
-import com.rawlabs.das.sdk.java.KeyColumns;
-import com.rawlabs.das.sdk.java.exceptions.DASSdkApiException;
-import com.rawlabs.protocol.das.ColumnDefinition;
-import com.rawlabs.protocol.das.Qual;
-import com.rawlabs.protocol.das.Row;
-import com.rawlabs.protocol.das.SortKey;
-import com.rawlabs.protocol.raw.Value;
-
-import javax.annotation.Nullable;
+import com.rawlabs.das.sdk.DASExecuteResult;
+import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.protocol.das.v1.query.PathKey;
+import com.rawlabs.protocol.das.v1.query.Qual;
+import com.rawlabs.protocol.das.v1.query.SortKey;
+import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
+import com.rawlabs.protocol.das.v1.tables.Row;
+import com.rawlabs.protocol.das.v1.types.Value;
 import java.io.IOException;
 import java.util.*;
-
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import javax.annotation.Nullable;
 
 public class DASJiraDashboardTable extends DASJiraTable {
 
@@ -32,23 +31,20 @@ public class DASJiraDashboardTable extends DASJiraTable {
 
   public DASJiraDashboardTable(Map<String, String> options, DashboardsApi dashboardsApi) {
     super(
-            options, TABLE_NAME, "Your dashboard is the main display you see when you log in to Jira.");
+        options, TABLE_NAME, "Your dashboard is the main display you see when you log in to Jira.");
     this.dashboardsApi = dashboardsApi;
   }
 
-  @Override
-  public String getUniqueColumn() {
+  public String uniqueColumn() {
     return "id";
   }
 
-  @Override
-  public List<KeyColumns> getPathKeys() {
-    return List.of(new KeyColumns(List.of("id"), 1));
+  public List<PathKey> getTablePathKeys() {
+    return List.of(PathKey.newBuilder().addKeyColumns("id").build());
   }
 
-  @Override
-  public List<Row> insertRows(List<Row> rows) {
-    return rows.stream().map(this::insertRow).toList();
+  public List<Row> bulkInsert(List<Row> rows) {
+    return rows.stream().map(this::insert).toList();
   }
 
   private List<SharePermission> getPermissions(Row row, String columnName) throws IOException {
@@ -70,17 +66,17 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   @Override
-  public Row insertRow(Row row) {
+  public Row insert(Row row) {
     try {
       Dashboard result = dashboardsApi.createDashboard(getDashboardDetails(row), null);
       return toRow(result, List.of());
     } catch (ApiException | IOException e) {
-      throw new DASSdkApiException(e.getMessage(), e);
+      throw new DASSdkException(e.getMessage(), e);
     }
   }
 
   @Override
-  public Row updateRow(Value rowId, Row newValues) {
+  public Row update(Value rowId, Row newValues) {
     try {
       Dashboard result =
           dashboardsApi.updateDashboard(
@@ -94,7 +90,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
   }
 
   @Override
-  public void deleteRow(Value rowId) {
+  public void delete(Value rowId) {
     try {
       dashboardsApi.deleteDashboard(extractValueFactory.extractValue(rowId).toString());
     } catch (ApiException e) {
@@ -104,10 +100,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
 
   @Override
   public DASExecuteResult execute(
-      List<Qual> quals,
-      List<String> columns,
-      @Nullable List<SortKey> sortKeys,
-      @Nullable Long limit) {
+      List<Qual> quals, List<String> columns, List<SortKey> sortKeys, @Nullable Long limit) {
     return new DASJiraPaginatedResult<Dashboard>(limit) {
 
       @Override
@@ -172,7 +165,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
       addToRow("title", rowBuilder, dashboard.getName(), columns);
       return rowBuilder.build();
     } catch (JsonProcessingException e) {
-      throw new DASSdkApiException(e.getMessage());
+      throw new DASSdkException(e.getMessage());
     }
   }
 
