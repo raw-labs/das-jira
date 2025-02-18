@@ -1,13 +1,13 @@
 package com.rawlabs.das.jira.tables;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.*;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.*;
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.*;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.v1.query.Operator;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

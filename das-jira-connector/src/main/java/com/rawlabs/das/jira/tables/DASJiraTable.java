@@ -1,15 +1,10 @@
 package com.rawlabs.das.jira.tables;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
-import static com.rawlabs.das.sdk.java.utils.factory.table.TableFactory.createTable;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createLongType;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rawlabs.das.jira.utils.factory.value.*;
 import com.rawlabs.das.sdk.DASExecuteResult;
 import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.das.sdk.DASTable;
-import com.rawlabs.das.sdk.java.utils.factory.value.*;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.Column;
@@ -19,6 +14,11 @@ import com.rawlabs.protocol.das.v1.tables.TableDefinition;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.jira.utils.factory.table.TableFactory.createTable;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createLongType;
 
 public abstract class DASJiraTable implements DASTable {
 
