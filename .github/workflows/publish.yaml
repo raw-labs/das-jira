@@ -36,7 +36,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.WRITE_PACKAGES }}
           logout: false
-      - uses: s4u/setup-maven-action@v1.16.0
+      - uses: s4u/setup-maven-action@v1.18.0
         with:
           java-version: 22
           maven-version: 3.9.9
