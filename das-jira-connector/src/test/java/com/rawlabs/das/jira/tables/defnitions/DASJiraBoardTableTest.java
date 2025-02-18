@@ -1,7 +1,7 @@
 package com.rawlabs.das.jira.tables.defnitions;
 
-import static com.rawlabs.das.sdk.java.utils.factory.qual.QualFactory.createEq;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createLongType;
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createLongType;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -15,9 +15,9 @@ import com.rawlabs.das.jira.rest.software.model.GetConfiguration200Response;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
 import com.rawlabs.das.sdk.DASSdkException;
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.v1.tables.Column;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;

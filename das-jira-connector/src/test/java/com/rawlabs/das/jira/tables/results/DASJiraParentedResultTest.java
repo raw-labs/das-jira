@@ -3,9 +3,9 @@ package com.rawlabs.das.jira.tables.results;
 import com.rawlabs.das.jira.tables.MockTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
 import com.rawlabs.das.sdk.DASTable;
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ValueTypeTuple;
+import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
 import com.rawlabs.protocol.das.v1.tables.Column;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("DAS Jira table with parent result tests")

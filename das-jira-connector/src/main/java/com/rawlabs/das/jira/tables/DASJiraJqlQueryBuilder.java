@@ -1,7 +1,7 @@
 package com.rawlabs.das.jira.tables;
 
-import com.rawlabs.das.sdk.java.utils.factory.value.DefaultExtractValueFactory;
-import com.rawlabs.das.sdk.java.utils.factory.value.ExtractValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.DefaultExtractValueFactory;
+import com.rawlabs.das.jira.utils.factory.value.ExtractValueFactory;
 import com.rawlabs.protocol.das.v1.query.Operator;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.types.Value;

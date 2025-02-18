@@ -1,7 +1,7 @@
 package com.rawlabs.das.jira.tables;
 
-import static com.rawlabs.das.sdk.java.utils.factory.table.ColumnFactory.createColumn;
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
 
 import com.rawlabs.das.sdk.DASExecuteResult;
 import com.rawlabs.protocol.das.v1.query.Qual;

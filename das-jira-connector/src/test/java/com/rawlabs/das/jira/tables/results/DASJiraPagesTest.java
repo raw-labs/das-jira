@@ -1,9 +1,9 @@
 package com.rawlabs.das.jira.tables.results;
 
-import static com.rawlabs.das.sdk.java.utils.factory.type.TypeFactory.createStringType;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.rawlabs.das.sdk.java.utils.factory.value.*;
+import com.rawlabs.das.jira.utils.factory.value.*;
 import com.rawlabs.protocol.das.v1.tables.Column;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
