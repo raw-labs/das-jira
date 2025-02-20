@@ -69,4 +69,4 @@ LABEL vendor="RAW Labs SA" \
       org.opencontainers.image.source="https://github.com/raw-labs/das-jira"
 
 # Set the entry point to run the application
-CMD ["java", "-jar", "das-jira-connector.jar"]
+CMD java ${JAVA_OPTS} -jar das-jira-connector.jar
