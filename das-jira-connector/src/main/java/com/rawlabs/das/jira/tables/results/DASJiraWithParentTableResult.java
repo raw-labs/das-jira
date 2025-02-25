@@ -1,8 +1,9 @@
 package com.rawlabs.das.jira.tables.results;
 
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import com.rawlabs.das.sdk.DASTable;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.Row;
@@ -26,7 +27,7 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
     try (DASExecuteResult parentResult = parentTable.execute(quals, columns, sortKeys, null)) {
       this.parentResult = parentResult;
     } catch (IOException e) {
-      throw new DASSdkException("Failed to execute parent table", e);
+      throw new DASJiraUnexpectedError(e);
     }
   }
 
@@ -50,7 +51,7 @@ public abstract class DASJiraWithParentTableResult implements DASExecuteResult {
         if (childResult.hasNext()) {
           return true;
         }
-      } catch (DASSdkException _) {
+      } catch (DASSdkInvalidArgumentException _) {
       }
     }
     return false;

@@ -1,6 +1,7 @@
 package com.rawlabs.das.jira.tables.results;
 
 import com.rawlabs.das.sdk.DASExecuteResult;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,44 +10,34 @@ import javax.annotation.Nullable;
 public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
 
   /**
-   * These are the names returned by "expand" query params. They are a map from the field to its
-   * name. The inverse of it allows to get the field name from the name. (E.g. "assignee" ->
-   * "fields.customfield_10000") It is a multimap because the same name can be used for different
-   * fields. We use always the first one.
+   * A map holding the inverse of the "expand" query parameters. (e.g. maps "assignee" to
+   * "fields.customfield_10000", taking the first mapping if multiple exist)
    */
   private Map<String, String> names;
 
-  protected Iterator<T> currentPage = null;
-
+  protected Iterator<T> currentPage;
   protected long currentCount = 0;
   protected Long totalCount;
   protected final Long limit;
 
+  /**
+   * In the constructor we immediately fetch the first page. This way, if there’s a problem (e.g.
+   * wrong parameters or permissions) an exception is thrown right away.
+   *
+   * @param limit an optional upper bound on the number of items to fetch
+   */
   public DASJiraPaginatedResult(@Nullable Long limit) {
     this.limit = limit;
-  }
-
-  public T getNext() {
-    if (hasNext()) {
-      return currentPage.next();
-    } else throw new IllegalStateException("No more elements");
-  }
-
-  public abstract DASJiraPage<T> fetchPage(long offset);
-
-  @Override
-  public boolean hasNext() {
-    while (isPageExhausted()) {
-      if (totalReached() || limitReached()) {
-        return false;
-      }
-      DASJiraPage<T> result = fetchPage(currentCount);
-      if (isResultEmpty(result)) {
-        return false;
-      }
-      if (names == null && result.names() != null) {
+    DASJiraPage<T> firstPage = fetchPage(0);
+    if (isResultEmpty(firstPage)) {
+      currentPage = Collections.emptyIterator();
+    } else {
+      currentCount = firstPage.result().size();
+      totalCount = firstPage.total();
+      currentPage = firstPage.result().iterator();
+      if (firstPage.names() != null && names == null) {
         names = new HashMap<>();
-        result
+        firstPage
             .names()
             .forEach(
                 (k, v) -> {
@@ -55,19 +46,56 @@ public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
                   }
                 });
       }
-      currentCount += result.result().size();
-      totalCount = result.total();
-      currentPage = result.result().iterator();
+    }
+  }
+
+  /**
+   * Fetches a page starting at the given offset. Implementations must provide the logic for
+   * fetching a single page and throw a SDK exception.
+   */
+  public abstract DASJiraPage<T> fetchPage(long offset);
+
+  /**
+   * Iterates lazily over the pages. If the current page is exhausted and the limit or total count
+   * hasn't been reached, this method will fetch the next page.
+   */
+  @Override
+  public boolean hasNext() {
+    while (!currentPage.hasNext()) {
+      if (totalReached() || limitReached()) {
+        return false;
+      }
+      DASJiraPage<T> nextPage = fetchPage(currentCount);
+      if (isResultEmpty(nextPage)) {
+        return false;
+      }
+      currentCount += nextPage.result().size();
+      totalCount = nextPage.total();
+      currentPage = nextPage.result().iterator();
+      if (nextPage.names() != null && names == null) {
+        names = new HashMap<>();
+        nextPage
+            .names()
+            .forEach(
+                (k, v) -> {
+                  if (!names.containsKey(v)) {
+                    names.put(v, k);
+                  }
+                });
+      }
     }
     return true;
   }
 
-  protected boolean isResultEmpty(DASJiraPage<T> result) {
-    return result.result().isEmpty();
+  public T getNext() {
+    if (hasNext()) {
+      return currentPage.next();
+    }
+    throw new IllegalStateException("No more elements");
   }
 
-  protected boolean isPageExhausted() {
-    return (currentPage == null || !currentPage.hasNext());
+  protected boolean isResultEmpty(DASJiraPage<T> result) {
+    return result.result().isEmpty();
   }
 
   protected boolean totalReached() {
@@ -75,10 +103,7 @@ public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
   }
 
   protected boolean limitReached() {
-    if (limit == null) {
-      return false;
-    }
-    return currentCount >= limit;
+    return limit != null && currentCount >= limit;
   }
 
   public Map<String, String> names() {
@@ -86,5 +111,7 @@ public abstract class DASJiraPaginatedResult<T> implements DASExecuteResult {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    // Implement any cleanup if needed
+  }
 }

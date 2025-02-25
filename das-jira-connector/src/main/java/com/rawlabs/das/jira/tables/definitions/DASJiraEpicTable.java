@@ -9,7 +9,6 @@ import com.rawlabs.das.jira.rest.software.model.Epic;
 import com.rawlabs.das.jira.rest.software.model.EpicSearchResult;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -43,7 +42,7 @@ public class DASJiraEpicTable extends DASJiraTable {
       EpicSearchResult result = epicApi.searchPaginatedEpics(0, withMaxResultOrLimit(limit));
       return fromRowIterator(result.getValues().stream().map(v -> toRow(v, columns)).iterator());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 

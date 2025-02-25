@@ -11,7 +11,7 @@ import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.jira.tables.definitions.DASJiraAdvancedSettingsTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
 import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
@@ -152,7 +152,7 @@ public class DASJiraAdvancedSettingsTableTest extends BaseMockTest {
   public void testGetAllAdvancedSettingsWithWithError() {
     ValueFactory valueFactory = new DefaultValueFactory();
     assertThrows(
-        DASSdkException.class,
+        DASSdkInvalidArgumentException.class,
         () -> {
           try (DASExecuteResult result =
               dasJiraAdvancedSettingsTable.execute(

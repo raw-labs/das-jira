@@ -10,6 +10,8 @@ import com.rawlabs.das.jira.rest.platform.auth.HttpBasicAuth;
 import com.rawlabs.das.jira.rest.platform.auth.OAuth;
 import java.util.Map;
 import java.util.Objects;
+
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import okhttp3.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ public class DASJiraInitializerTest {
   @DisplayName("Initialization fails when auth not provided")
   public void testJiraInitializer() {
     assertThrows(
-        IllegalArgumentException.class,
+        DASSdkInvalidArgumentException.class,
         () -> DASJiraInitializer.initializeSoftware(Map.of("base_url", "http://localhost:8080")));
   }
 

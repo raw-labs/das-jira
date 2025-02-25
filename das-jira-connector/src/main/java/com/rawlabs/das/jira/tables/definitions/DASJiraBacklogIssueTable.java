@@ -13,7 +13,7 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.Column;
@@ -50,7 +50,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
     String issueId = (String) extractValueFactory.extractValue(rowId);
 
     if (boardId == null || issueId == null) {
-      throw new DASSdkException("The only update operation allowed is moving issues to backlog.");
+      throw new DASSdkInvalidArgumentException("The only update operation allowed is moving issues to backlog.");
     }
 
     MoveIssuesToBacklogForBoardRequest moveIssuesToBacklogForBoardRequest =
@@ -59,7 +59,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
     try {
       boardApi.moveIssuesToBoard(boardId, moveIssuesToBacklogForBoardRequest);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
     return newValues.toBuilder()
         .addColumns(
@@ -103,7 +103,7 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
                   Long.valueOf(Objects.requireNonNullElse(searchResults.getTotal(), 0)),
                   searchResults.getNames());
             } catch (ApiException e) {
-              throw new DASSdkException(e.getMessage(), e);
+              throw makeSdkException(e);
             }
           }
         };

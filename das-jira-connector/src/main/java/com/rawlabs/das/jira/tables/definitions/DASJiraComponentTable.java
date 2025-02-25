@@ -13,7 +13,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -80,7 +79,7 @@ public class DASJiraComponentTable extends DASJiraTable {
           this.projectComponentsApi.createComponent(createProjectComponent(row));
       return toRow(toComponentWithCount(inserted), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -93,7 +92,7 @@ public class DASJiraComponentTable extends DASJiraTable {
       projectComponentsApi.updateComponent(
           (String) extractValueFactory.extractValue(rowId), createProjectComponent(newValues));
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
     return super.update(rowId, newValues);
   }
@@ -102,7 +101,7 @@ public class DASJiraComponentTable extends DASJiraTable {
     try {
       projectComponentsApi.deleteComponent((String) extractValueFactory.extractValue(rowId), null);
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -133,8 +132,7 @@ public class DASJiraComponentTable extends DASJiraTable {
                       null);
               return new DASJiraPage<>(components.getValues(), components.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkException(
-                  "Error fetching components: %s".formatted(e.getResponseBody()), e);
+              throw makeSdkException(e);
             }
           }
         };
@@ -259,7 +257,7 @@ public class DASJiraComponentTable extends DASJiraTable {
           realAssigneeType,
           projectComponent.getSelf());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 

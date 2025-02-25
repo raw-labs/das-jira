@@ -4,12 +4,12 @@ import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColum
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.JiraSettingsApi;
 import com.rawlabs.das.jira.rest.platform.model.ModelConfiguration;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -44,7 +44,7 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
       Iterator<Row> iterator = List.of(toRow(config, columns)).iterator();
       return fromRowIterator(iterator);
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -73,7 +73,7 @@ public class DASJiraGlobalSettingTable extends DASJiraTable {
                   try {
                     return objectMapper.writeValueAsString(c);
                   } catch (JsonProcessingException e) {
-                    throw new DASSdkException(e.getMessage(), e);
+                    throw new DASJiraUnexpectedError(e);
                   }
                 })
             .orElse(null),

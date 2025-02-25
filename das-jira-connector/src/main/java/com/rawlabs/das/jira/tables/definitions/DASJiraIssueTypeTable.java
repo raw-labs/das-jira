@@ -8,7 +8,6 @@ import com.rawlabs.das.jira.rest.platform.api.IssueTypesApi;
 import com.rawlabs.das.jira.rest.platform.model.*;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -58,7 +57,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       issueTypeCreateBean.setHierarchyLevel(hierarchyLevel);
       return toRow(issueTypesApi.createIssueType(issueTypeCreateBean), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -69,7 +68,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       var result = issueTypesApi.updateIssueType(id, issueTypeUpdateBean);
       return toRow(result, List.of());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -78,7 +77,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
     try {
       issueTypesApi.deleteIssueType(id, null);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -89,7 +88,7 @@ public class DASJiraIssueTypeTable extends DASJiraTable {
       return fromRowIterator(
           issueTypesApi.getIssueAllTypes().stream().map(i -> toRow(i, columns)).iterator());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
