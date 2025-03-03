@@ -10,7 +10,8 @@ COPY das-jira-connector/pom.xml das-jira-connector/pom.xml
 COPY docker/settings.xml .
 
 RUN --mount=type=secret,id=github_token \
-    export GITHUB_TOKEN="$(cat /run/secrets/github_token)" && \
+    GITHUB_TOKEN="$(cat /run/secrets/github_token)" && \
+    export GITHUB_TOKEN && \
     mvn -B dependency:go-offline dependency:resolve-plugins -DskipTests \
     --settings settings.xml
 
