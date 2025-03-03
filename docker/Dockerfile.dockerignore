@@ -3,6 +3,8 @@ LICENSE
 README.md
 docker
 !docker/settings.xml
+!docker/entrypoint.sh
+!docker/healthcheck.sh
 .github
 .git
 .gitignore
