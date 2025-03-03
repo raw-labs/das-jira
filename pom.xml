@@ -65,4 +65,20 @@
         <joda-time-version>2.13.0</joda-time-version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Security vulnerability overrides -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>4.1.118.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20231013</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>
