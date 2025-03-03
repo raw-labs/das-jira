@@ -10,7 +10,7 @@ COPY das-jira-connector/pom.xml das-jira-connector/pom.xml
 COPY docker/settings.xml .
 
 RUN --mount=type=secret,id=github_token \
-    export GITHUB_TOKEN=$(cat /run/secrets/github_token) && \
+    export GITHUB_TOKEN="$(cat /run/secrets/github_token)" && \
     mvn -B dependency:go-offline dependency:resolve-plugins -DskipTests \
     --settings settings.xml
 
@@ -30,6 +30,7 @@ FROM --platform=${BUILDPLATFORM} eclipse-temurin:22-jre-jammy
 
 ENV DAS_SERVER_PORT=50051
 
+# hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-openbsd && \
     apt-get clean && \
