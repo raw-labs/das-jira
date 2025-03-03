@@ -6,9 +6,6 @@ on:
       - pom.xml
       - docker/**
       - '**/*.java'
-  push:
-    branches:
-      - main
 
 defaults:
   run:
