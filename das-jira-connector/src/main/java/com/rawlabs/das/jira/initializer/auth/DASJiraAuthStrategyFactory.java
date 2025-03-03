@@ -1,12 +1,14 @@
 package com.rawlabs.das.jira.initializer.auth;
 
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
+
 import java.util.Map;
 
 public class DASJiraAuthStrategyFactory {
   public static DASJiraAuthStrategy createAuthStrategy(Map<String, String> options) {
     if (isBearerAuth(options)) return new DASJiraOAuth2AuthStrategy();
     else if (isBasicAuth(options)) return new DasJiraBasicAuthStrategy();
-    else throw new IllegalArgumentException("Invalid authentication options");
+    else throw new DASSdkInvalidArgumentException("Invalid authentication option");
   }
 
   private static boolean isBearerAuth(Map<String, String> options) {

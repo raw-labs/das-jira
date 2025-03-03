@@ -5,6 +5,7 @@ import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColum
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.ProjectsApi;
 import com.rawlabs.das.jira.rest.platform.model.*;
@@ -12,7 +13,6 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -72,7 +72,7 @@ public class DASJiraProjectTable extends DASJiraTable {
       addToRow("self", rowBuilder, projectIdentifiers.getSelf(), List.of());
       return rowBuilder.build();
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -80,7 +80,7 @@ public class DASJiraProjectTable extends DASJiraTable {
     try {
       projectsApi.deleteProject((String) extractValueFactory.extractValue(rowId), true);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -104,7 +104,7 @@ public class DASJiraProjectTable extends DASJiraTable {
               (String) extractValueFactory.extractValue(rowId), updateProjectDetails, expand);
       return toRow(result, List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -149,7 +149,7 @@ public class DASJiraProjectTable extends DASJiraTable {
                   null);
           return new DASJiraPage<>(searchResult.getValues(), searchResult.getTotal());
         } catch (ApiException e) {
-          throw new DASSdkException(e.getMessage(), e);
+          throw makeSdkException(e);
         }
       }
     };
@@ -191,7 +191,7 @@ public class DASJiraProjectTable extends DASJiraTable {
                   try {
                     return objectMapper.writeValueAsString(p);
                   } catch (JsonProcessingException e) {
-                    throw new DASSdkException(e.getMessage(), e);
+                    throw new DASJiraUnexpectedError(e);
                   }
                 })
             .orElse(null);

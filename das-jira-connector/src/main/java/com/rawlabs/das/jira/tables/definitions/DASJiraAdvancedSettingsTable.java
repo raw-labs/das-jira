@@ -10,7 +10,6 @@ import com.rawlabs.das.jira.rest.platform.model.ApplicationProperty;
 import com.rawlabs.das.jira.rest.platform.model.SimpleApplicationPropertyBean;
 import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -58,7 +57,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
           jiraSettingsApi.setApplicationProperty(id, applicationPropertyBean);
       return toRow(applicationProperty, List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 
@@ -89,8 +88,7 @@ public class DASJiraAdvancedSettingsTable extends DASJiraTable {
         }
       };
     } catch (ApiException e) {
-      throw new DASSdkException(
-          "Failed to fetch advanced settings: %s".formatted(e.getResponseBody()), e);
+      throw makeSdkException(e);
     }
   }
 

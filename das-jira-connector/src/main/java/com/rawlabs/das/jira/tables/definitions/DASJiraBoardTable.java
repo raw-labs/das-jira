@@ -11,7 +11,6 @@ import com.rawlabs.das.jira.tables.*;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -62,7 +61,7 @@ public class DASJiraBoardTable extends DASJiraTable {
       GetAllBoards200ResponseValuesInner result = boardApi.createBoard(board);
       return toRow(result, null);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 
@@ -70,7 +69,7 @@ public class DASJiraBoardTable extends DASJiraTable {
     try {
       boardApi.deleteBoard((Long) extractValueFactory.extractValue(rowId));
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 
@@ -120,8 +119,7 @@ public class DASJiraBoardTable extends DASJiraTable {
               return new DASJiraPage<>(
                   getAllBoards200ResponsePage.getValues(), getAllBoards200ResponsePage.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkException(
-                  "Failed to fetch boards: %s".formatted(e.getResponseBody()));
+              throw makeSdkException(e);
             }
           }
 
@@ -131,33 +129,29 @@ public class DASJiraBoardTable extends DASJiraTable {
             try {
               return toRow(next, columns);
             } catch (ApiException e) {
-              throw new DASSdkException("Failed to fetch board configuration", e);
+              throw makeSdkException(e);
             }
           }
         };
       }
     } catch (ApiException e) {
-      throw new DASSdkException("Failed to fetch advanced settings", e);
+      throw makeSdkException(e);
     }
   }
 
   private Row toRow(
       GetAllBoards200ResponseValuesInner getAllBoards200ResponseValuesInner, List<String> columns)
       throws ApiException {
-    try {
-      Row row = getBoardsRow(getAllBoards200ResponseValuesInner, columns);
-      if (columns == null
-          || columns.isEmpty()
-          || columns.contains("filter_id")
-          || columns.contains("sub_query")) {
-        GetConfiguration200Response config =
-            boardApi.getConfiguration(getAllBoards200ResponseValuesInner.getId());
-        row = addConfigToRow(row, config, columns);
-      }
-      return row;
-    } catch (ApiException e) {
-      throw new DASSdkException("Failed to fetch board configuration", e);
+    Row row = getBoardsRow(getAllBoards200ResponseValuesInner, columns);
+    if (columns == null
+        || columns.isEmpty()
+        || columns.contains("filter_id")
+        || columns.contains("sub_query")) {
+      GetConfiguration200Response config =
+          boardApi.getConfiguration(getAllBoards200ResponseValuesInner.getId());
+      row = addConfigToRow(row, config, columns);
     }
+    return row;
   }
 
   private Row getBoardsRow(

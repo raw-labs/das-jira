@@ -54,7 +54,7 @@ public class DASJiraUserTable extends DASJiraTable {
       User user = usersApi.createUser(newUserDetails);
       return toRow(user, List.of());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -63,7 +63,7 @@ public class DASJiraUserTable extends DASJiraTable {
     try {
       usersApi.removeUser(extractValueFactory.extractValue(rowId).toString(), null, null);
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -74,7 +74,7 @@ public class DASJiraUserTable extends DASJiraTable {
       List<User> users = usersApi.getAllUsers(0, withMaxResultOrLimit(limit));
       return fromRowIterator(users.stream().map(u -> toRow(u, columns)).iterator());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 

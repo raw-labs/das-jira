@@ -5,6 +5,7 @@ import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.DashboardsApi;
 import com.rawlabs.das.jira.rest.platform.model.*;
@@ -12,7 +13,6 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -70,8 +70,10 @@ public class DASJiraDashboardTable extends DASJiraTable {
     try {
       Dashboard result = dashboardsApi.createDashboard(getDashboardDetails(row), null);
       return toRow(result, List.of());
-    } catch (ApiException | IOException e) {
-      throw new DASSdkException(e.getMessage(), e);
+    } catch (ApiException e) {
+      throw makeSdkException(e);
+    } catch (IOException e) {
+      throw new DASJiraUnexpectedError(e);
     }
   }
 
@@ -84,8 +86,10 @@ public class DASJiraDashboardTable extends DASJiraTable {
               getDashboardDetails(newValues),
               null);
       return toRow(result, List.of());
-    } catch (ApiException | IOException e) {
-      throw new RuntimeException(e);
+    } catch (ApiException e) {
+      throw makeSdkException(e);
+    } catch (IOException e) {
+      throw new DASJiraUnexpectedError(e);
     }
   }
 
@@ -94,7 +98,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
     try {
       dashboardsApi.deleteDashboard(extractValueFactory.extractValue(rowId).toString());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -117,7 +121,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
           return new DASJiraPage<>(
               page.getDashboards(), Long.valueOf(Objects.requireNonNullElse(page.getTotal(), 0)));
         } catch (ApiException e) {
-          throw new RuntimeException(e);
+          throw makeSdkException(e);
         }
       }
     };
@@ -165,7 +169,7 @@ public class DASJiraDashboardTable extends DASJiraTable {
       addToRow("title", rowBuilder, dashboard.getName(), columns);
       return rowBuilder.build();
     } catch (JsonProcessingException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
   }
 

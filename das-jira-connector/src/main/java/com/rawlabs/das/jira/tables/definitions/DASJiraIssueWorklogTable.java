@@ -4,6 +4,7 @@ import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColum
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.IssueSearchApi;
 import com.rawlabs.das.jira.rest.platform.api.IssueWorklogsApi;
@@ -16,7 +17,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -66,7 +66,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
           UserDetails.fromJson(updateAuthor.toJson()),
           extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException | URISyntaxException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
   }
 
@@ -78,7 +78,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               worklog.getIssueId(), worklog, null, null, null, null, null, null);
       return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 
@@ -97,7 +97,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
               null);
       return toRow(resultWorklog, List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -125,7 +125,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
                   result.getWorklogs(),
                   Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)));
             } catch (ApiException e) {
-              throw new RuntimeException(e);
+              throw makeSdkException(e);
             }
           }
         };
@@ -166,7 +166,7 @@ public class DASJiraIssueWorklogTable extends DASJiraTable {
           objectMapper.writeValueAsString(worklog.getProperties()),
           columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
 
     var updateAuthor =

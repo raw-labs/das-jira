@@ -14,7 +14,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -60,7 +59,7 @@ public class DASJiraSprintTable extends DASJiraTable {
       Sprint sprint = sprintApi.createSprint(createSprintRequest);
       return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -81,7 +80,7 @@ public class DASJiraSprintTable extends DASJiraTable {
               (Long) extractValueFactory.extractValue(rowId), updateSprintRequest);
       return toRow(sprint, sprint.getOriginBoardId(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -90,7 +89,7 @@ public class DASJiraSprintTable extends DASJiraTable {
     try {
       sprintApi.deleteSprint((Long) extractValueFactory.extractValue(rowId));
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -115,7 +114,7 @@ public class DASJiraSprintTable extends DASJiraTable {
                   boardApi.getAllSprints(boardId, offset, withMaxResultOrLimit(limit), null);
               return new DASJiraPage<>(result.getValues(), result.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkException(e.getResponseBody());
+              throw makeSdkException(e);
             }
           }
         };

@@ -3,6 +3,7 @@ package com.rawlabs.das.jira.tables.definitions;
 import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.*;
 import com.rawlabs.das.jira.rest.platform.model.Comment;
@@ -12,7 +13,6 @@ import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.jira.tables.results.DASJiraWithParentTableResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -61,7 +61,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
           UserDetails.fromJson(extractValueFactory.extractValue(row, "update_author").toString()),
           extractValueFactory.extractValue(row, "updated").toString());
     } catch (IOException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw new DASJiraUnexpectedError(e);
     }
   }
 
@@ -71,7 +71,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
       Comment resultComment = issueCommentsApi.addComment(issueIdOrKey, extractComment(row), null);
       return toRow(resultComment, issueIdOrKey, List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage(), e);
+      throw makeSdkException(e);
     }
   }
 
@@ -88,7 +88,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
               null);
       return toRow(comment, issueIdOrKey, List.of());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -114,7 +114,7 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
                       issueId, offset, withMaxResultOrLimit(limit), withOrderBy(sortKeys), null);
               return new DASJiraPage<>(result.getComments(), result.getTotal());
             } catch (ApiException e) {
-              throw new DASSdkException(e.getResponseBody());
+              throw makeSdkException(e);
             }
           }
         };

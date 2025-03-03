@@ -2,6 +2,8 @@ package com.rawlabs.das.jira.initializer;
 
 import com.rawlabs.das.jira.initializer.auth.DASJiraAuthStrategy;
 import com.rawlabs.das.jira.initializer.auth.DASJiraAuthStrategyFactory;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
+
 import java.util.Map;
 
 public class DASJiraInitializer {
@@ -9,7 +11,7 @@ public class DASJiraInitializer {
   public static com.rawlabs.das.jira.rest.platform.ApiClient initializePlatform(
       Map<String, String> options) {
     if (options.get("base_url") == null) {
-      throw new IllegalArgumentException("base_url is required");
+      throw new DASSdkInvalidArgumentException("base_url is required");
     }
     com.rawlabs.das.jira.rest.platform.ApiClient apiClient =
         new com.rawlabs.das.jira.rest.platform.ApiClient();
@@ -22,7 +24,7 @@ public class DASJiraInitializer {
   public static com.rawlabs.das.jira.rest.software.ApiClient initializeSoftware(
       Map<String, String> options) {
     if (options.get("base_url") == null) {
-      throw new IllegalArgumentException("base_url is required");
+      throw new DASSdkInvalidArgumentException("base_url is required");
     }
     com.rawlabs.das.jira.rest.software.ApiClient apiClient =
         new com.rawlabs.das.jira.rest.software.ApiClient();

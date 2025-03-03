@@ -13,7 +13,6 @@ import com.rawlabs.das.jira.tables.DASJiraJqlQueryBuilder;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -54,7 +53,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
       addToRow("self", builder, result.getSelf(), List.of());
       return builder.build();
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -62,7 +61,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
     try {
       issuesApi.deleteIssue(extractValueFactory.extractValue(rowId).toString(), null);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -101,7 +100,7 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
               Long.valueOf(Objects.requireNonNullElse(result.getTotal(), 0)),
               result.getNames());
         } catch (ApiException e) {
-          throw new DASSdkException(e.getMessage());
+          throw makeSdkException(e);
         }
       }
     };

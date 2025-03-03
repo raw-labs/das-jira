@@ -13,7 +13,6 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -61,7 +60,7 @@ public class DASJiraGroupTable extends DASJiraTable {
       groupDetails.setGroupId(group.getGroupId());
       return toRow(groupDetails, List.of(), List.of(), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -71,7 +70,7 @@ public class DASJiraGroupTable extends DASJiraTable {
       this.groupsApi.removeGroup(
           null, (String) extractValueFactory.extractValue(rowId), null, null);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -112,7 +111,7 @@ public class DASJiraGroupTable extends DASJiraTable {
                             withMaxResultOrLimit(limit));
                     return new DASJiraPage<>(result.getValues(), result.getTotal());
                   } catch (ApiException e) {
-                    throw new DASSdkException(e.getMessage());
+                    throw makeSdkException(e);
                   }
                 }
               }) {
@@ -134,7 +133,7 @@ public class DASJiraGroupTable extends DASJiraTable {
               groupsApi.bulkGetGroups(offset, withMaxResultOrLimit(limit), null, null, null, null);
           return new DASJiraPage<>(result.getValues(), result.getTotal());
         } catch (ApiException e) {
-          throw new DASSdkException(e.getMessage());
+          throw makeSdkException(e);
         }
       }
     };

@@ -5,6 +5,7 @@ import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColum
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.rest.platform.api.WorkflowsApi;
 import com.rawlabs.das.jira.rest.platform.model.PageBeanWorkflow;
@@ -13,7 +14,6 @@ import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.jira.tables.results.DASJiraPage;
 import com.rawlabs.das.jira.tables.results.DASJiraPaginatedResult;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
@@ -50,7 +50,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
     try {
       workflowsApi.deleteInactiveWorkflow(rowId.toString());
     } catch (ApiException e) {
-      throw new RuntimeException(e);
+      throw makeSdkException(e);
     }
   }
 
@@ -79,7 +79,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
                   null);
           return new DASJiraPage<>(result.getValues(), result.getTotal());
         } catch (ApiException e) {
-          throw new RuntimeException(e);
+          throw makeSdkException(e);
         }
       }
     };
@@ -103,7 +103,7 @@ public class DASJiraWorkflowTable extends DASJiraTable {
       addToRow(
           "statuses", rowBuilder, objectMapper.writeValueAsString(workflow.getStatuses()), columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
     addToRow("title", rowBuilder, workflow.getId().getName(), columns);
     return rowBuilder.build();

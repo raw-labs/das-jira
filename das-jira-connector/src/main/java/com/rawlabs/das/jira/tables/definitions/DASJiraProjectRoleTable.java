@@ -10,7 +10,6 @@ import com.rawlabs.das.jira.rest.platform.model.ProjectRole;
 import com.rawlabs.das.jira.rest.platform.model.RoleActor;
 import com.rawlabs.das.jira.tables.DASJiraTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
 import com.rawlabs.protocol.das.v1.query.PathKey;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
@@ -58,7 +57,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
     try {
       return toRow(projectRolesApi.createProjectRole(createUpdateRoleRequestBean(row)), List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -70,7 +69,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
               createUpdateRoleRequestBean(newValues)),
           List.of());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -78,7 +77,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
     try {
       projectRolesApi.deleteProjectRole((Long) extractValueFactory.extractValue(rowId), null);
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 
@@ -88,7 +87,7 @@ public class DASJiraProjectRoleTable extends DASJiraTable {
       List<ProjectRole> result = projectRolesApi.getAllProjectRoles();
       return fromRowIterator(result.stream().map(r -> toRow(r, columns)).iterator());
     } catch (ApiException e) {
-      throw new DASSdkException(e.getMessage());
+      throw makeSdkException(e);
     }
   }
 

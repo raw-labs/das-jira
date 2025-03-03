@@ -1,10 +1,14 @@
 package com.rawlabs.das.jira.tables;
 
+import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
+import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.createEq;
+import static com.rawlabs.das.jira.utils.factory.table.TableFactory.createTable;
+import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createLongType;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rawlabs.das.jira.rest.platform.ApiException;
 import com.rawlabs.das.jira.utils.factory.value.*;
-import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
-import com.rawlabs.das.sdk.DASTable;
+import com.rawlabs.das.sdk.*;
 import com.rawlabs.protocol.das.v1.query.Qual;
 import com.rawlabs.protocol.das.v1.query.SortKey;
 import com.rawlabs.protocol.das.v1.tables.Column;
@@ -14,11 +18,6 @@ import com.rawlabs.protocol.das.v1.tables.TableDefinition;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static com.rawlabs.das.jira.utils.factory.qual.ExtractQualFactory.extractEqDistinct;
-import static com.rawlabs.das.jira.utils.factory.qual.QualFactory.createEq;
-import static com.rawlabs.das.jira.utils.factory.table.TableFactory.createTable;
-import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createLongType;
 
 public abstract class DASJiraTable implements DASTable {
 
@@ -98,7 +97,7 @@ public abstract class DASJiraTable implements DASTable {
       return null;
     }
     if (sortKeys.size() > 1) {
-      throw new DASSdkException("Only one sort key is allowed.");
+      throw new DASSdkInvalidArgumentException("Only one sort key is allowed.");
     }
     SortKey key = sortKeys.getFirst();
     return (key.getIsReversed() ? "-" : "+") + key.getName().replace("title", "name");
@@ -124,5 +123,44 @@ public abstract class DASJiraTable implements DASTable {
   public OffsetDateTime getDateTime(String dateString) {
     // Parse the string to an OffsetDateTime object
     return OffsetDateTime.parse(dateString, formatter);
+  }
+
+  // A helper to fallback to a default message if ever the body would be empty or null.
+  private static String mkMessage(String msg) {
+    if (msg == null || msg.trim().isEmpty()) {
+      return "Unknown JIRA API error";
+    }
+    return msg;
+  }
+
+  /**
+   * Helper method to create a DASSdk RuntimeException from an ApiException.
+   *
+   * <p>When the SDK exposes more exceptions (e.g. authentication errors), this method can
+   * investigate the ApiException and create the appropriate SDK exception.
+   *
+   * @param e the ApiException to convert
+   * @return the RuntimeException to throw
+   */
+  protected RuntimeException makeSdkException(ApiException e) {
+    return switch (e.getCode()) {
+      case 400 -> new DASSdkInvalidArgumentException(mkMessage(e.getResponseBody()), e);
+      case 401 -> new DASSdkUnauthenticatedException("unauthorized", e);
+      case 403 -> new DASSdkPermissionDeniedException("permission denied", e);
+      default ->
+          // For now, just create a generic SDK exception with the body of the ApiException
+          new DASSdkInvalidArgumentException(mkMessage(e.getResponseBody()), e);
+    };
+  }
+
+  protected RuntimeException makeSdkException(com.rawlabs.das.jira.rest.software.ApiException e) {
+    return switch (e.getCode()) {
+      case 400 -> new DASSdkInvalidArgumentException(mkMessage(e.getResponseBody()), e);
+      case 401 -> new DASSdkUnauthenticatedException("unauthorized", e);
+      case 403 -> new DASSdkPermissionDeniedException("permission denied", e);
+      default ->
+          // For now, just create a generic SDK exception with the body of the ApiException
+          new DASSdkInvalidArgumentException(mkMessage(e.getResponseBody()), e);
+    };
   }
 }

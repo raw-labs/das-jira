@@ -1,7 +1,7 @@
 package com.rawlabs.das.jira.tables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.jira.DASJiraUnexpectedError;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import java.util.*;
 
@@ -83,7 +83,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
       // 'description' is an object, so we need to serialize it. It's then sent as 'any'.
       addToRow("description", rowBuilder, objectMapper.writeValueAsString(description), columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkException("error processing 'description'", e);
+      throw new DASJiraUnexpectedError(e);
     }
 
     addToRow(
@@ -147,7 +147,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
     try {
       addToRow("fields", rowBuilder, objectMapper.writeValueAsString(fields), columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
 
     addToRow(
@@ -173,7 +173,7 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
     try {
       addToRow("tags", rowBuilder, objectMapper.writeValueAsString(tags), columns);
     } catch (JsonProcessingException e) {
-      throw new DASSdkException(e.getMessage());
+      throw new DASJiraUnexpectedError(e);
     }
   }
 }

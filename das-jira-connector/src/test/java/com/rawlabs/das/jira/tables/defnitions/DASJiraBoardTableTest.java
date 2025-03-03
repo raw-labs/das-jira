@@ -14,7 +14,7 @@ import com.rawlabs.das.jira.rest.software.model.GetAllBoards200ResponseValuesInn
 import com.rawlabs.das.jira.rest.software.model.GetConfiguration200Response;
 import com.rawlabs.das.jira.tables.definitions.DASJiraBoardTable;
 import com.rawlabs.das.sdk.DASExecuteResult;
-import com.rawlabs.das.sdk.DASSdkException;
+import com.rawlabs.das.sdk.DASSdkInvalidArgumentException;
 import com.rawlabs.das.jira.utils.factory.value.DefaultValueFactory;
 import com.rawlabs.das.jira.utils.factory.value.ValueFactory;
 import com.rawlabs.das.jira.utils.factory.value.ValueTypeTuple;
@@ -125,7 +125,7 @@ public class DASJiraBoardTableTest extends BaseMockTest {
   @DisplayName("Get with error")
   void testGetWithError() {
     assertThrows(
-        DASSdkException.class,
+        DASSdkInvalidArgumentException.class,
         () -> {
           try (DASExecuteResult result =
               dasJiraBoardTable.execute(
