@@ -5,6 +5,10 @@ on:
       - .github/workflows/docker-ci.yaml
       - pom.xml
       - docker/**
+      - '**/*.java'
+  push:
+    branches:
+      - main
 
 defaults:
   run:
@@ -12,19 +16,70 @@ defaults:
 
 env:
   GITHUB_TOKEN: ${{ secrets.READ_PACKAGES }}
+  IMAGE_NAME: das-jira-server
 
 jobs:
-  build:
+  lint:
+    name: Lint Dockerfile
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/Dockerfile
+          failure-threshold: error
+
+  build-and-test:
+    name: Build, Scan & Test
+    runs-on: ubuntu-latest
+    needs: lint
     steps:
       - uses: actions/checkout@v4
       - uses: s4u/setup-maven-action@v1.18.0
         with:
           java-version: 22
           maven-version: 3.9.9
-      - name: set version from tag
+
+      - name: Set version from branch or tag
         run: |
-          DOCKER_TAG=$(echo '${{ github.head_ref }}' | sed 's/[^a-zA-Z0-9_.-]/-/g')
+          DOCKER_TAG=$(echo '${{ github.head_ref || github.ref_name }}' | sed 's/[^a-zA-Z0-9_.-]/-/g')
+          echo "VERSION=${DOCKER_TAG}" >> $GITHUB_ENV
           mvn -B versions:set -DnewVersion=${DOCKER_TAG} -DprocessAllModules
-      - name: build docker image
-        run: docker/build
+
+      - name: Build docker image
+        run: |
+          docker/build
+          echo "IMAGE=ghcr.io/raw-labs/das-jira/${IMAGE_NAME}:${VERSION}" >> $GITHUB_ENV
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Test image - run container
+        run: |
+          CONTAINER_ID=$(docker run -d -p 50051 ${IMAGE})
+          echo "CONTAINER_ID=${CONTAINER_ID}" >> $GITHUB_ENV
+          sleep 10
+
+      - name: Test image - verify healthcheck
+        run: |
+          docker exec ${CONTAINER_ID} /app/healthcheck.sh
+          if [ $? -ne 0 ]; then
+            echo "Healthcheck failed!"
+            exit 1
+          fi
+
+      - name: Cleanup container
+        if: always()
+        run: |
+          if [ ! -z "${CONTAINER_ID}" ]; then
+            docker stop ${CONTAINER_ID}
+            docker rm ${CONTAINER_ID}
+          fi
