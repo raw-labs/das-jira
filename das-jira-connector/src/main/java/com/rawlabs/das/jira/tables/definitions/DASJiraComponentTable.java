@@ -1,5 +1,6 @@
 package com.rawlabs.das.jira.tables.definitions;
 
+import static com.rawlabs.das.jira.utils.ExceptionHandling.makeSdkException;
 import static com.rawlabs.das.jira.utils.factory.table.ColumnFactory.createColumn;
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.*;
 import static com.rawlabs.das.jira.utils.factory.type.TypeFactory.createStringType;
