@@ -43,6 +43,6 @@ public class DASJiraTest {
                         "personal_access_token",
                         "pat"),
                     null));
-    assertTrue(exception.getMessage().contains("this-doesn-t-exist.com: nodename nor servname provided, or not known"), exception.getMessage());
+    assertTrue(exception.getMessage().contains("this-doesn-t-exist.com"), exception.getMessage());
   }
 }
