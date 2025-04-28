@@ -34,9 +34,10 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private final BoardApi boardApi;
 
-  public DASJiraBacklogIssueTable(Map<String, String> options, ZoneId jiraZoneId, BoardApi boardApi) {
+  public DASJiraBacklogIssueTable(Map<String, String> options, ZoneId localZoneId, ZoneId jiraZoneId, BoardApi boardApi) {
     super(
         options,
+        localZoneId,
         jiraZoneId,
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.");

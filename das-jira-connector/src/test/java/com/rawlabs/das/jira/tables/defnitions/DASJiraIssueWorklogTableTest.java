@@ -45,6 +45,7 @@ public class DASJiraIssueWorklogTableTest extends BaseMockTest {
     dasJiraIssueWorklogTable =
         new DASJiraIssueWorklogTable(
             Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
             ZoneId.of("UTC"), // The jiraZoneId
             issueWorklogsApi,
             issueSearchApi,

@@ -25,6 +25,7 @@ public class DASJiraTableManager {
       com.rawlabs.das.jira.rest.software.ApiClient apiClientSoftware) {
     MyselfApi myselfApi = new MyselfApi(apiClientPlatform);
     final ZoneId jiraZoneId;
+    final ZoneId localZoneId;
     try {
       String jiraTimeZone = myselfApi.getCurrentUser("").getTimeZone();
       if (jiraTimeZone == null) {
@@ -34,10 +35,15 @@ public class DASJiraTableManager {
     } catch (ApiException e) {
       throw new DASSdkInvalidArgumentException("Error getting user timezone", e);
     }
+    if (options.get("timezone") == null) {
+      localZoneId = ZoneId.of("UTC");
+    } else {
+      localZoneId = ZoneId.of(options.get("timezone"));
+    }
     tables =
         List.of(
             new DASJiraAdvancedSettingsTable(options, new JiraSettingsApi(apiClientPlatform)),
-            new DASJiraBacklogIssueTable(options, jiraZoneId, new BoardApi(apiClientSoftware)),
+            new DASJiraBacklogIssueTable(options, localZoneId, jiraZoneId, new BoardApi(apiClientSoftware)),
             new DASJiraBoardTable(options, new BoardApi(apiClientSoftware)),
             new DASJiraComponentTable(
                 options,
@@ -49,18 +55,21 @@ public class DASJiraTableManager {
             new DASJiraGroupTable(options, new GroupsApi(apiClientPlatform)),
             new DASJiraIssueCommentTable(
                 options,
+                localZoneId,
                 jiraZoneId,
                 new IssueCommentsApi(apiClientPlatform),
                 new IssueSearchApi(apiClientPlatform),
                 new IssuesApi(apiClientPlatform)),
             new DASJiraIssueTable(
                 options,
+                localZoneId,
                 jiraZoneId,
                 new IssueSearchApi(apiClientPlatform),
                 new IssuesApi(apiClientPlatform)),
             new DASJiraIssueTypeTable(options, new IssueTypesApi(apiClientPlatform)),
             new DASJiraIssueWorklogTable(
                 options,
+                localZoneId,
                 jiraZoneId,
                 new IssueWorklogsApi(apiClientPlatform),
                 new IssueSearchApi(apiClientPlatform),

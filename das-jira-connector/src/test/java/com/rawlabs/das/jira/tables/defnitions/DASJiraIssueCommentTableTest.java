@@ -46,6 +46,7 @@ public class DASJiraIssueCommentTableTest extends BaseMockTest {
     dasJiraIssueCommentTable =
         new DASJiraIssueCommentTable(
             Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
             ZoneId.of("UTC"), // The jiraZoneId
             issueCommentsApi,
             issueSearchApi,

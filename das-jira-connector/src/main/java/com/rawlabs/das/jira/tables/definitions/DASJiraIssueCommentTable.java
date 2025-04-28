@@ -34,13 +34,14 @@ public class DASJiraIssueCommentTable extends DASJiraTable {
 
   public DASJiraIssueCommentTable(
       Map<String, String> options,
-      ZoneId zoneId,
+      ZoneId localZoneId,
+      ZoneId jiraZoneId,
       IssueCommentsApi issueCommentsApi,
       IssueSearchApi issueSearchApi,
       IssuesApi issuesApi) {
     super(options, TABLE_NAME, "Comments that provided in issue.");
     this.issueCommentsApi = issueCommentsApi;
-    this.parentTable = new DASJiraIssueTable(options, zoneId, issueSearchApi, issuesApi);
+    this.parentTable = new DASJiraIssueTable(options, localZoneId, jiraZoneId, issueSearchApi, issuesApi);
   }
 
   public List<SortKey> getTableSortOrders(List<SortKey> sortKeys) {

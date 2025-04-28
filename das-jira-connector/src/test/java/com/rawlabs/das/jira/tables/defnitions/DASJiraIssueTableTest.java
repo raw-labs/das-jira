@@ -51,6 +51,7 @@ public class DASJiraIssueTableTest extends BaseMockTest {
     dasJiraIssueTable =
         new DASJiraIssueTable(
             Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
             ZoneId.of("UTC"), // The jiraZoneId (whatever you need in test)
             issueSearchApi,
             null // issuesApi

@@ -44,6 +44,7 @@ public class DASJiraBacklogIssueTableTest extends BaseMockTest {
     dasJiraBacklogIssueTable =
         new DASJiraBacklogIssueTable(
             Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
             ZoneId.of("UTC"), // The jiraZoneId
             boardApi);
     when(boardApi.getIssuesForBacklog(any(), any(), any(), any(), any(), any(), any()))

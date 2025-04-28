@@ -16,9 +16,9 @@ public abstract class DASJiraIssueTransformationTable extends DASJiraTable {
   DateTimeFormatter offsetTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
   protected DASJiraIssueTransformationTable(
-      Map<String, String> options, ZoneId remoteZoneId, String table, String description) {
+      Map<String, String> options, ZoneId localZoneId, ZoneId remoteZoneId, String table, String description) {
     super(options, table, description);
-    localZoneId = ZoneId.of(options.get("timezone"));
+    this.localZoneId = localZoneId;
     this.remoteZoneId = remoteZoneId;
   }
 

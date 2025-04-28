@@ -32,12 +32,12 @@ public class DASJiraIssueTable extends DASJiraIssueTransformationTable {
   private final ZoneId jiraZoneId;
 
   public DASJiraIssueTable(
-          Map<String, String> options, ZoneId jiraZoneId, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
+          Map<String, String> options, ZoneId localZoneId, ZoneId jiraZoneId, IssueSearchApi issueSearchApi, IssuesApi issueApi) {
     super(
-        options, jiraZoneId, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
+        options, localZoneId, jiraZoneId, TABLE_NAME, "Issues help manage code, estimate workload, and keep track of team.");
     this.issueSearchApi = issueSearchApi;
     this.issuesApi = issueApi;
-    this.localZoneId = ZoneId.of(options.get("timezone"));
+    this.localZoneId = localZoneId;
     this.jiraZoneId = jiraZoneId;
   }
 
