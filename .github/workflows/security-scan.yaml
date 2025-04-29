@@ -16,3 +16,4 @@ jobs:
       - uses: raw-labs/das-sec-scan@v0.3.0-rc1
         with:
           github-token: ${{ github.token }}
+          severity: MEDIUM
