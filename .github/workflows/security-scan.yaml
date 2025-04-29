@@ -1,0 +1,19 @@
+name: Security Scan
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security Scan
+    # Remove general once open source
+    runs-on: [self-hosted,general]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: raw-labs/das-sec-scan@v0.3.0-rc1
+        with:
+          github-token: ${{ github.token }}
