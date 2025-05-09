@@ -19,16 +19,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.ZoneId;
+import java.util.Map;
 @DisplayName("DAS Jira Issue Comment Table Test")
 public class DASJiraIssueCommentTableTest extends BaseMockTest {
 
   @Mock static IssueCommentsApi issueCommentsApi;
   @Mock static IssueSearchApi issueSearchApi;
 
-  @InjectMocks DASJiraIssueCommentTable dasJiraIssueCommentTable;
+  private DASJiraIssueCommentTable dasJiraIssueCommentTable;
 
   private static PageOfComments pageOfComments;
 
@@ -42,6 +43,15 @@ public class DASJiraIssueCommentTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     DASJiraIssueTableTest.configBeforeEach(issueSearchApi);
+    dasJiraIssueCommentTable =
+        new DASJiraIssueCommentTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
+            ZoneId.of("UTC"), // The jiraZoneId
+            issueCommentsApi,
+            issueSearchApi,
+            null // issuesApi
+            );
     when(issueCommentsApi.getComments(any(), any(), any(), any(), any()))
         .thenReturn(pageOfComments);
   }

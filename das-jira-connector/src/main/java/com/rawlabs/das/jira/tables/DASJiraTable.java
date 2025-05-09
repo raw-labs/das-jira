@@ -56,17 +56,19 @@ public abstract class DASJiraTable implements DASTable {
   protected void addToRow(
       String columnName, Row.Builder rowBuilder, Object value, List<String> columns) {
     if (hasProjection(columns, columnName)) {
+      ColumnDefinition definition = columnDefinitions.get(columnName);
       rowBuilder.addColumns(
           Column.newBuilder()
               .setName(columnName)
               .setData(
                   valueFactory.createValue(
-                      new ValueTypeTuple(value, columnDefinitions.get(columnName).getType()))));
+                      new ValueTypeTuple(value, definition.getType()))));
     }
   }
 
   private boolean hasProjection(List<String> columns, String columnName) {
-    return columns == null || columns.isEmpty() || columns.contains(columnName);
+    return columnDefinitions.containsKey(columnName)
+        && (columns == null || columns.isEmpty() || columns.contains(columnName));
   }
 
   protected abstract LinkedHashMap<String, ColumnDefinition> buildColumnDefinitions();

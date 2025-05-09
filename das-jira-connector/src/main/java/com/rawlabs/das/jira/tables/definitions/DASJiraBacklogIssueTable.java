@@ -22,6 +22,7 @@ import com.rawlabs.protocol.das.v1.tables.ColumnDefinition;
 import com.rawlabs.protocol.das.v1.tables.Row;
 import com.rawlabs.protocol.das.v1.types.Value;
 import com.rawlabs.protocol.das.v1.types.ValueLong;
+import java.time.ZoneId;
 import java.util.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,9 +34,11 @@ public class DASJiraBacklogIssueTable extends DASJiraIssueTransformationTable {
 
   private final BoardApi boardApi;
 
-  public DASJiraBacklogIssueTable(Map<String, String> options, BoardApi boardApi) {
+  public DASJiraBacklogIssueTable(Map<String, String> options, ZoneId localZoneId, ZoneId jiraZoneId, BoardApi boardApi) {
     super(
         options,
+        localZoneId,
+        jiraZoneId,
         TABLE_NAME,
         "The backlog contains incomplete issues that are not assigned to any future or active sprint.");
     this.boardApi = boardApi;
