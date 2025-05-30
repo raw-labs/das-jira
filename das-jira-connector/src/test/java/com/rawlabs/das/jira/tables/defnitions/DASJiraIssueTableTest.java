@@ -17,14 +17,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.time.ZoneId;
+import java.util.Map;
 @DisplayName("DAS Jira Issue Table Test")
 public class DASJiraIssueTableTest extends BaseMockTest {
-  @Mock static IssueSearchApi issueSearchApi;
+  @Mock private IssueSearchApi issueSearchApi;
 
-  @InjectMocks DASJiraIssueTable dasJiraIssueTable;
+  private static DASJiraIssueTable dasJiraIssueTable;
 
   private static SearchResults searchResults;
 
@@ -47,6 +48,14 @@ public class DASJiraIssueTableTest extends BaseMockTest {
   @BeforeEach
   void setUp() throws ApiException {
     configBeforeEach(issueSearchApi);
+    dasJiraIssueTable =
+        new DASJiraIssueTable(
+            Map.of("timezone", "UTC"), // The options
+            ZoneId.of("UTC"), // The localZoneId
+            ZoneId.of("UTC"), // The jiraZoneId (whatever you need in test)
+            issueSearchApi,
+            null // issuesApi
+            );
   }
 
   @DisplayName("Get issues")
